@@ -2,15 +2,16 @@ const ACTIVE_KEY = "steibis-break90-active";
 const ARCHIVE_KEY = "steibis-break90-archive";
 const PROFILE_KEY = "steibis-caddie-profile";
 
-/* ── Tee data: all 4 tees × 18 holes (metres, converted from GolfPass yards) ── */
+/* Tee data checked May 25, 2026.
+   Hole lengths: Golfify scorecard. Totals/CR/Slope cross-checked against Albrecht Golf Guide and German Golf Guide. */
 const TEE_DATA = {
-  yellow: { label: "Gelb (Herren)",   cr: 69.0, slope: 135,
+  yellow: { label: "Gelb",   cr: 69.0, slope: 135,
     meters: [308,381,159,468,169,463,379,492,180,438,167,332,114,297,136,270,89,440] },
-  blue:   { label: "Blau (Senioren)", cr: 67.3, slope: 131,
+  blue:   { label: "Blau", cr: 67.2, slope: 131,
     meters: [294,314,133,456,151,441,364,448,154,420,157,287,109,285,129,270,89,426] },
-  red:    { label: "Rot (Damen)",     cr: 70.5, slope: 128,
+  red:    { label: "Rot",     cr: 70.5, slope: 128,
     meters: [276,314,133,429,151,403,348,442,154,388,143,287,103,263,109,249,89,385] },
-  orange: { label: "Orange (Damen+)", cr: 69.0, slope: 124,
+  orange: { label: "Orange", cr: 68.9, slope: 125,
     meters: [266,272,115,389,129,369,331,397,127,388,143,265,98,252,109,249,66,362] },
 };
 
@@ -116,12 +117,12 @@ const FEEDBACK_QUESTIONS = [
 
 /* ── PGA score names ── */
 const SCORE_NAMES_DE = {
-  "-4": "Kondor", "-3": "Albatross", "-2": "Eagle",
+  "-4": "4 unter Par", "-3": "Albatross", "-2": "Eagle",
   "-1": "Birdie", "0": "Par", "1": "Bogey",
-  "2": "Doppelbogey", "3": "Triplebogey",
+  "2": "Double Bogey", "3": "Triple Bogey",
 };
 const SCORE_CSS = {
-  "-2": "eagle", "-1": "birdie", "0": "par",
+  "-4": "eagle", "-3": "eagle", "-2": "eagle", "-1": "birdie", "0": "par",
   "1": "bogey", "2": "double", "3": "triple",
 };
 
@@ -137,11 +138,9 @@ const UI_TEXT = {
     shareRound: "Link kopieren",
     resetRound: "Alle Eingaben dieser Runde zurücksetzen",
     round: "Runde",
-    analysis: "Analyse",
     training: "Training",
-    coach: "Coach",
     history: "Historie",
-    glossary: "Glossar",
+    settings: "Einstellungen",
   },
   en: {
     score: "Score",
@@ -154,11 +153,9 @@ const UI_TEXT = {
     shareRound: "Copy link",
     resetRound: "Reset this round",
     round: "Round",
-    analysis: "Analysis",
     training: "Training",
-    coach: "Coach",
     history: "History",
-    glossary: "Glossary",
+    settings: "Settings",
   },
 };
 const HOLE_PLANS_EN = {
@@ -326,6 +323,9 @@ const state = {
   selectedShotType: "Tee",
   language: "de",
   activeTee: "yellow",
+  showMissOptions: false,
+  showPuttMissOptions: false,
+  historyView: "month",
   archive: loadArchive(),
   round: loadActiveRound(),
   profile: loadProfile(),
@@ -347,11 +347,8 @@ const els = {
   tabs: document.querySelectorAll(".tab"),
   panels: {
     track: document.querySelector("#trackPanel"),
-    analysis: document.querySelector("#analysisPanel"),
     training: document.querySelector("#trainingPanel"),
-    coach: document.querySelector("#coachPanel"),
-    archive: document.querySelector("#archivePanel"),
-    glossary: document.querySelector("#glossaryPanel"),
+    settings: document.querySelector("#settingsPanel"),
   },
   prevHole: document.querySelector("#prevHole"),
   nextHole: document.querySelector("#nextHole"),
@@ -365,7 +362,13 @@ const els = {
   holeWarning: document.querySelector("#holeWarning"),
   holePlan: document.querySelector("#holePlan"),
   shotTypeGrid: document.querySelector("#shotTypeGrid"),
+  planHit: document.querySelector("#planHit"),
+  planMiss: document.querySelector("#planMiss"),
+  missOptions: document.querySelector("#missOptions"),
   shotGrid: document.querySelector("#shotGrid"),
+  puttHit: document.querySelector("#puttHit"),
+  puttMiss: document.querySelector("#puttMiss"),
+  puttMissOptions: document.querySelector("#puttMissOptions"),
   puttGrid: document.querySelector("#puttGrid"),
   finishHole: document.querySelector("#finishHole"),
   shotList: document.querySelector("#shotList"),
@@ -387,6 +390,7 @@ const els = {
   coachReport: document.querySelector("#coachReport"),
   archiveList: document.querySelector("#archiveList"),
   historyStats: document.querySelector("#historyStats"),
+  historyViewButtons: document.querySelectorAll("[data-history-view]"),
   glossaryList: document.querySelector("#glossaryList"),
   ruleModal: document.querySelector("#ruleModal"),
   closeRuleModal: document.querySelector("#closeRuleModal"),
@@ -557,11 +561,11 @@ function hole(index = state.currentHole) {
 }
 
 function playedHoles(round = state.round) {
-  return round.holes.filter((item) => item.shots.length > 0 || item.note.trim() || item.scratched);
+  return round.holes.filter((item) => item.shots.length > 0 || item.scratched);
 }
 
 function holeScore(item) {
-  if (item.scratched) return item.par + 3;
+  if (item.scratched) return 10;
   return item.shots.reduce((sum, shot) => sum + (shot.penalty ? 2 : 1), 0);
 }
 
@@ -629,6 +633,8 @@ function formatToPar(value) {
 function addShot(result, options = {}) {
   haptic(result === "Exakt umgesetzt" ? 18 : 8);
   if (result === "Exakt umgesetzt") showConfetti();
+  state.showMissOptions = false;
+  state.showPuttMissOptions = false;
   const penalty = Boolean(options.penalty);
   hole().scratched = false;
   hole().shots.push({
@@ -644,6 +650,7 @@ function addShot(result, options = {}) {
 }
 
 function undoShot() {
+  haptic(10);
   if (hole().scratched) hole().scratched = false;
   else hole().shots.pop();
   saveActive();
@@ -651,6 +658,7 @@ function undoShot() {
 }
 
 function scratchHole() {
+  haptic([18, 40, 18]);
   hole().scratched = true;
   hole().shots = [];
   saveActive();
@@ -689,18 +697,27 @@ function chooseRuleOption(index) {
   closeRuleModal();
 }
 
-function setHole(index) {
+function setHole(index, options = {}) {
+  const previous = state.currentHole;
   state.currentHole = Math.max(0, Math.min(17, index));
-  els.holeStrip.classList.add("collapsed");
+  state.showMissOptions = false;
+  state.showPuttMissOptions = false;
+  if (options.manual && state.currentHole !== previous + 1) {
+    els.holeStrip.classList.remove("collapsed");
+  } else {
+    els.holeStrip.classList.add("collapsed");
+  }
   render();
   flashAiCaddie();
+  if (options.showCaddie) openInfoModal("caddie");
 }
 
 function finishHole() {
-  if (state.currentHole < 17) setHole(state.currentHole + 1);
+  haptic(12);
+  if (state.currentHole < 17) setHole(state.currentHole + 1, { showCaddie: true });
   else {
     saveCurrentRound();
-    state.activeTab = "analysis";
+    state.activeTab = "training";
     render();
   }
 }
@@ -838,17 +855,17 @@ function renderTrack() {
 
   els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · CR ${tee.cr.toFixed(1)} / Slope ${tee.slope}`;
   els.holeRating.style.background = difficultyColor(item.si);
-  els.note.value = item.note;
+  if (els.note) els.note.value = item.note;
 
   els.shotList.innerHTML = item.scratched
     ? `<div class="shot-row scratch"><strong>-</strong><span>Loch gestrichen · ${holeScore(item)} Schläge</span></div>`
     : item.shots.length
-    ? item.shots
-        .map((shot, index) => `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><strong>${index + 1}</strong><span>${shot.type || "Schlag"} · ${shot.result}${shot.note ? ` · ${shot.note}` : ""}${shot.penalty ? " · +1 Strafschlag" : ""}</span></div>`)
-        .join("")
-    : `<div class="empty-state">Stell dir den Schlag vor und tippe danach auf das Ergebnis.</div>`;
+    ? (() => {
+        const shot = item.shots[item.shots.length - 1];
+        return `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><strong>${item.shots.length}</strong><span>Letzte Eingabe: ${shot.type || "Schlag"} · ${shot.result}${shot.note ? ` · ${shot.note}` : ""}${shot.penalty ? " · +1 Strafschlag" : ""}</span></div>`;
+      })()
+    : `<div class="empty-state compact">Noch keine Eingabe auf diesem Loch.</div>`;
 
-  renderWarning(item);
   renderHolePlan(item);
   renderAiCaddie(item);
 }
@@ -941,26 +958,34 @@ function flashAiCaddie() {
 function renderHolePlan(item) {
   const hcp = Number(state.profile.handicap);
   const breakTarget = state.round.breakTarget || 90;
-  const target = item.si <= 6 || breakTarget >= 95 || hcp >= 24 ? "Bogey-Plan" : item.par === 3 && item.meters <= 140 ? "Par-Chance" : "Bogey-Par";
+  const meters = (TEE_DATA[state.activeTee] || TEE_DATA.yellow).meters[state.currentHole];
+  const target = item.si <= 6 || breakTarget >= 95 || hcp >= 24 ? "Bogey-Plan" : item.par === 3 && meters <= 140 ? "Par-Chance" : "Bogey-Par";
   const scoreNow = holeScore(item);
+  const risks = historicRisks(item);
   const paceText = scoreNow
     ? `Aktuell: ${scoreNow} Schläge auf diesem Loch.`
     : Number.isFinite(hcp)
       ? `Vor dem Schlag: Zielzone passend zu HCP ${hcp} und Break ${breakTarget} festlegen.`
       : "Vor dem Schlag: Zielzone festlegen, dann Ergebnis tippen.";
   els.holePlan.innerHTML = `
-    <h3>${target} · Strategie Loch ${item.hole}</h3>
+    <h3>${risks.length ? "Warnung & " : ""}${target} · Loch ${item.hole}</h3>
+    ${risks.length ? `<p class="plan-warning"><strong>Historisch häufig:</strong> ${risks.slice(0, 2).join(" / ")}. Sichere Zielzone priorisieren.</p>` : ""}
     <p>${linkGlossary(state.language === "en" ? HOLE_PLANS_EN[item.hole] : HOLE_PLANS[item.hole])}</p>
     <p>${linkGlossary(paceText)}</p>
   `;
+  els.holePlan.classList.toggle("has-warning", risks.length > 0);
 }
 
-function renderWarning(item) {
+function historicRisks(item) {
   const counts = historicHoleCounts(item.hole);
-  const risks = Object.entries(counts)
+  return Object.entries(counts)
     .filter(([, count]) => count >= 2)
     .sort((a, b) => b[1] - a[1])
     .map(([result]) => result);
+}
+
+function renderWarning(item) {
+  const risks = historicRisks(item);
 
   if (!risks.length) {
     els.holeWarning.classList.remove("active");
@@ -974,7 +999,13 @@ function renderWarning(item) {
 
 function renderShotButtons() {
   els.shotTypeGrid.innerHTML = SHOT_TYPES.map((type) => `<button class="shot-type ${type === state.selectedShotType ? "active" : ""}" type="button" data-shot-type="${type}">${type}</button>`).join("");
-  els.shotGrid.innerHTML = SHOT_RESULTS.map((item) => {
+  els.missOptions.hidden = !state.showMissOptions;
+  els.planHit.classList.toggle("active", !state.showMissOptions);
+  els.planMiss.classList.toggle("active", state.showMissOptions);
+  els.puttMissOptions.hidden = !state.showPuttMissOptions;
+  els.puttHit.classList.toggle("active", !state.showPuttMissOptions);
+  els.puttMiss.classList.toggle("active", state.showPuttMissOptions);
+  els.shotGrid.innerHTML = SHOT_RESULTS.filter((item) => item.label !== "Exakt umgesetzt").map((item) => {
     const [label, hint] = SHOT_LABELS[item.label] || [item.label, ""];
     return `<button class="shot-button" data-result="${item.label}" data-category="${item.category}" ${item.rule ? `data-rule="${item.rule}"` : ""} type="button">${label}${item.rule ? '<span class="rule-badge">i</span>' : ""}<small>${hint}</small></button>`;
   }).join("");
@@ -995,21 +1026,21 @@ function renderAnalysis() {
   const par = playedPar();
   const threePlus = state.round.holes.filter((item) => item.shots.filter((shot) => shot.result === "Putt" || shot.type === "putt").length >= 3).length;
   const trouble = counts.Rechts + counts.Links + counts.Getoppt + counts.Fett + counts["Zu kurz"] + counts["Zu lang"] + counts["Aus Gelb"] + counts["Aus Rot"] + counts["Aus Weiß"] + counts["Ball verloren"] + counts.Unspielbar + counts.Dropzone + counts.Biotop + counts.Sonstiges + counts.Gestrichen;
+  const exactRate = counts["Exakt umgesetzt"] + trouble ? Math.round((counts["Exakt umgesetzt"] / Math.max(1, counts["Exakt umgesetzt"] + trouble)) * 100) : 0;
+  const penaltyRate = played ? Math.round((counts.Strafschläge / played) * 100) : 0;
+  const puttLoad = played ? Math.round((counts.Putts / played) * 100) : 0;
 
   els.summaryGrid.innerHTML = [
-    ["Gespielte Löcher", played],
-    ["Score / Ziel", `${score || 0}/${played ? targetForPlayed() : 90}`],
-    ["Fehler-Schläge", trouble],
-    ["3+ Putts", threePlus],
-    ["Strafschläge", counts.Strafschläge],
-    ["Gestrichen", counts.Gestrichen],
-    ["Rechts", counts.Rechts],
-    ["Links", counts.Links],
-    ["Kurz/Lang", counts["Zu kurz"] + counts["Zu lang"]],
-    ["Fett/Getoppt", counts.Fett + counts.Getoppt],
-    ["Exakt", counts["Exakt umgesetzt"]],
+    ["Gespielte Löcher", played, Math.min(100, Math.round((played / 18) * 100)), "Datenbasis"],
+    ["Score / Ziel", `${score || 0}/${played ? targetForPlayed() : 90}`, played ? Math.min(100, Math.round((score / Math.max(1, targetForPlayed())) * 100)) : 0, "Zielkorridor"],
+    ["Plan getroffen", `${exactRate}%`, exactRate, `${counts["Exakt umgesetzt"]} Treffer`],
+    ["Fehler-Schläge", trouble, Math.min(100, trouble * 10), "Abweichungen"],
+    ["3+ Putts", threePlus, Math.min(100, threePlus * 25), "Putting"],
+    ["Strafschläge", counts.Strafschläge, Math.min(100, penaltyRate), "Penalty-Last"],
+    ["Gestrichen", counts.Gestrichen, Math.min(100, counts.Gestrichen * 35), "10er-Loch"],
+    ["Putt-Volumen", counts.Putts, Math.min(100, puttLoad), "Putts je Loch"],
   ]
-    .map(([label, value]) => `<article class="summary-card"><span>${label}</span><strong>${value}</strong></article>`)
+    .map(([label, value, width, sub]) => `<article class="summary-card stat-card"><span>${label}</span><strong>${value}</strong><small>${sub}</small><div class="stat-bar"><i style="width:${width}%"></i></div></article>`)
     .join("");
 
   renderTopThree(counts, threePlus);
@@ -1100,7 +1131,12 @@ function renderTopThree(counts, threePlus) {
 
 function renderTraining() {
   const counts = resultCounts();
+  const played = playedHoles().length;
+  const score = roundScore();
+  const projected = played ? Math.round((score / played) * 18) : 0;
   const threePlus = state.round.holes.filter((item) => item.shots.filter((shot) => shot.result === "Putt" || shot.type === "putt").length >= 3).length;
+  const trouble = counts.Rechts + counts.Links + counts.Getoppt + counts.Fett + counts["Zu kurz"] + counts["Zu lang"] + counts["Aus Gelb"] + counts["Aus Rot"] + counts["Aus Weiß"] + counts["Ball verloren"] + counts.Unspielbar + counts.Dropzone + counts.Biotop + counts.Sonstiges + counts.Gestrichen;
+  const totalSignals = Math.max(1, counts["Exakt umgesetzt"] + trouble + counts.Putts + counts.Strafschläge);
   const priorities = [
     { key: "putting", score: threePlus * 4 + counts.Putts / 10 },
     { key: "strike", score: counts.Fett * 3 + counts.Getoppt * 3 + counts["Zu kurz"] + counts["Zu lang"] },
@@ -1108,8 +1144,34 @@ function renderTraining() {
     { key: "direction", score: counts.Rechts * 2 + counts.Links * 2 + counts.Sonstiges },
     { key: "break90", score: 1 },
   ].sort((a, b) => b.score - a.score);
+  const primary = TRAINING_SOURCES[priorities[0].key];
+  const hcpText = hcpBand();
+  const nextAction = played
+    ? `${hcpText}: Fokus zuerst auf ${primary.title.toLowerCase()}. Hochrechnung aktuell ${projected} Schläge.`
+    : `${hcpText}: Spiele ein paar Löcher, dann priorisiert die App automatisch Training, Caddie-Strategie und Coach-Hinweise.`;
 
-  els.trainingList.innerHTML = priorities
+  els.trainingList.innerHTML = `
+    <article class="training-card ai-training-card">
+      <p class="eyebrow">Individueller KI-Fokus</p>
+      <h3>${played ? "Dein nächster Trainingshebel" : "Noch keine Rundendaten"}</h3>
+      <p>${linkGlossary(nextAction)}</p>
+      <p>${played ? `Datenbasis: ${played} gespielte Löcher · ${counts.Strafschläge} Strafschläge · ${threePlus} Loch/Löcher mit 3+ Putts · HCP-Profil ${hcpText}.` : "Nach der Runde entsteht hier automatisch ein Trainerplan aus Score, HCP, Schlagtyp und Fehlerprofil."}</p>
+    </article>
+    <article class="training-card chart-card">
+      <p class="eyebrow">KI-Statistik</p>
+      <h3>Fehlerprofil</h3>
+      ${[
+        ["Plan getroffen", counts["Exakt umgesetzt"], "good"],
+        ["Richtung", counts.Rechts + counts.Links, "direction"],
+        ["Kontakt", counts.Fett + counts.Getoppt, "contact"],
+        ["Länge", counts["Zu kurz"] + counts["Zu lang"], "distance"],
+        ["Penalty/Gestrichen", counts.Strafschläge + counts.Gestrichen, "penalty"],
+        ["Putts", counts.Putts, "putt"],
+      ].map(([label, value, tone]) => `<div class="chart-row ${tone}"><span>${label}</span><strong>${value}</strong><i style="width:${Math.max(4, Math.round((value / totalSignals) * 100))}%"></i></div>`).join("")}
+    </article>
+  `;
+
+  els.trainingList.insertAdjacentHTML("beforeend", priorities
     .slice(0, 3)
     .map(({ key }, index) => {
       const source = TRAINING_SOURCES[key];
@@ -1122,7 +1184,7 @@ function renderTraining() {
         </article>
       `;
     })
-    .join("");
+    .join(""));
   els.trainingList.insertAdjacentHTML("beforeend", `<div class="premium-note">Mehr-Runden-Trends: Premium. Trainerbericht: Pro-Feature.</div>`);
 }
 
@@ -1179,6 +1241,7 @@ function renderArchive() {
 }
 
 function renderHistoryStats() {
+  els.historyViewButtons.forEach((button) => button.classList.toggle("active", button.dataset.historyView === state.historyView));
   if (!state.archive.length) {
     els.historyStats.innerHTML = "";
     return;
@@ -1195,15 +1258,19 @@ function renderHistoryStats() {
     monthGroups.get(monthKey).rounds.push(round);
     yearGroups.get(yearKey).rounds.push(round);
   });
-  els.historyStats.innerHTML = [...yearGroups.values(), ...monthGroups.values()]
+  const groups = state.historyView === "year" ? [...yearGroups.values()] : [...monthGroups.values()];
+  els.historyStats.innerHTML = groups
     .map((group) => {
       const avgScore = Math.round(group.rounds.reduce((sum, round) => sum + roundScore(round), 0) / group.rounds.length);
       const avgHoles = Math.round(group.rounds.reduce((sum, round) => sum + playedHoles(round).length, 0) / group.rounds.length);
+      const best = Math.min(...group.rounds.map((round) => roundScore(round) || 0).filter(Boolean));
       return `
         <article class="history-card">
           <p class="eyebrow">${group.type} · ${group.label}</p>
           <h3>${group.rounds.length} Runde${group.rounds.length === 1 ? "" : "n"}</h3>
           <strong>Ø ${avgScore} auf Ø ${avgHoles} Loch</strong>
+          <div class="stat-bar"><i style="width:${Math.min(100, Math.round((avgHoles / 18) * 100))}%"></i></div>
+          <p>Bester Score: ${Number.isFinite(best) ? best : "-"}</p>
         </article>
       `;
     })
@@ -1217,7 +1284,7 @@ function renderGlossary() {
 }
 
 function openGlossaryTerm(term) {
-  state.activeTab = "glossary";
+  state.activeTab = "settings";
   render();
   requestAnimationFrame(() => {
     const id = `glossary-${term.replace(/\s+/g, "-")}`;
@@ -1270,6 +1337,11 @@ function openInfoModal(kind) {
       eyebrow: "Nächster Schlag",
       title: `Tipp Loch ${item.hole}`,
       body: `<p>${linkGlossary(nextBestDecision(item))}</p><p>Detailinfos findest du direkt im KI-Caddie unter Empfehlung, Warum, Risiko, Datenbasis und Alternative.</p>`,
+    },
+    caddie: {
+      eyebrow: "KI-Caddie",
+      title: `Loch ${item.hole}: nächster Plan`,
+      body: `<p>${linkGlossary(nextBestDecision(item))}</p><p><strong>Warum:</strong> ${item.si <= 6 ? `Stroke Index ${item.si} macht dieses Loch riskanter.` : "Die beste Chance bleibt eine klare Zielzone ohne Folgefehler."}</p><p>Du findest die ausführliche Auswertung und Trainingspriorität im Menü Training.</p>`,
     },
   }[kind];
   els.infoEyebrow.textContent = content.eyebrow;
@@ -1358,20 +1430,30 @@ els.breakTarget.innerHTML = Array.from({ length: 36 }, (_, index) => {
 
 els.tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
+    haptic(5);
     state.activeTab = tab.dataset.tab;
     render();
   });
 });
 
+els.historyViewButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.historyView = button.dataset.historyView;
+    haptic(5);
+    renderArchive();
+  });
+});
+
 els.holeStrip.addEventListener("click", (event) => {
   const button = event.target.closest("[data-hole]");
-  if (button) setHole(Number(button.dataset.hole));
+  if (button) setHole(Number(button.dataset.hole), { manual: true, showCaddie: true });
 });
 
 els.shotTypeGrid.addEventListener("click", (event) => {
   const button = event.target.closest("[data-shot-type]");
   if (!button) return;
   state.selectedShotType = button.dataset.shotType;
+  haptic(6);
   renderShotButtons();
 });
 
@@ -1416,6 +1498,20 @@ els.shotGrid.addEventListener("click", (event) => {
   else addShot(button.dataset.result);
 });
 
+els.planHit.addEventListener("click", () => addShot("Exakt umgesetzt"));
+els.planMiss.addEventListener("click", () => {
+  state.showMissOptions = true;
+  haptic(8);
+  renderShotButtons();
+});
+
+els.puttHit.addEventListener("click", () => addShot("Putt: Exakt", { type: "Putt" }));
+els.puttMiss.addEventListener("click", () => {
+  state.showPuttMissOptions = true;
+  haptic(8);
+  renderShotButtons();
+});
+
 els.puttGrid.addEventListener("click", (event) => {
   const button = event.target.closest("[data-putt]");
   if (button) addShot(`Putt: ${button.dataset.putt}`, { type: "Putt" });
@@ -1455,17 +1551,18 @@ els.shareActions.addEventListener("click", (event) => {
 els.finishHole.addEventListener("click", finishHole);
 els.undoShot.addEventListener("click", undoShot);
 els.scratchHole.addEventListener("click", scratchHole);
-els.prevHole.addEventListener("click", () => setHole(state.currentHole - 1));
-els.nextHole.addEventListener("click", () => setHole(state.currentHole + 1));
+els.prevHole.addEventListener("click", () => setHole(state.currentHole - 1, { manual: true, showCaddie: true }));
+els.nextHole.addEventListener("click", () => setHole(state.currentHole + 1, { manual: true, showCaddie: true }));
 
-els.note.addEventListener("input", () => {
-  hole().note = els.note.value;
-  saveActive();
-});
+if (els.note) {
+  els.note.addEventListener("input", () => {
+    hole().note = els.note.value;
+    saveActive();
+  });
+}
 
 els.saveRound.addEventListener("click", saveCurrentRound);
 els.shareRound.addEventListener("click", shareRound);
-if (els.exportPdf) els.exportPdf.addEventListener("click", exportPdf);
 els.resetRound.addEventListener("click", resetRoundInputs);
 
 els.breakTarget.addEventListener("change", () => {

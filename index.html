@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#f3f5f1" />
     <title>CoursePilot</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=14" />
+    <link rel="stylesheet" href="styles.css?v=18" />
   </head>
   <body>
     <div class="app-shell">
@@ -28,14 +28,11 @@
             </svg>
           </div>
           <div>
-            <p class="eyebrow">Oberstaufen-Steibis</p>
             <h1 id="appName">CoursePilot</h1>
           </div>
         </div>
         <div class="top-actions">
-          <button class="icon-button" id="aboutApp" type="button" aria-label="Über die App" title="Über die App">i</button>
           <button class="language-toggle" id="languageToggle" type="button">DE</button>
-          <button class="icon-button" id="newRound" type="button" aria-label="Neue Runde starten" title="Neue Runde starten">+</button>
         </div>
       </header>
 
@@ -55,41 +52,11 @@
           </div>
         </section>
 
-        <label class="challenge-picker">
-          <span data-i18n="challenge">Challenge</span>
-          <select id="breakTarget" aria-label="Break-Ziel auswählen"></select>
-        </label>
-
-        <section class="profile-card" aria-label="Spielerprofil">
-          <button class="profile-toggle" id="toggleProfile" type="button">
-            <span>Profil</span>
-            <strong id="profileSummary">HCP offen</strong>
-          </button>
-          <div class="profile-fields collapsed" id="profileFields">
-            <label>
-              <span>Handicap Index</span>
-              <input id="handicap" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z.B. 24.5" />
-            </label>
-            <label>
-              <span>Spielziel</span>
-              <select id="playerGoal">
-                <option value="break90">Break 90</option>
-                <option value="break95">Break 95</option>
-                <option value="break100">Break 100</option>
-                <option value="stabil">Stabilere Runde</option>
-              </select>
-            </label>
-          </div>
-        </section>
-
         <!-- Bottom Navigation – bleibt als .tabs für JS-Kompatibilität -->
         <nav class="tabs" aria-label="Ansichten">
-          <button class="tab active" type="button" data-tab="track" data-i18n="round">Runde</button>
-          <button class="tab" type="button" data-tab="analysis" data-i18n="analysis">Analyse</button>
-          <button class="tab" type="button" data-tab="training" data-i18n="training">Training</button>
-          <button class="tab" type="button" data-tab="coach" data-i18n="coach">Coach</button>
-          <button class="tab" type="button" data-tab="archive" data-i18n="history">Historie</button>
-          <button class="tab" type="button" data-tab="glossary" data-i18n="glossary">Glossar</button>
+          <button class="tab active" type="button" data-tab="track"><span class="tab-icon">◎</span><span data-i18n="round">Runde</span></button>
+          <button class="tab" type="button" data-tab="training"><span class="tab-icon">△</span><span data-i18n="training">Training</span></button>
+          <button class="tab" type="button" data-tab="settings"><span class="tab-icon">⚙</span><span data-i18n="settings">Einstellungen</span></button>
         </nav>
 
         <!-- ═══ RUNDE ═══════════════════════════════════════════════ -->
@@ -108,112 +75,138 @@
           <button class="hole-toggle" id="toggleHoleMenu" type="button">Loch wechseln</button>
           <div class="hole-strip collapsed" id="holeStrip" aria-label="Loch auswählen"></div>
 
-          <div class="warning" id="holeWarning"></div>
-          <div class="strategy-card" id="holePlan"></div>
-          <div class="ai-card" id="aiCaddie"></div>
-
-          <button class="wide-button" id="openTip" type="button">Tipp zum nächsten Schlag</button>
-
           <section class="shot-entry" aria-label="Schlag erfassen">
             <p class="eyebrow">Schlagtyp</p>
             <div class="shot-type-grid" id="shotTypeGrid"></div>
-            <p class="eyebrow">Vorgestellter Schlag</p>
-            <div class="shot-grid" id="shotGrid"></div>
+            <p class="eyebrow">Plan-Ergebnis</p>
+            <div class="plan-choice">
+              <button class="plan-button hit" id="planHit" type="button">Plan getroffen</button>
+              <button class="plan-button miss" id="planMiss" type="button">Nicht getroffen</button>
+            </div>
+            <div class="miss-options" id="missOptions" hidden>
+              <p class="eyebrow">Abweichung erfassen</p>
+              <div class="shot-grid" id="shotGrid"></div>
+            </div>
             <p class="eyebrow putt-heading">Putt</p>
-            <div class="putt-grid" id="puttGrid"></div>
+            <div class="plan-choice putt-choice">
+              <button class="plan-button hit" id="puttHit" type="button">Putt-Plan getroffen</button>
+              <button class="plan-button miss" id="puttMiss" type="button">Nicht getroffen</button>
+            </div>
+            <div class="miss-options" id="puttMissOptions" hidden>
+              <p class="eyebrow">Putt-Abweichung</p>
+              <div class="putt-grid" id="puttGrid"></div>
+            </div>
             <button class="wide-button primary" id="finishHole" type="button">Loch fertig →</button>
           </section>
 
-          <section class="shot-list" aria-label="Schläge am Loch">
-            <div class="section-title">
-              <h3>Dieses Loch</h3>
-              <div class="inline-actions">
-                <button class="text-button warn" id="scratchHole" type="button">Loch streichen</button>
-                <button class="text-button" id="undoShot" type="button">Widerrufen</button>
-              </div>
+          <section class="last-action" aria-label="Letzte Eingabe">
+            <div class="inline-actions">
+              <button class="compact-button warn" id="scratchHole" type="button">Loch streichen</button>
+              <button class="compact-button" id="undoShot" type="button">Letzte Eingabe widerrufen</button>
             </div>
             <div id="shotList"></div>
           </section>
 
-          <label class="note-field">
-            <span>Notiz</span>
-            <input id="note" list="noteSuggestions" placeholder="z.B. rechts ins Rough, Layup war gut" autocomplete="off" />
-            <datalist id="noteSuggestions"></datalist>
-          </label>
+          <div class="strategy-card" id="holePlan"></div>
+          <div class="ai-card" id="aiCaddie"></div>
+
+          <button class="wide-button" id="openTip" type="button">Trainingstipp anzeigen</button>
+
+          <input id="note" type="hidden" />
+          <datalist id="noteSuggestions"></datalist>
+          <div class="warning" id="holeWarning" hidden></div>
 
           <div class="actions">
             <button class="wide-button primary" id="saveRound" type="button">Runde speichern</button>
-            <button class="wide-button" id="shareRound" type="button">Teilen / PDF</button>
+            <button class="wide-button" id="shareRound" type="button">Link kopieren</button>
           </div>
 
           <div class="share-actions" id="shareActions">
             <button type="button" data-share="whatsapp">WhatsApp</button>
             <button type="button" data-share="imessage">iMessage</button>
             <button type="button" data-share="instagram">Instagram</button>
+            <button type="button" data-share="pdf" id="exportPdf">PDF</button>
           </div>
 
           <button class="wide-button danger" id="resetRound" type="button">Alle Eingaben dieser Runde zurücksetzen</button>
           <p class="share-output" id="shareOutput" aria-live="polite"></p>
         </section>
 
-        <!-- ═══ ANALYSE ══════════════════════════════════════════════ -->
-        <section class="panel" id="analysisPanel">
-          <div class="section-title">
-            <div>
-              <p class="eyebrow">Muster erkennen</p>
-              <h2>Zusammenfassung</h2>
-            </div>
-          </div>
-          <div class="summary-grid" id="summaryGrid"></div>
-          <div class="top-three" id="topThree"></div>
-          <div class="ai-card" id="aiReview"></div>
-          <div class="strategy" id="courseStrategy"></div>
-          <div class="insights" id="insights"></div>
-        </section>
-
         <!-- ═══ TRAINING ═════════════════════════════════════════════ -->
         <section class="panel" id="trainingPanel">
           <div class="section-title">
             <div>
-              <p class="eyebrow">Beste Quellen</p>
-              <h2>Trainingshilfe</h2>
+              <p class="eyebrow">KI-automatisiert</p>
+              <h2>Training</h2>
             </div>
           </div>
+          <div class="summary-grid" id="summaryGrid"></div>
+          <div class="ai-card" id="aiReview"></div>
           <div class="training-list" id="trainingList"></div>
-        </section>
-
-        <!-- ═══ COACH ════════════════════════════════════════════════ -->
-        <section class="panel" id="coachPanel">
-          <div class="section-title">
-            <div>
-              <p class="eyebrow">Trainer-Version</p>
-              <h2>Coach Report</h2>
-            </div>
-          </div>
+          <div class="top-three" id="topThree"></div>
           <div class="coach-report" id="coachReport"></div>
-        </section>
-
-        <!-- ═══ HISTORIE ═════════════════════════════════════════════ -->
-        <section class="panel" id="archivePanel">
-          <div class="section-title">
+          <div class="strategy" id="courseStrategy"></div>
+          <div class="insights" id="insights"></div>
+          <div class="section-title history-heading">
             <div>
               <p class="eyebrow">Gespeicherte Runden</p>
               <h2>Historie</h2>
+            </div>
+            <div class="segmented-control" aria-label="Historie Ansicht">
+              <button class="active" type="button" data-history-view="month">Monat</button>
+              <button type="button" data-history-view="year">Jahr</button>
             </div>
           </div>
           <div class="history-stats" id="historyStats"></div>
           <div class="archive-list" id="archiveList"></div>
         </section>
 
-        <!-- ═══ GLOSSAR ══════════════════════════════════════════════ -->
-        <section class="panel" id="glossaryPanel">
+        <!-- ═══ EINSTELLUNGEN ═══════════════════════════════════════ -->
+        <section class="panel" id="settingsPanel">
           <div class="section-title">
             <div>
-              <p class="eyebrow">Einfach erklärt</p>
-              <h2>Glossar</h2>
+              <p class="eyebrow">Vor der Runde</p>
+              <h2>Einstellungen</h2>
             </div>
           </div>
-          <div class="glossary-list" id="glossaryList"></div>
+          <section class="settings-card">
+            <label class="challenge-picker">
+              <span>Break-Ziel</span>
+              <select id="breakTarget" aria-label="Break-Ziel auswählen"></select>
+            </label>
+            <label class="challenge-picker tee-picker">
+              <span>Abschlag</span>
+              <select id="teeSelect" aria-label="Abschlag auswählen">
+                <option value="yellow">Gelb</option>
+                <option value="blue">Blau</option>
+                <option value="red">Rot</option>
+                <option value="orange">Orange</option>
+              </select>
+            </label>
+            <section class="profile-card" aria-label="Spielerprofil">
+              <button class="profile-toggle" id="toggleProfile" type="button">
+                <span>Profil</span>
+                <strong id="profileSummary">HCP offen</strong>
+              </button>
+              <div class="profile-fields" id="profileFields">
+                <label>
+                  <span>Handicap Index</span>
+                  <input id="handicap" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z.B. 24.5" />
+                </label>
+                <input id="playerGoal" type="hidden" value="break90" />
+              </div>
+            </section>
+            <div class="settings-note">
+              <h3>Was macht das HCP?</h3>
+              <p>Dein Handicap ist kein zweites Ziel. Es verändert Strategie, Risiko und Erwartungen: höhere HCPs bekommen defensivere Zielzonen, niedrigere HCPs mehr Par-Chancen.</p>
+            </div>
+            <button class="wide-button" id="aboutApp" type="button">Über die App</button>
+            <button class="wide-button" id="newRound" type="button">Neue Runde starten</button>
+            <details class="glossary-details">
+              <summary>Glossar</summary>
+              <div class="glossary-list" id="glossaryList"></div>
+            </details>
+          </section>
         </section>
 
       </main>
@@ -278,10 +271,10 @@
       </section>
     </div>
 
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=18"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=14");
+        navigator.serviceWorker.register("./sw.js?v=18");
       }
     </script>
   </body>

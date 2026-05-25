@@ -1,5 +1,5 @@
-const CACHE_NAME = "coursepilot-v14";
-const ASSETS = ["./", "./index.html", "./styles.css?v=14", "./app.js?v=14", "./manifest.webmanifest"];
+const CACHE_NAME = "coursepilot-v18";
+const ASSETS = ["./", "./index.html", "./styles.css?v=18", "./app.js?v=18", "./manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
