@@ -44,6 +44,22 @@ const GLOSSARY = {
   "Course Rating": "Einschätzung, welchen Score ein Scratch-Golfer auf diesem Platz erwartbar spielt.",
   Slope: "Zeigt, wie stark die Platzschwierigkeit für Bogey-Golfer steigt. 113 ist neutral; 135 ist anspruchsvoll.",
   "Stroke Index": "Schwierigkeitsrang eines Lochs von 1 bis 18. SI 1 ist das schwerste Loch.",
+  Score: "Gesamtzahl deiner Schläge auf den gespielten Löchern.",
+  Par: "Erwartete Schlagzahl eines Lochs für einen sehr guten Spieler.",
+  Bogey: "Ein Schlag über Par. Für Break 90 ist ein kontrolliertes Bogey oft ein gutes Ergebnis.",
+  Birdie: "Ein Schlag unter Par.",
+  Eagle: "Zwei Schläge unter Par.",
+  "Double Bogey": "Zwei Schläge über Par. Meist entsteht es durch einen zweiten Fehler nach dem ersten Fehler.",
+  "Break-Ziel": "Der Score, den du unterbieten willst, zum Beispiel Break 90.",
+  "Zielkorridor": "Vergleich zwischen deinem aktuellen Score und dem Score, der noch zu deinem Break-Ziel passt.",
+  Abschlag: "Startbereich eines Lochs. Die Farbe legt die Länge und Schwierigkeit fest.",
+  Tee: "Der erste Schlag auf einem Loch.",
+  Transport: "Ein Schlag, der den Ball kontrolliert weiter in Richtung Grün bringt, ohne zwingend die Fahne anzugreifen.",
+  Annäherung: "Schlag Richtung Grün oder Fahne, meist mit Eisen, Wedge oder kurzem Schläger.",
+  Putt: "Schlag auf dem Grün mit dem Putter.",
+  "KI-Caddie": "Automatischer Tipp aus Score, HCP, Lochschwierigkeit, Schlagtyp und bisherigen Fehlern.",
+  "Break-Chance": "Schätzung, wie gut dein aktueller Verlauf noch zu deinem Break-Ziel passt.",
+  Lochrisiko: "Kombination aus Lochschwierigkeit, Historie und aktuellen Fehlern.",
   "Penalty Area": "Bereich, meist rot oder gelb markiert. Bei Erleichterung fällt normalerweise ein Strafschlag an.",
   "Gelbe Penalty Area": "Penalty Area mit Erleichterungsoptionen Schlag-und-Distanz oder Zurück-auf-der-Linie; keine Standard-seitliche Erleichterung.",
   "Aus Weiss": "Ausgrenze. Der Ball darf nicht gespielt werden; normalerweise Schlag und Distanz mit Strafschlag.",
@@ -56,6 +72,21 @@ const GLOSSARY = {
   Layup: "Bewusst kürzerer, sicherer Schlag in eine gute Position.",
   "Low Point": "Tiefster Punkt des Schwungs. Entscheidend für sauberen Ballkontakt.",
   "3-Putt": "Drei Putts auf einem Grün. Einer der schnellsten Hebel für bessere Scores.",
+  "Low Point": "Tiefster Punkt des Schwungs. Er entscheidet oft, ob du fett, dünn oder sauber triffst.",
+  Zielseite: "Die Seite, auf der der nächste Schlag einfacher bleibt, auch wenn der aktuelle Schlag nicht perfekt ist.",
+  "Pre-Shot-Routine": "Kurzer, wiederholbarer Ablauf vor dem Schlag: Ziel wählen, Schlag sehen, ausrichten, ausführen.",
+};
+
+const RULE_TITLES = {
+  yellow: "Gelbe Zone",
+  red: "Rote Zone",
+  white: "Aus",
+  biotope: "Biotop",
+  lost: "Ball weg",
+  provisional: "Provisorischer Ball",
+  unplayable: "Unspielbar",
+  dropzone: "Dropzone",
+  preferred: "Besserlegen",
 };
 
 const SHOT_RESULTS = [
@@ -87,15 +118,15 @@ const SHOT_LABELS = {
   "Zu lang": ["Long", "über Ziel"],
   Getoppt: ["Top", "dünn getroffen"],
   Fett: ["Fat", "Boden vor Ball"],
-  "Aus Rot": ["Penalty Area rot", "Regelinfo"],
-  "Aus Gelb": ["Penalty Area gelb", "Regelinfo"],
-  "Aus Weiß": ["Out of Bounds", "Regelinfo"],
-  Biotop: ["No-Play-Zone", "Regelinfo"],
-  "Ball verloren": ["Lost Ball", "Regelinfo"],
-  Provisorisch: ["Provisional", "Regelinfo"],
-  Unspielbar: ["Unplayable", "Regelinfo"],
-  Dropzone: ["Drop Zone", "Local Rule"],
-  Besserlegen: ["Preferred Lies", "Local Rule"],
+  "Aus Rot": ["Rote Zone", "Wasser/rote Pfosten"],
+  "Aus Gelb": ["Gelbe Zone", "gelbe Pfosten"],
+  "Aus Weiß": ["Aus", "weiße Pfosten"],
+  Biotop: ["Biotop", "nicht spielen"],
+  "Ball verloren": ["Ball weg", "nicht gefunden"],
+  Provisorisch: ["Provisorischer Ball", "Sicherheitsball"],
+  Unspielbar: ["Unspielbar", "Ball liegt schlecht"],
+  Dropzone: ["Dropzone", "Platzregel"],
+  Besserlegen: ["Besserlegen", "Winterregel"],
   Sonstiges: ["Anderer Fehler", "notieren"],
 };
 const PUTT_LABELS = {
@@ -105,7 +136,7 @@ const PUTT_LABELS = {
   "Zu kurz": ["Zu kurz", "Speed"],
   "Zu lang": ["Zu lang", "Speed"],
 };
-const SHOT_TYPES = ["Tee", "Transport", "Annäherung", "Recovery", "Putt"];
+const SHOT_TYPES = ["Tee", "Transport", "Annäherung", "Putt"];
 const FEEDBACK_KEY = "steibis-caddie-feedback";
 const FEEDBACK_QUESTIONS = [
   "War die Eingabe während der Runde schnell genug?",
@@ -135,7 +166,7 @@ const UI_TEXT = {
     newRound: "Neue Runde starten",
     nextTip: "Tipp zum nächsten Schlag",
     saveRound: "Runde speichern",
-    shareRound: "Link kopieren",
+    shareRound: "↗ Teilen",
     resetRound: "Alle Eingaben dieser Runde zurücksetzen",
     round: "Runde",
     training: "Training",
@@ -150,7 +181,7 @@ const UI_TEXT = {
     newRound: "Start new round",
     nextTip: "Next-shot tip",
     saveRound: "Save round",
-    shareRound: "Copy link",
+    shareRound: "↗ Share",
     resetRound: "Reset this round",
     round: "Round",
     training: "Training",
@@ -295,6 +326,33 @@ const TRAINING_SOURCES = {
     url: "https://www.golfmonthly.com/tips/how-to-break-90",
   },
 };
+
+const COURSE_EXPERTS = [
+  {
+    name: "Butch Harmon",
+    role: "Tee & Course Management",
+    advice: "Wähle ein kleines Ziel, richte dich bewusst aus und spiele den Schläger, der den Ball sicher ins Spiel bringt.",
+    url: "https://www.golfdigest.com/story/butch-harmon-driving-tips",
+  },
+  {
+    name: "Dan Grieve",
+    role: "Short Game",
+    advice: "Rund ums Grün zählt Einfachheit: vorher entscheiden, ob der Ball rollen oder fliegen soll, dann den passenden Schlag wählen.",
+    url: "https://www.golfmonthly.com/tips/short-game-guru-dan-grieve-answers-your-questions-on-chipping-pitching-bunkers-and-the-dreaded-yips",
+  },
+  {
+    name: "Chris Como",
+    role: "Bewegung & Kontakt",
+    advice: "Achte auf klare Schlagaufgabe und sauberen Kontakt. Technik ist Mittel zum Zweck, nicht der Gedanke über dem Ball.",
+    url: "https://chriscomo.com/",
+  },
+  {
+    name: "Bob Rotella",
+    role: "Mental Game",
+    advice: "Akzeptiere, dass Golf Fehler enthält. Entscheidend ist Commitment zum nächsten Schlag, nicht Ärger über den letzten.",
+    url: "https://www.golfmonthly.com/features/the-game/bob-rotella-how-to-master-the-mental-game-80146",
+  },
+];
 
 const HOLE_PLANS = {
   1: "Kontrollierter Start. Ziel ist Fairway-Mitte, Bogey ist im Plan, Par ein Bonus.",
@@ -489,6 +547,16 @@ function newRound() {
   };
 }
 
+function resetActiveRound() {
+  state.round = newRound();
+  state.currentHole = 0;
+  state.selectedShotType = "Tee";
+  state.showMissOptions = false;
+  state.showPuttMissOptions = false;
+  state.activeTab = "track";
+  saveActive();
+}
+
 function resetRoundInputs() {
   if (!confirm("Warnung: Dadurch werden alle Eingaben der aktuellen Runde gelöscht. Gespeicherte Runden in der Historie bleiben erhalten. Wirklich zurücksetzen?")) return;
   const keepTarget = state.round.breakTarget || 90;
@@ -613,7 +681,8 @@ function t(key) {
 
 function applyLanguage() {
   document.documentElement.lang = state.language;
-  els.languageToggle.textContent = state.language.toUpperCase();
+  els.languageToggle.textContent = state.language === "de" ? "🇩🇪 DE" : "🇬🇧 EN";
+  const de = state.language === "de";
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
@@ -623,6 +692,16 @@ function applyLanguage() {
   els.saveRound.textContent = t("saveRound");
   if (els.shareRound) els.shareRound.textContent = t("shareRound");
   els.resetRound.textContent = t("resetRound");
+  els.toggleHoleMenu.textContent = de ? "Loch wechseln" : "Change hole";
+  els.finishHole.textContent = de ? "Loch fertig →" : "Finish hole →";
+  els.planHit.textContent = de ? "Plan getroffen" : "Plan hit";
+  els.planMiss.textContent = de ? "Nicht getroffen" : "Missed plan";
+  els.puttHit.textContent = de ? "Putt-Plan getroffen" : "Putt plan hit";
+  els.puttMiss.textContent = de ? "Nicht getroffen" : "Missed plan";
+  els.scratchHole.textContent = de ? "Loch streichen" : "Pick up hole";
+  els.undoShot.textContent = de ? "Letzte Eingabe widerrufen" : "Undo last entry";
+  els.aboutApp.textContent = de ? "Über die App" : "About the app";
+  els.newRound.textContent = de ? "Neue Runde starten" : "Start new round";
 }
 
 function formatToPar(value) {
@@ -633,6 +712,7 @@ function formatToPar(value) {
 function addShot(result, options = {}) {
   haptic(result === "Exakt umgesetzt" ? 18 : 8);
   if (result === "Exakt umgesetzt") showConfetti();
+  const shotType = options.type || state.selectedShotType;
   state.showMissOptions = false;
   state.showPuttMissOptions = false;
   const penalty = Boolean(options.penalty);
@@ -640,13 +720,21 @@ function addShot(result, options = {}) {
   hole().shots.push({
     result,
     penalty,
-    type: options.type || state.selectedShotType,
+    type: shotType,
     note: options.note || "",
     at: new Date().toISOString(),
     number: hole().shots.length + 1,
   });
+  advanceShotType(shotType);
   saveActive();
   render();
+}
+
+function advanceShotType(shotType) {
+  if (shotType === "Tee") {
+    state.selectedShotType = "Transport";
+    window.setTimeout(() => openShotTypeModal(), 120);
+  }
 }
 
 function undoShot() {
@@ -668,7 +756,7 @@ function scratchHole() {
 function openRuleModal(ruleKey) {
   const info = RULE_INFO[ruleKey];
   if (!info) return;
-  els.ruleTitle.textContent = info.title;
+  els.ruleTitle.textContent = RULE_TITLES[ruleKey] || info.title;
   els.ruleBody.innerHTML = `<p>${info.body}</p>`;
   els.ruleSource.innerHTML = `${info.source} <a href="${info.url}" target="_blank" rel="noreferrer">Offizielle Regel prüfen</a>`;
   els.ruleOptions.innerHTML = info.options
@@ -775,10 +863,11 @@ function saveCurrentRound() {
   if (index >= 0) state.archive[index] = normalized;
   else state.archive.unshift(normalized);
   saveArchive();
-  saveActive();
-  els.shareOutput.textContent = "Runde gespeichert. Du findest sie im Archiv.";
+  resetActiveRound();
+  els.shareOutput.textContent = "Runde gespeichert. Die nächste Runde startet wieder an Loch 1.";
   els.shareOutput.classList.add("active");
   renderArchive();
+  render();
   openFeedbackModal();
 }
 
@@ -788,14 +877,7 @@ function makeShareLink() {
 }
 
 async function shareRound() {
-  const link = makeShareLink();
-  try {
-    await navigator.clipboard.writeText(link);
-    els.shareOutput.textContent = "Link kopiert – teile ihn direkt in WhatsApp, iMessage oder per E-Mail.";
-  } catch {
-    els.shareOutput.textContent = `Link: ${link}`;
-  }
-  els.shareOutput.classList.add("active");
+  shareTo("native");
 }
 
 function renderTabs() {
@@ -848,9 +930,9 @@ function renderTrack() {
   const shots = holeScore(item);
   const label = shots > 0 ? holeScoreLabel(shots, item.par) : null;
   if (label) {
-    els.holeScore.innerHTML = `${shots} Schl. <span class="score-label score-${label.css}">${label.name}</span>`;
+    els.holeScore.innerHTML = `${shots} ${state.language === "en" ? (shots === 1 ? "shot" : "shots") : "Schl."} <span class="score-label score-${label.css}">${label.name}</span>`;
   } else {
-    els.holeScore.textContent = "0 Schläge";
+    els.holeScore.textContent = state.language === "en" ? "0 shots" : "0 Schläge";
   }
 
   els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · CR ${tee.cr.toFixed(1)} / Slope ${tee.slope}`;
@@ -858,13 +940,13 @@ function renderTrack() {
   if (els.note) els.note.value = item.note;
 
   els.shotList.innerHTML = item.scratched
-    ? `<div class="shot-row scratch"><strong>-</strong><span>Loch gestrichen · ${holeScore(item)} Schläge</span></div>`
+    ? `<div class="shot-row scratch"><strong>-</strong><span>${state.language === "en" ? "Hole picked up" : "Loch gestrichen"} · ${holeScore(item)} ${state.language === "en" ? "shots" : "Schläge"}</span></div>`
     : item.shots.length
     ? (() => {
         const shot = item.shots[item.shots.length - 1];
-        return `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><strong>${item.shots.length}</strong><span>Letzte Eingabe: ${shot.type || "Schlag"} · ${shot.result}${shot.note ? ` · ${shot.note}` : ""}${shot.penalty ? " · +1 Strafschlag" : ""}</span></div>`;
+        return `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><strong>${item.shots.length}</strong><span>${state.language === "en" ? "Last entry" : "Letzte Eingabe"}: ${shot.type || (state.language === "en" ? "Shot" : "Schlag")} · ${shot.result}${shot.note ? ` · ${shot.note}` : ""}${shot.penalty ? ` · +1 ${state.language === "en" ? "penalty stroke" : "Strafschlag"}` : ""}</span></div>`;
       })()
-    : `<div class="empty-state compact">Noch keine Eingabe auf diesem Loch.</div>`;
+    : `<div class="empty-state compact">${state.language === "en" ? "No entry on this hole yet." : "Noch keine Eingabe auf diesem Loch."}</div>`;
 
   renderHolePlan(item);
   renderAiCaddie(item);
@@ -921,6 +1003,23 @@ function nextBestDecision(item) {
   return "Normaler Plan: klare Zielzone wählen, 80 Prozent Tempo, Ergebnis sofort tippen.";
 }
 
+function paceWarning(item) {
+  const strokes = holeScore(item);
+  if (!strokes || item.scratched) return "";
+  const putts = item.shots.filter((shot) => shot.type === "Putt").length;
+  const transport = item.shots.filter((shot) => shot.type === "Transport").length;
+  const approach = item.shots.filter((shot) => shot.type === "Annäherung").length;
+  const beforeGreen = transport + approach;
+  const targetBeforeGreen = Math.max(1, item.par - 2);
+  if (putts === 0 && beforeGreen > targetBeforeGreen) {
+    return `Warnung: ${beforeGreen} Transport-/Annäherungsschläge vor dem ersten Putt. Empfehlung: nicht mehr die Fahne jagen, sondern sicher aufs Grün oder in die größte Zone.`;
+  }
+  if (strokes >= item.par && putts === 0) {
+    return `Score-Alarm: Du bist schon bei Par, bevor geputtet wurde. Nächster Schlag: Schaden begrenzen, kein Heldenschlag.`;
+  }
+  return "";
+}
+
 function renderAiCaddie(item) {
   const chance = break90Chance();
   const risk = holeRisk(item);
@@ -930,8 +1029,16 @@ function renderAiCaddie(item) {
     ? `Loch ${item.hole} ist Stroke Index ${item.si}. Dein Ziel ist hier kontrolliertes Bogey statt Risiko.`
     : `Loch ${item.hole} erlaubt mehr Spielraum. Der Plan bleibt: klare Zielzone und nächster einfacher Schlag.`;
   const alternative = risk > 55 ? "Alternative: defensiver Schläger, Layup oder Mitte Grün." : "Alternative: normaler Schlag auf die breite Zielseite.";
+  const warning = paceWarning(item);
+  const expert = item.shots.some((shot) => shot.type === "Putt")
+    ? COURSE_EXPERTS[3]
+    : item.shots.some((shot) => shot.type === "Annäherung")
+      ? COURSE_EXPERTS[1]
+      : COURSE_EXPERTS[0];
   els.aiCaddie.innerHTML = `
-    <h3>KI-Caddie</h3>
+    <h3>KI-Caddie · Trainerwissen</h3>
+    <p class="caddie-lead">Zusammengefasst aus deinen Daten und Prinzipien von ${expert.name}, Dan Grieve, Chris Como und Bob Rotella.</p>
+    ${warning ? `<div class="caddie-warning">${linkGlossary(warning)}</div>` : ""}
     <div class="metric-row">
       <div class="metric-pill"><span>Break-Chance</span><strong>${chance}%</strong><div class="ai-meter"><span style="width: ${chance}%"></span></div></div>
       <div class="metric-pill"><span>Lochrisiko</span><strong>${risk}%</strong><div class="ai-meter"><span style="width: ${risk}%"></span></div></div>
@@ -942,6 +1049,7 @@ function renderAiCaddie(item) {
       <div class="ai-line"><strong>Risiko</strong><p>Konservativ ab ${risk > 55 ? "jetzt" : "Fehlerfolge"} denken.</p></div>
       <div class="ai-line"><strong>Datenbasis</strong><p>${hcpBand()} · ${dataPoints} Lochdaten · ${state.archive.length} gespeicherte Runden</p></div>
       <div class="ai-line"><strong>Alternative</strong><p>${linkGlossary(alternative)}</p></div>
+      <div class="ai-line"><strong>${expert.name}</strong><p>${linkGlossary(expert.advice)}</p></div>
     </div>
     <p class="premium-note">KI-Caddie Pro: verfügbar nach 3 gespeicherten Runden mit Mehr-Runden-Trends.</p>
   `;
@@ -972,6 +1080,9 @@ function renderHolePlan(item) {
     ${risks.length ? `<p class="plan-warning"><strong>Historisch häufig:</strong> ${risks.slice(0, 2).join(" / ")}. Sichere Zielzone priorisieren.</p>` : ""}
     <p>${linkGlossary(state.language === "en" ? HOLE_PLANS_EN[item.hole] : HOLE_PLANS[item.hole])}</p>
     <p>${linkGlossary(paceText)}</p>
+    <div class="expert-strip">
+      ${COURSE_EXPERTS.map((expert) => `<article><strong>${expert.name}</strong><span>${expert.role}</span><p>${expert.advice}</p></article>`).join("")}
+    </div>
   `;
   els.holePlan.classList.toggle("has-warning", risks.length > 0);
 }
@@ -1048,9 +1159,12 @@ function renderAnalysis() {
 
   const pace = played ? targetForPlayed() - score : 0;
   els.courseStrategy.innerHTML = `
-    <h3>Course Strategy Break 90</h3>
+    <h3>Course Strategy · Expertenprinzip</h3>
     <p>${linkGlossary(state.language === "en" ? "Steibis is par 70. For Break 90 you have 19 strokes of buffer. Play every hole for bogey, take par only as a bonus on the shorter holes 13, 16 and 17. On Stroke Index 1-6, controlled bogey beats double-bogey risk." : "Steibis ist Par 70. Für Break 90 hast du 19 Schläge Puffer. Spiele jedes Loch auf Bogey, nimm Par nur als Bonus auf den kürzeren Löchern 13, 16 und 17. Auf Stroke Index 1-6 ist ein kontrolliertes Bogey besser als Risiko Richtung Doppelbogey.")}</p>
     <p>${played ? `Aktuell bist du ${pace >= 0 ? `${pace} Schläge im Zielkorridor` : `${Math.abs(pace)} Schläge hinter dem Zielkorridor`}.` : "Starte die Runde, dann wird der Zielkorridor laufend mitgerechnet."}</p>
+    <div class="expert-strip compact">
+      ${COURSE_EXPERTS.map((expert) => `<article><strong>${expert.name}</strong><span>${expert.role}</span><p>${expert.advice}</p></article>`).join("")}
+    </div>
   `;
 
   const insights = [];
@@ -1205,7 +1319,7 @@ function renderCoachReport() {
       <ul>
         <li>${played} gespielte Löcher, Score ${score || 0}</li>
         <li>Primärer Trainingshebel: ${focus}</li>
-        <li>Schlagtypen: Tee ${counts.byType.Tee}, Transport ${counts.byType.Transport}, Annäherung ${counts.byType.Annäherung}, Recovery ${counts.byType.Recovery}, Putt ${counts.byType.Putt}</li>
+        <li>Schlagtypen: Tee ${counts.byType.Tee}, Transport ${counts.byType.Transport}, Annäherung ${counts.byType.Annäherung}, Putt ${counts.byType.Putt}</li>
       </ul>
     </article>
     <article class="coach-card">
@@ -1278,7 +1392,8 @@ function renderHistoryStats() {
 }
 
 function renderGlossary() {
-  els.glossaryList.innerHTML = Object.entries(GLOSSARY)
+  els.glossaryList.innerHTML = `<p class="setting-help">Tipp: Blau markierte Fachbegriffe in der App sind klickbar und führen direkt hierher.</p>` + Object.entries(GLOSSARY)
+    .sort(([a], [b]) => a.localeCompare(b, "de"))
     .map(([term, description]) => `<article class="glossary-card" id="glossary-${term.replace(/\s+/g, "-")}"><h3>${term}</h3><p>${description}</p></article>`)
     .join("");
 }
@@ -1318,6 +1433,58 @@ function closeFeedbackModal() {
   els.feedbackModal.hidden = true;
 }
 
+function caddieBullets(item = hole()) {
+  const risk = holeRisk(item);
+  const shots = holeScore(item);
+  const hcp = Number(state.profile.handicap);
+  const warning = paceWarning(item);
+  return [
+    warning,
+    nextBestDecision(item),
+    item.si <= 6 ? `Schweres Loch: Stroke Index ${item.si}. Bogey ist ein gutes Ergebnis.` : "Spiele auf die breite Zielseite und vermeide den Folgefehler.",
+    Number.isFinite(hcp) ? `HCP ${hcp}: Risiko und Zielzone konservativ wählen, wenn der Schlag eng wirkt.` : "HCP noch offen: Empfehlung basiert auf Platzdaten und aktuellen Schlägen.",
+    shots ? `Aktuell ${shots} Schlag/Schläge auf diesem Loch. Nächster Schlag soll den Schaden begrenzen.` : "Vor dem Schlag: Ziel, Fehlseite und sicherer nächster Schlag klären.",
+    risk > 55 ? "Lochrisiko erhöht: Layup, Mitte Grün oder sicherer Schläger bevorzugt." : "Risiko im Rahmen: normaler Plan mit ruhigem Tempo.",
+  ].filter(Boolean);
+}
+
+function bulletList(items) {
+  return `<ul class="caddie-bullets">${items.map((item) => `<li>${linkGlossary(item)}</li>`).join("")}</ul>`;
+}
+
+function caddieMore() {
+  return `
+    <div class="modal-actions">
+      <button class="wide-button primary" type="button" data-speak-caddie>Vorlesen</button>
+    </div>
+    <details class="more-panel">
+      <summary>More: Trainer-Logik</summary>
+      ${COURSE_EXPERTS.map((expert) => `
+        <article>
+          <strong>${expert.name} · ${expert.role}</strong>
+          <p>${linkGlossary(expert.advice)}</p>
+          <a href="${expert.url}" target="_blank" rel="noreferrer">Quelle</a>
+        </article>
+      `).join("")}
+    </details>
+  `;
+}
+
+function openShotTypeModal() {
+  const de = state.language === "de";
+  els.infoEyebrow.textContent = de ? "Nächster Schlag" : "Next shot";
+  els.infoTitle.textContent = de ? "Schlagtyp wählen" : "Choose shot type";
+  els.infoBody.innerHTML = `
+    <p>${de ? "Ich habe automatisch auf" : "I automatically switched to"} <strong>Transport</strong>${de ? " gestellt." : "."}</p>
+    <div class="rule-options next-shot-options">
+      <button class="rule-option" type="button" data-next-shot-type="Transport">${de ? "Transport beibehalten" : "Keep transport shot"}</button>
+      <button class="rule-option" type="button" data-next-shot-type="Annäherung">${de ? "Annäherung" : "Approach"}</button>
+      <button class="rule-option" type="button" data-next-shot-type="Putt">Putt</button>
+    </div>
+  `;
+  els.infoModal.hidden = false;
+}
+
 function openInfoModal(kind) {
   const item = hole();
   const chance = break90Chance();
@@ -1334,14 +1501,14 @@ function openInfoModal(kind) {
       body: "<p>CoursePilot hilft Amateur-Golfern, auf bekannten Plätzen smarter zu spielen: weniger Strafschläge, weniger 3-Putts, klarere Entscheidungen und ein datenbasierter Trainingsfokus.</p><p>Die App ist für Spieler gedacht, die Break-Ziele wie Break 90, 95 oder 100 verfolgen und aus jeder Runde lernen wollen.</p><p>Konzept, Umsetzung und Copyright: Stefan mit KI-Entwicklungspartner Codex, 2026. Regelhinweise ersetzen keine Spielleitung oder offiziellen Rules of Golf.</p>",
     },
     tip: {
-      eyebrow: "Nächster Schlag",
-      title: `Tipp Loch ${item.hole}`,
-      body: `<p>${linkGlossary(nextBestDecision(item))}</p><p>Detailinfos findest du direkt im KI-Caddie unter Empfehlung, Warum, Risiko, Datenbasis und Alternative.</p>`,
+      eyebrow: state.language === "en" ? "Next-shot tip" : "Tipp zum nächsten Schlag",
+      title: state.language === "en" ? "Your AI caddie recommends" : "Dein KI-Caddie empfiehlt",
+      body: bulletList(caddieBullets(item)) + caddieMore(),
     },
     caddie: {
-      eyebrow: "KI-Caddie",
-      title: `Loch ${item.hole}: nächster Plan`,
-      body: `<p>${linkGlossary(nextBestDecision(item))}</p><p><strong>Warum:</strong> ${item.si <= 6 ? `Stroke Index ${item.si} macht dieses Loch riskanter.` : "Die beste Chance bleibt eine klare Zielzone ohne Folgefehler."}</p><p>Du findest die ausführliche Auswertung und Trainingspriorität im Menü Training.</p>`,
+      eyebrow: state.language === "en" ? "Next-shot tip" : "Tipp zum nächsten Schlag",
+      title: state.language === "en" ? "Your AI caddie recommends" : "Dein KI-Caddie empfiehlt",
+      body: bulletList(caddieBullets(item)) + caddieMore(),
     },
   }[kind];
   els.infoEyebrow.textContent = content.eyebrow;
@@ -1367,16 +1534,17 @@ function shareTo(channel) {
   if (channel === "pdf") { exportPdf(); return; }
   const link = makeShareLink();
   const plainText = `Meine Runde mit CoursePilot: ${link}`;
-  if (navigator.share && channel !== "instagram") {
+  if (navigator.share) {
     navigator.share({ title: "CoursePilot Runde", text: plainText, url: link }).catch(() => {});
     return;
   }
-  const text = encodeURIComponent(plainText);
-  const urls = {
-    whatsapp: `https://wa.me/?text=${text}`,
-    imessage: `sms:&body=${text}`,
-  };
-  if (urls[channel]) window.open(urls[channel], "_blank", "noreferrer");
+  navigator.clipboard?.writeText(link).then(() => {
+    els.shareOutput.textContent = "Link kopiert. Du kannst ihn in WhatsApp, iMessage oder Instagram einfügen.";
+    els.shareOutput.classList.add("active");
+  }).catch(() => {
+    els.shareOutput.textContent = `Link: ${link}`;
+    els.shareOutput.classList.add("active");
+  });
 }
 
 function saveFeedbackEntry() {
@@ -1394,6 +1562,17 @@ function saveFeedbackEntry() {
   const saved = JSON.parse(localStorage.getItem(FEEDBACK_KEY) || "[]");
   saved.unshift(feedback);
   localStorage.setItem(FEEDBACK_KEY, JSON.stringify(saved));
+  const body = [
+    "CoursePilot Feedback",
+    `Runde: ${state.round.id}`,
+    `Zeit: ${new Date(feedback.at).toLocaleString("de-DE")}`,
+    `Emotion: ${feedback.emotion}`,
+    "",
+    ...answers.map((answer) => `${answer.question}: ${answer.score}/5`),
+    "",
+    `Freitext: ${feedback.text || "-"}`,
+  ].join("\n");
+  location.href = `mailto:schaedler.stefan@gmail.com?subject=${encodeURIComponent("CoursePilot Feedback")}&body=${encodeURIComponent(body)}`;
   closeFeedbackModal();
 }
 
@@ -1406,6 +1585,7 @@ function render() {
   renderScore();
   renderProfile();
   renderHoleStrip();
+  renderShotButtons();
   renderTrack();
   renderNotes();
   renderAnalysis();
@@ -1487,6 +1667,7 @@ if (els.teeSelect) {
 }
 
 document.addEventListener("click", (event) => {
+  if (event.target.closest("button")) haptic(4);
   const button = event.target.closest("[data-glossary]");
   if (button) openGlossaryTerm(button.dataset.glossary);
 });
@@ -1543,6 +1724,29 @@ els.infoModal.addEventListener("click", (event) => {
   if (event.target === els.infoModal) closeInfoModal();
 });
 
+els.infoBody.addEventListener("click", (event) => {
+  const speak = event.target.closest("[data-speak-caddie]");
+  if (speak) {
+    const text = [...els.infoBody.querySelectorAll(".caddie-bullets li")].map((item) => item.textContent.trim()).join(". ");
+    if ("speechSynthesis" in window && text) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = state.language === "en" ? "en-GB" : "de-DE";
+      window.speechSynthesis.speak(utterance);
+    } else {
+      els.shareOutput.textContent = "Vorlesen wird von diesem Browser nicht unterstützt.";
+      els.shareOutput.classList.add("active");
+    }
+    return;
+  }
+  const button = event.target.closest("[data-next-shot-type]");
+  if (!button) return;
+  state.selectedShotType = button.dataset.nextShotType;
+  haptic(8);
+  closeInfoModal();
+  renderShotButtons();
+});
+
 els.shareActions.addEventListener("click", (event) => {
   const button = event.target.closest("[data-share]");
   if (button) shareTo(button.dataset.share);
@@ -1582,9 +1786,7 @@ els.breakTarget.addEventListener("change", () => {
 
 els.newRound.addEventListener("click", () => {
   if (playedHoles().length && !confirm("Neue Runde starten? Die aktuelle Runde vorher speichern, falls du sie behalten willst.")) return;
-  state.round = newRound();
-  state.currentHole = 0;
-  saveActive();
+  resetActiveRound();
   render();
 });
 

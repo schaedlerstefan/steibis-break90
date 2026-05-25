@@ -6,7 +6,9 @@
     <meta name="theme-color" content="#f3f5f1" />
     <title>CoursePilot</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=18" />
+    <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="app-icon.svg" />
+    <link rel="stylesheet" href="styles.css?v=23" />
   </head>
   <body>
     <div class="app-shell">
@@ -32,7 +34,7 @@
           </div>
         </div>
         <div class="top-actions">
-          <button class="language-toggle" id="languageToggle" type="button">DE</button>
+          <button class="language-toggle" id="languageToggle" type="button">🇩🇪 DE</button>
         </div>
       </header>
 
@@ -118,13 +120,10 @@
 
           <div class="actions">
             <button class="wide-button primary" id="saveRound" type="button">Runde speichern</button>
-            <button class="wide-button" id="shareRound" type="button">Link kopieren</button>
+            <button class="wide-button" id="shareRound" type="button">↗ Teilen</button>
           </div>
 
           <div class="share-actions" id="shareActions">
-            <button type="button" data-share="whatsapp">WhatsApp</button>
-            <button type="button" data-share="imessage">iMessage</button>
-            <button type="button" data-share="instagram">Instagram</button>
             <button type="button" data-share="pdf" id="exportPdf">PDF</button>
           </div>
 
@@ -174,6 +173,7 @@
               <span>Break-Ziel</span>
               <select id="breakTarget" aria-label="Break-Ziel auswählen"></select>
             </label>
+            <p class="setting-help">Dein Break-Ziel ist der Score, den du unterbieten willst. Die App nutzt es für Risiko, Pace und Caddie-Hinweise.</p>
             <label class="challenge-picker tee-picker">
               <span>Abschlag</span>
               <select id="teeSelect" aria-label="Abschlag auswählen">
@@ -183,6 +183,7 @@
                 <option value="orange">Orange</option>
               </select>
             </label>
+            <p class="setting-help">Der Abschlag verändert Längen, Course Rating und Slope. Wähle die Farbe, von der du heute wirklich spielst.</p>
             <section class="profile-card" aria-label="Spielerprofil">
               <button class="profile-toggle" id="toggleProfile" type="button">
                 <span>Profil</span>
@@ -199,6 +200,10 @@
             <div class="settings-note">
               <h3>Was macht das HCP?</h3>
               <p>Dein Handicap ist kein zweites Ziel. Es verändert Strategie, Risiko und Erwartungen: höhere HCPs bekommen defensivere Zielzonen, niedrigere HCPs mehr Par-Chancen.</p>
+            </div>
+            <div class="settings-note">
+              <h3>Historie & Datenschutz</h3>
+              <p>Deine Runden werden lokal auf diesem Gerät im Browser gespeichert. Sie bleiben beim erneuten Öffnen erhalten, solange Browserdaten für diese Seite nicht gelöscht werden. Vor Gerätewechsel oder Cache-Löschung solltest du wichtige Runden als Link oder PDF sichern.</p>
             </div>
             <button class="wide-button" id="aboutApp" type="button">Über die App</button>
             <button class="wide-button" id="newRound" type="button">Neue Runde starten</button>
@@ -253,7 +258,7 @@
             <option value="ruhig">Ruhig</option>
           </select>
         </label>
-        <button class="wide-button primary" id="saveFeedback" type="button">Feedback speichern</button>
+        <button class="wide-button primary" id="saveFeedback" type="button">Feedback per Mail senden</button>
       </section>
     </div>
 
@@ -271,10 +276,10 @@
       </section>
     </div>
 
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=23"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=18");
+        navigator.serviceWorker.register("./sw.js?v=23");
       }
     </script>
   </body>
