@@ -1,0 +1,9 @@
+{
+  "name": "CoursePilot",
+  "short_name": "CoursePilot",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f2ea",
+  "theme_color": "#174a3a",
+  "icons": []
+}

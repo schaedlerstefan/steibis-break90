@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f8f6" />
+    <title>CoursePilot</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css?v=13" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Oberstaufen-Steibis</p>
+          <h1 id="appName">CoursePilot</h1>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button" id="aboutApp" type="button" aria-label="Über die App" title="Über die App">i</button>
+          <button class="language-toggle" id="languageToggle" type="button">DE</button>
+          <button class="icon-button" id="newRound" type="button" aria-label="Neü Runde starten" title="Neü Runde starten">+</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="scorebar" aria-label="Rundenergebnis">
+          <div>
+            <span data-i18n="score">Score</span>
+            <strong id="scoreTotal">0</strong>
+          </div>
+          <div>
+            <span data-i18n="toPar">zu Par</span>
+            <strong id="toPar">E</strong>
+          </div>
+          <div>
+            <span data-i18n="target">Ziel</span>
+            <strong id="targetPace">90</strong>
+          </div>
+        </section>
+
+        <label class="challenge-picker">
+          <span data-i18n="challenge">Challenge</span>
+          <select id="breakTarget" aria-label="Break-Ziel auswählen"></select>
+        </label>
+
+        <section class="profile-card" aria-label="Spielerprofil">
+          <button class="profile-toggle" id="toggleProfile" type="button">
+            <span>Profil</span>
+            <strong id="profileSummary">HCP offen</strong>
+          </button>
+          <div class="profile-fields collapsed" id="profileFields">
+            <label>
+              <span>Handicap Index</span>
+              <input id="handicap" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z.B. 24.5" />
+            </label>
+            <label>
+              <span>Spielziel</span>
+              <select id="playerGoal">
+                <option value="break90">Break 90</option>
+                <option value="break95">Break 95</option>
+                <option value="break100">Break 100</option>
+                <option value="stabil">Stabilere Runde</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <nav class="tabs" aria-label="Ansichten">
+          <button class="tab active" type="button" data-tab="track" data-i18n="round">Runde</button>
+          <button class="tab" type="button" data-tab="analysis" data-i18n="analysis">Analyse</button>
+          <button class="tab" type="button" data-tab="training" data-i18n="training">Training</button>
+          <button class="tab" type="button" data-tab="coach" data-i18n="coach">Coach</button>
+          <button class="tab" type="button" data-tab="archive" data-i18n="history">Historie</button>
+          <button class="tab" type="button" data-tab="glossary" data-i18n="glossary">Glossar</button>
+        </nav>
+
+        <section class="panel active" id="trackPanel">
+          <div class="hole-top">
+            <button class="icon-button" id="prevHole" type="button" aria-label="Vorheriges Loch" title="Vorheriges Loch">‹</button>
+            <div>
+              <p class="eyebrow">Loch <span id="holeNumber">1</span> · Par <span id="parValue">4</span> · <span id="lengthValue">308</span> m</p>
+              <h2 id="holeScore">0 Schläge</h2>
+              <p class="hole-rating" id="holeRating"></p>
+            </div>
+            <button class="icon-button" id="nextHole" type="button" aria-label="Nächstes Loch" title="Nächstes Loch">›</button>
+          </div>
+
+          <button class="hole-toggle" id="toggleHoleMenu" type="button">Loch wechseln</button>
+          <div class="hole-strip collapsed" id="holeStrip" aria-label="Loch auswählen"></div>
+          <div class="warning" id="holeWarning"></div>
+          <div class="strategy-card" id="holePlan"></div>
+          <div class="ai-card" id="aiCaddie"></div>
+          <button class="wide-button" id="openTip" type="button">Tipp zum nächsten Schlag</button>
+
+          <section class="shot-entry" aria-label="Schlag erfassen">
+            <p class="eyebrow">Schlagtyp</p>
+            <div class="shot-type-grid" id="shotTypeGrid"></div>
+            <p class="eyebrow">Vorgestellter Schlag</p>
+            <div class="shot-grid" id="shotGrid"></div>
+            <p class="eyebrow putt-heading">Putt</p>
+            <div class="putt-grid" id="puttGrid"></div>
+            <button class="wide-button" id="finishHole" type="button">Loch fertig</button>
+          </section>
+
+          <section class="shot-list" aria-label="Schläge am Loch">
+            <div class="section-title">
+              <h3>Dieses Loch</h3>
+              <div class="inline-actions">
+                <button class="text-button warn" id="scratchHole" type="button">Loch streichen</button>
+                <button class="text-button" id="undoShot" type="button">Widerrufen</button>
+              </div>
+            </div>
+            <div id="shotList"></div>
+          </section>
+
+          <label class="note-field">
+            <span>Notiz</span>
+            <input id="note" list="noteSuggestions" placeholder="z.B. rechts ins Rough, Layup war gut" autocomplete="off" />
+            <datalist id="noteSuggestions"></datalist>
+          </label>
+
+          <div class="actions">
+            <button class="wide-button primary" id="saveRound" type="button">Runde speichern</button>
+            <button class="wide-button" id="shareRound" type="button">Link / PDF</button>
+          </div>
+          <div class="share-actions" id="shareActions">
+            <button type="button" data-share="whatsapp">WhatsApp</button>
+            <button type="button" data-share="imessage">iMessage</button>
+            <button type="button" data-share="instagram">Instagram</button>
+          </div>
+          <button class="wide-button danger" id="resetRound" type="button">Alle Eingaben dieser Runde zurücksetzen</button>
+          <p class="share-output" id="shareOutput" aria-live="polite"></p>
+        </section>
+
+        <section class="panel" id="analysisPanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Muster erkennen</p>
+              <h2>Zusammenfassung</h2>
+            </div>
+          </div>
+          <div class="summary-grid" id="summaryGrid"></div>
+          <div class="top-three" id="topThree"></div>
+          <div class="ai-card" id="aiReview"></div>
+          <div class="strategy" id="courseStrategy"></div>
+          <div class="insights" id="insights"></div>
+        </section>
+
+        <section class="panel" id="trainingPanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Beste Quellen</p>
+              <h2>Trainingshilfe</h2>
+            </div>
+          </div>
+          <div class="training-list" id="trainingList"></div>
+        </section>
+
+        <section class="panel" id="coachPanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Trainer-Version</p>
+              <h2>Coach Report</h2>
+            </div>
+          </div>
+          <div class="coach-report" id="coachReport"></div>
+        </section>
+
+        <section class="panel" id="archivePanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Gespeicherte Runden</p>
+              <h2>Historie</h2>
+            </div>
+          </div>
+          <div class="history-stats" id="historyStats"></div>
+          <div class="archive-list" id="archiveList"></div>
+        </section>
+
+        <section class="panel" id="glossaryPanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Einfach erklärt</p>
+              <h2>Glossar</h2>
+            </div>
+          </div>
+          <div class="glossary-list" id="glossaryList"></div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="ruleModal" hidden>
+      <section class="rule-modal" role="dialog" aria-modal="true" aria-labelledby="ruleTitle">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Regelhinweis</p>
+            <h2 id="ruleTitle">Regel</h2>
+          </div>
+          <button class="icon-button" id="closeRuleModal" type="button" aria-label="Schließen" title="Schließen">×</button>
+        </div>
+        <div id="ruleBody"></div>
+        <div class="rule-options" id="ruleOptions"></div>
+        <p class="rule-source" id="ruleSource"></p>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="feedbackModal" hidden>
+      <section class="rule-modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Tester-Feedback</p>
+            <h2 id="feedbackTitle">Runde bewerten</h2>
+          </div>
+          <button class="icon-button" id="closeFeedbackModal" type="button" aria-label="Schließen" title="Schließen">×</button>
+        </div>
+        <div class="feedback-list" id="feedbackList"></div>
+        <label class="feedback-free">
+          <span>Freitext</span>
+          <textarea id="feedbackText" rows="4" placeholder="Was war hilfreich, was hat gestört?"></textarea>
+        </label>
+        <label class="feedback-free">
+          <span>Emotion der Runde</span>
+          <select id="roundEmotion">
+            <option value="fokussiert">Fokussiert</option>
+            <option value="zufrieden">Zufrieden</option>
+            <option value="frustriert">Frustriert</option>
+            <option value="mutig">Mutig</option>
+            <option value="ruhig">Ruhig</option>
+          </select>
+        </label>
+        <button class="wide-button primary" id="saveFeedback" type="button">Feedback speichern</button>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="infoModal" hidden>
+      <section class="rule-modal" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow" id="infoEyebrow">Info</p>
+            <h2 id="infoTitle">Info</h2>
+          </div>
+          <button class="icon-button" id="closeInfoModal" type="button" aria-label="Schließen" title="Schließen">×</button>
+        </div>
+        <div id="infoBody"></div>
+      </section>
+    </div>
+
+    <script src="app.js?v=13"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js?v=13");
+      }
+    </script>
+  </body>
+</html>
