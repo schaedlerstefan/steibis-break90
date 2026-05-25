@@ -2,33 +2,41 @@ const ACTIVE_KEY = "steibis-break90-active";
 const ARCHIVE_KEY = "steibis-break90-archive";
 const PROFILE_KEY = "steibis-caddie-profile";
 
+/* ── Tee data: all 4 tees × 18 holes (metres, converted from GolfPass yards) ── */
+const TEE_DATA = {
+  yellow: { label: "Gelb (Herren)",   cr: 69.0, slope: 135,
+    meters: [308,381,159,468,169,463,379,492,180,438,167,332,114,297,136,270,89,440] },
+  blue:   { label: "Blau (Senioren)", cr: 67.3, slope: 131,
+    meters: [294,314,133,456,151,441,364,448,154,420,157,287,109,285,129,270,89,426] },
+  red:    { label: "Rot (Damen)",     cr: 70.5, slope: 128,
+    meters: [276,314,133,429,151,403,348,442,154,388,143,287,103,263,109,249,89,385] },
+  orange: { label: "Orange (Damen+)", cr: 69.0, slope: 124,
+    meters: [266,272,115,389,129,369,331,397,127,388,143,265,98,252,109,249,66,362] },
+};
+
 const COURSE = [
-  { hole: 1, par: 4, meters: 308, si: 13 },
-  { hole: 2, par: 4, meters: 381, si: 7 },
-  { hole: 3, par: 3, meters: 159, si: 17 },
-  { hole: 4, par: 5, meters: 468, si: 15 },
-  { hole: 5, par: 3, meters: 169, si: 9 },
-  { hole: 6, par: 5, meters: 463, si: 1 },
-  { hole: 7, par: 4, meters: 379, si: 11 },
-  { hole: 8, par: 5, meters: 492, si: 3 },
-  { hole: 9, par: 3, meters: 180, si: 5 },
-  { hole: 10, par: 5, meters: 438, si: 2 },
-  { hole: 11, par: 3, meters: 167, si: 8 },
-  { hole: 12, par: 4, meters: 332, si: 4 },
-  { hole: 13, par: 3, meters: 114, si: 16 },
-  { hole: 14, par: 4, meters: 297, si: 14 },
-  { hole: 15, par: 3, meters: 136, si: 10 },
-  { hole: 16, par: 4, meters: 270, si: 12 },
-  { hole: 17, par: 3, meters: 89, si: 18 },
-  { hole: 18, par: 5, meters: 440, si: 6 },
+  { hole:  1, par: 4, si: 13 },
+  { hole:  2, par: 4, si:  7 },
+  { hole:  3, par: 3, si: 17 },
+  { hole:  4, par: 5, si: 15 },
+  { hole:  5, par: 3, si:  9 },
+  { hole:  6, par: 5, si:  1 },
+  { hole:  7, par: 4, si: 11 },
+  { hole:  8, par: 5, si:  3 },
+  { hole:  9, par: 3, si:  5 },
+  { hole: 10, par: 5, si:  2 },
+  { hole: 11, par: 3, si:  8 },
+  { hole: 12, par: 4, si:  4 },
+  { hole: 13, par: 3, si: 16 },
+  { hole: 14, par: 4, si: 14 },
+  { hole: 15, par: 3, si: 10 },
+  { hole: 16, par: 4, si: 12 },
+  { hole: 17, par: 3, si: 18 },
+  { hole: 18, par: 5, si:  6 },
 ];
 
-const COURSE_RATING = {
-  tee: "Gelb",
-  cr: 69.0,
-  slope: 135,
-  par: 70,
-};
+/* Keep for backward-compat with archived rounds that stored meters */
+const COURSE_RATING = { tee: "Gelb", cr: 69.0, slope: 135, par: 70 };
 
 const GLOSSARY = {
   "Handicap Index": "Kennzahl für deine Spielstärke. Je niedriger, desto besser. Sie hilft, Erwartungen und Zielscore realistischer zu setzen.",
@@ -105,6 +113,18 @@ const FEEDBACK_QUESTIONS = [
   "Waren Regeln und Glossar verständlich?",
   "Würdest du die App in der nächsten Runde wieder nutzen?",
 ];
+
+/* ── PGA score names ── */
+const SCORE_NAMES_DE = {
+  "-4": "Kondor", "-3": "Albatross", "-2": "Eagle",
+  "-1": "Birdie", "0": "Par", "1": "Bogey",
+  "2": "Doppelbogey", "3": "Triplebogey",
+};
+const SCORE_CSS = {
+  "-2": "eagle", "-1": "birdie", "0": "par",
+  "1": "bogey", "2": "double", "3": "triple",
+};
+
 const UI_TEXT = {
   de: {
     score: "Score",
@@ -114,7 +134,7 @@ const UI_TEXT = {
     newRound: "Neue Runde starten",
     nextTip: "Tipp zum nächsten Schlag",
     saveRound: "Runde speichern",
-    shareRound: "Teilen / PDF",
+    shareRound: "Link kopieren",
     resetRound: "Alle Eingaben dieser Runde zurücksetzen",
     round: "Runde",
     analysis: "Analyse",
@@ -131,7 +151,7 @@ const UI_TEXT = {
     newRound: "Start new round",
     nextTip: "Next-shot tip",
     saveRound: "Save round",
-    shareRound: "Share / PDF",
+    shareRound: "Copy link",
     resetRound: "Reset this round",
     round: "Round",
     analysis: "Analysis",
@@ -166,8 +186,8 @@ const RULE_INFO = {
   yellow: {
     title: "Aus Gelb / gelbe Penalty Area",
     body: "Bei einer gelben Penalty Area darfst du den Ball ohne Strafschlag spielen, wie er liegt. Nimmst du Erleichterung, gibt es einen Strafschlag. Die typischen Optionen sind Schlag-und-Distanz oder Zurück-auf-der-Linie. Seitliche Erleichterung mit zwei Schlägerlängen ist bei Gelb nicht die Standardoption.",
-    source: "Regelbasis: USGA/R&A Regel 17.1d. Vor Turnierrunden offizielle Rules-App oder Spielleitung prüfen.",
-    url: "https://www.usga.org/content/usga/home-page/rules-hub/topics/penalty-areas.html",
+    source: "Regelbasis: R&A/USGA Regel 17.1d. Vor Turnierrunden offizielle Rules-App oder Spielleitung prüfen.",
+    url: "https://www.randa.org/en/rog/the-rules-of-golf/rule-17",
     options: [
       { label: "Ball spielbar: ohne Strafschlag weiterspielen", result: "Aus Gelb", penalty: false },
       { label: "Erleichterung genommen: +1 Strafschlag", result: "Aus Gelb", penalty: true },
@@ -176,8 +196,8 @@ const RULE_INFO = {
   red: {
     title: "Aus Rot / rote Penalty Area",
     body: "Wenn der Ball in einer roten Penalty Area liegt, darfst du ihn ohne Strafschlag spielen, wie er liegt. Nimmst du Erleichterung außerhalb der Penalty Area, folgt ein Strafschlag. Rot hat zusätzlich zur Schlag-und-Distanz- und Zurück-auf-der-Linie-Erleichterung die seitliche Erleichterung innerhalb von zwei Schlägerlängen.",
-    source: "Regelbasis: USGA/R&A Regel 17.1d, Stand 2023 Rules. Vor Turnierrunden offizielle Rules-App oder Spielleitung prüfen.",
-    url: "https://www.usga.org/content/usga/home-page/rules-hub/topics/penalty-areas.html",
+    source: "Regelbasis: R&A/USGA Regel 17.1d. Vor Turnierrunden offizielle Rules-App oder Spielleitung prüfen.",
+    url: "https://www.randa.org/en/rog/the-rules-of-golf/rule-17",
     options: [
       { label: "Ball spielbar: ohne Strafschlag weiterspielen", result: "Aus Rot", penalty: false },
       { label: "Erleichterung genommen: +1 Strafschlag", result: "Aus Rot", penalty: true },
@@ -186,15 +206,15 @@ const RULE_INFO = {
   white: {
     title: "Aus Weiß / Ausgrenze",
     body: "Weiße Pfosten markieren normalerweise Aus. Ein Ball im Aus darf nicht gespielt werden. Die offizielle Regel ist Schlag und Distanz: ein Strafschlag, und du spielst vom Ort des vorherigen Schlags erneut.",
-    source: "Regelbasis: USGA/R&A Regel 18.2, Stroke and Distance. Vor Turnierrunden offizielle Rules-App oder Spielleitung prüfen.",
+    source: "Regelbasis: R&A/USGA Regel 18.2, Stroke and Distance. Vor Turnierrunden offizielle Rules-App oder Spielleitung prüfen.",
     url: "https://www.randa.org/en/rog/the-rules-of-golf/rule-18",
     options: [{ label: "Aus Weiß eintragen: +1 Strafschlag", result: "Aus Weiß", penalty: true }],
   },
   biotope: {
     title: "Biotop / Spielverbotszone",
     body: "Ein Biotop ist häufig als Spielverbotszone markiert. Daraus darf nicht gespielt werden. Ob die Erleichterung straflos oder mit Strafschlag ist, hängt von der Platzkennzeichnung und lokalen Regel ab: Spielverbotszone in einer Penalty Area führt normalerweise zu Penalty-Area-Erleichterung mit +1; Spielverbotszone als ungewöhnliche Platzverhältnisse kann straflose Erleichterung bedeuten.",
-    source: "Regelbasis: USGA/R&A Regeln 16.1f und 17.1e; lokale Platzregeln unbedingt prüfen.",
-    url: "https://www.usga.org/RulesFAQ/rules_answer.asp?FAQidx=213&Rule=0&Topic=4",
+    source: "Regelbasis: R&A/USGA Regeln 16.1f und 17.1e; lokale Platzregeln unbedingt prüfen.",
+    url: "https://www.randa.org/en/rog/the-rules-of-golf/rule-16",
     options: [
       { label: "Biotop in Penalty Area: +1 Strafschlag", result: "Biotop", penalty: true },
       { label: "Biotop mit strafloser Erleichterung laut Platzregel", result: "Biotop", penalty: false },
@@ -203,15 +223,15 @@ const RULE_INFO = {
   lost: {
     title: "Ball verloren",
     body: "Ist ein Ball verloren, musst du nach Schlag und Distanz verfahren: ein Strafschlag, und der nächste Schlag wird von der Stelle des vorherigen Schlags gespielt. In Privatrunden kann es lokale Sonderregeln geben, diese sind aber nicht automatisch Turnierregel.",
-    source: "Regelbasis: USGA/R&A Regel 18.2. Lokale Regeln prüfen.",
-    url: "https://www.randa.org/rog/the-rules-of-golf/rule-18",
+    source: "Regelbasis: R&A/USGA Regel 18.2. Lokale Regeln prüfen.",
+    url: "https://www.randa.org/en/rog/the-rules-of-golf/rule-18",
     options: [{ label: "Ball verloren eintragen: +1 Strafschlag", result: "Ball verloren", penalty: true }],
   },
   provisional: {
     title: "Provisorischer Ball",
     body: "Ein provisorischer Ball ist erlaubt, wenn dein Ball außerhalb einer Penalty Area verloren oder im Aus sein könnte. Er ist nicht gedacht, wenn bekannt oder so gut wie sicher ist, dass der Ball in einer Penalty Area liegt. Wird der Originalball rechtzeitig gefunden und ist spielbar, wird der provisorische Ball aufgehoben.",
-    source: "Regelbasis: USGA/R&A Regel 18.3. Penalty Area nach Regel 17 getrennt behandeln.",
-    url: "https://www.randa.org/rog/the-rules-of-golf/rule-18",
+    source: "Regelbasis: R&A/USGA Regel 18.3. Penalty Area nach Regel 17 getrennt behandeln.",
+    url: "https://www.randa.org/en/rog/the-rules-of-golf/rule-18",
     options: [
       { label: "Nur provisorisch gespielt: noch kein Strafschlag", result: "Provisorisch", penalty: false },
       { label: "Provisorischer Ball wird Ball im Spiel: +1 Strafschlag", result: "Provisorisch", penalty: true },
@@ -220,15 +240,15 @@ const RULE_INFO = {
   unplayable: {
     title: "Unspielbarer Ball",
     body: "Du darfst deinen Ball überall auf dem Platz als unspielbar erklären, außer in einer Penalty Area. Dann gibt es einen Strafschlag. Erleichterungsoptionen sind typischerweise Schlag-und-Distanz, Zurück-auf-der-Linie oder seitliche Erleichterung innerhalb von zwei Schlägerlängen.",
-    source: "Regelbasis: USGA/R&A Regel 19. Ball in Penalty Area: Regel 17 nutzen.",
-    url: "https://www.randa.org/rog/the-rules-of-golf/rule-19",
+    source: "Regelbasis: R&A/USGA Regel 19. Ball in Penalty Area: Regel 17 nutzen.",
+    url: "https://www.randa.org/en/rog/the-rules-of-golf/rule-19",
     options: [{ label: "Unspielbar genommen: +1 Strafschlag", result: "Unspielbar", penalty: true }],
   },
   dropzone: {
     title: "Dropzone / lokale Platzregel",
     body: "Dropzonen sind lokale Regeln. Ob und wann du sie benutzen darfst, hängt von der Platzregel oder Spielleitung ab. Häufig ist die Dropzone eine zusätzliche Erleichterungsoption mit Strafschlag, z.B. bei Penalty Areas.",
     source: "Regelbasis: lokale Platzregel / Spielleitung. Vor der Runde prüfen.",
-    url: "https://www.randa.org/rog/committee-procedures",
+    url: "https://www.randa.org/en/rog/committee-procedures",
     options: [
       { label: "Dropzone mit Strafschlag genutzt", result: "Dropzone", penalty: true },
       { label: "Dropzone laut Platzregel straflos genutzt", result: "Dropzone", penalty: false },
@@ -238,7 +258,7 @@ const RULE_INFO = {
     title: "Besserlegen / Winterregel",
     body: "Besserlegen ist keine automatische Grundregel, sondern eine lokale Platzregel. Sie gilt nur, wenn sie durch den Club oder die Spielleitung aktiviert wurde, meist auf kurz gemähten Bereichen. Ohne lokale Regel darf nicht einfach bessergelegt werden.",
     source: "Regelbasis: Musterplatzregel E-3 / lokale Platzregel. Ausschreibung prüfen.",
-    url: "https://www.randa.org/rog/committee-procedures",
+    url: "https://www.randa.org/en/rog/committee-procedures",
     options: [
       { label: "Besserlegen laut Platzregel genutzt: straflos", result: "Besserlegen", penalty: false },
       { label: "Unsichere Anwendung markieren", result: "Besserlegen", penalty: false },
@@ -257,7 +277,7 @@ const TRAINING_SOURCES = {
     title: "Fett, getoppt, zu kurz: Low Point kontrollieren",
     coach: "Adam Young",
     text: "Lege eine Linie oder ein flaches Objekt knapp hinter den Ball. Trainiere, dass der tiefste Punkt vor dem Ball liegt. Das reduziert fette und getoppte Treffer.",
-    url: "https://www.adamyounggolf.com/fix-fat-and-thin-golf-shots/",
+    url: "https://www.adamyounggolf.com/",
   },
   direction: {
     title: "Rechts/Links: Schlagform akzeptieren",
@@ -273,9 +293,9 @@ const TRAINING_SOURCES = {
   },
   break90: {
     title: "Break 90: weniger Trouble, weniger 3-Putts",
-    coach: "Shot-Scope-Daten / Adam Harnett",
+    coach: "Shot-Scope-Daten / Golf Monthly",
     text: "Der größte Hebel ist nicht Perfektion, sondern eine Runde mit weniger unspielbaren Abschlägen und einem 3-Putt weniger.",
-    url: "https://www.golfmonthly.com/features/6-ways-to-consistently-break-90-proven-by-data",
+    url: "https://www.golfmonthly.com/tips/how-to-break-90",
   },
 };
 
@@ -305,6 +325,7 @@ const state = {
   currentHole: 0,
   selectedShotType: "Tee",
   language: "de",
+  activeTee: "yellow",
   archive: loadArchive(),
   round: loadActiveRound(),
   profile: loadProfile(),
@@ -322,6 +343,7 @@ const els = {
   profileSummary: document.querySelector("#profileSummary"),
   handicap: document.querySelector("#handicap"),
   playerGoal: document.querySelector("#playerGoal"),
+  teeSelect: document.querySelector("#teeSelect"),
   tabs: document.querySelectorAll(".tab"),
   panels: {
     track: document.querySelector("#trackPanel"),
@@ -353,6 +375,7 @@ const els = {
   noteSuggestions: document.querySelector("#noteSuggestions"),
   saveRound: document.querySelector("#saveRound"),
   shareRound: document.querySelector("#shareRound"),
+  exportPdf: document.querySelector("#exportPdf"),
   shareOutput: document.querySelector("#shareOutput"),
   summaryGrid: document.querySelector("#summaryGrid"),
   topThree: document.querySelector("#topThree"),
@@ -389,14 +412,61 @@ const els = {
   infoBody: document.querySelector("#infoBody"),
 };
 
+/* ── Haptic ── */
+function haptic(ms = 8) {
+  try { navigator.vibrate?.(ms); } catch (_) {}
+}
+
+/* ── Confetti ── */
+function showConfetti() {
+  const COLORS = ["#163627","#295e73","#a87820","#7dba90","#ffffff","#c8e6d0","#f0c040"];
+  const wrap = document.createElement("div");
+  wrap.className = "confetti-wrap";
+  document.body.appendChild(wrap);
+  for (let i = 0; i < 34; i++) {
+    const p = document.createElement("div");
+    p.className = "cp";
+    p.style.setProperty("--x", `${Math.random() * 100}vw`);
+    p.style.setProperty("--y", `${-10 - Math.random() * 20}px`);
+    p.style.setProperty("--rot", `${Math.random() * 720 - 360}deg`);
+    p.style.setProperty("--c", COLORS[Math.floor(Math.random() * COLORS.length)]);
+    p.style.animationDuration = `${950 + Math.random() * 650}ms`;
+    p.style.animationDelay = `${Math.random() * 280}ms`;
+    wrap.appendChild(p);
+  }
+  setTimeout(() => wrap.remove(), 2400);
+}
+
+/* ── PDF export ── */
+function exportPdf() {
+  window.print();
+}
+
+/* ── PGA score label ── */
+function holeScoreLabel(shots, par) {
+  if (!shots) return null;
+  const diff = shots - par;
+  const key = String(Math.max(-4, Math.min(3, diff)));
+  return {
+    name: SCORE_NAMES_DE[key] || (diff > 0 ? `+${diff}` : String(diff)),
+    css: SCORE_CSS[key] || "triple",
+  };
+}
+
 function loadProfile() {
   try {
     const saved = JSON.parse(localStorage.getItem(PROFILE_KEY));
-    if (saved && typeof saved === "object") return { handicap: saved.handicap ?? "", goal: saved.goal || "break90" };
+    if (saved && typeof saved === "object") {
+      return {
+        handicap: saved.handicap ?? "",
+        goal: saved.goal || "break90",
+        tee: saved.tee || "yellow",
+      };
+    }
   } catch {
     localStorage.removeItem(PROFILE_KEY);
   }
-  return { handicap: "", goal: "break90" };
+  return { handicap: "", goal: "break90", tee: "yellow" };
 }
 
 function saveProfile() {
@@ -416,7 +486,7 @@ function newRound() {
 }
 
 function resetRoundInputs() {
-  if (!confirm("Warnung: Dadurch werden alle Eingaben der aktüllen Runde gelöscht. Gespeicherte Runden in der Historie bleiben erhalten. Wirklich zurücksetzen?")) return;
+  if (!confirm("Warnung: Dadurch werden alle Eingaben der aktuellen Runde gelöscht. Gespeicherte Runden in der Historie bleiben erhalten. Wirklich zurücksetzen?")) return;
   const keepTarget = state.round.breakTarget || 90;
   state.round = newRound();
   state.round.breakTarget = keepTarget;
@@ -547,7 +617,7 @@ function applyLanguage() {
   els.newRound.setAttribute("title", t("newRound"));
   els.openTip.textContent = t("nextTip");
   els.saveRound.textContent = t("saveRound");
-  els.shareRound.textContent = t("shareRound");
+  if (els.shareRound) els.shareRound.textContent = t("shareRound");
   els.resetRound.textContent = t("resetRound");
 }
 
@@ -557,6 +627,8 @@ function formatToPar(value) {
 }
 
 function addShot(result, options = {}) {
+  haptic(result === "Exakt umgesetzt" ? 18 : 8);
+  if (result === "Exakt umgesetzt") showConfetti();
   const penalty = Boolean(options.penalty);
   hole().scratched = false;
   hole().shots.push({
@@ -700,12 +772,11 @@ function makeShareLink() {
 
 async function shareRound() {
   const link = makeShareLink();
-  const text = `Link: ${link}\nPDF: Im Teilen-Dialog oder Browsermenü "Drucken" und dann "Als PDF sichern" wählen.`;
   try {
     await navigator.clipboard.writeText(link);
-    els.shareOutput.textContent = `${text}\nDer Link wurde kopiert.`;
+    els.shareOutput.textContent = "Link kopiert – teile ihn direkt in WhatsApp, iMessage oder per E-Mail.";
   } catch {
-    els.shareOutput.textContent = text;
+    els.shareOutput.textContent = `Link: ${link}`;
   }
   els.shareOutput.classList.add("active");
 }
@@ -730,7 +801,10 @@ function renderScore() {
 function renderProfile() {
   els.handicap.value = state.profile.handicap;
   els.playerGoal.value = state.profile.goal;
-  els.profileSummary.textContent = state.profile.handicap === "" ? "HCP offen" : `HCP ${state.profile.handicap} · ${hcpBand()}`;
+  if (els.teeSelect) els.teeSelect.value = state.activeTee;
+  const teeLabel = TEE_DATA[state.activeTee]?.label || "Gelb";
+  const hcpPart = state.profile.handicap === "" ? "HCP offen" : `HCP ${state.profile.handicap} · ${hcpBand()}`;
+  els.profileSummary.textContent = `${hcpPart} · ${teeLabel}`;
 }
 
 function renderHoleStrip() {
@@ -747,11 +821,22 @@ function renderHoleStrip() {
 
 function renderTrack() {
   const item = hole();
+  const tee = TEE_DATA[state.activeTee] || TEE_DATA.yellow;
+  const meters = tee.meters[state.currentHole];
+
   els.holeNumber.textContent = item.hole;
   els.parValue.textContent = item.par;
-  els.lengthValue.textContent = item.meters;
-  els.holeScore.textContent = `${holeScore(item)} Schläge`;
-  els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · CR ${COURSE_RATING.cr.toFixed(1)} / Slope ${COURSE_RATING.slope}`;
+  els.lengthValue.textContent = meters;
+
+  const shots = holeScore(item);
+  const label = shots > 0 ? holeScoreLabel(shots, item.par) : null;
+  if (label) {
+    els.holeScore.innerHTML = `${shots} Schl. <span class="score-label score-${label.css}">${label.name}</span>`;
+  } else {
+    els.holeScore.textContent = "0 Schläge";
+  }
+
+  els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · CR ${tee.cr.toFixed(1)} / Slope ${tee.slope}`;
   els.holeRating.style.background = difficultyColor(item.si);
   els.note.value = item.note;
 
@@ -778,24 +863,10 @@ function difficultyLabel(si) {
 
 function difficultyColor(si) {
   const colors = {
-    1: "#6f1d1b",
-    2: "#84231f",
-    3: "#9b2c25",
-    4: "#b33b2f",
-    5: "#c85a3f",
-    6: "#d9784d",
-    7: "#d99a45",
-    8: "#c9aa43",
-    9: "#b3ad45",
-    10: "#9cab4d",
-    11: "#86a957",
-    12: "#72a761",
-    13: "#5fa66b",
-    14: "#4da475",
-    15: "#3da27f",
-    16: "#329d83",
-    17: "#2f947d",
-    18: "#2e8b57",
+    1: "#6f1d1b", 2: "#84231f", 3: "#9b2c25", 4: "#b33b2f", 5: "#c85a3f",
+    6: "#d9784d", 7: "#d99a45", 8: "#c9aa43", 9: "#b3ad45", 10: "#9cab4d",
+    11: "#86a957", 12: "#72a761", 13: "#5fa66b", 14: "#4da475",
+    15: "#3da27f", 16: "#329d83", 17: "#2f947d", 18: "#2e8b57",
   };
   return colors[si] || "#66716b";
 }
@@ -983,7 +1054,7 @@ function renderAiReview(counts, threePlus) {
 
   els.aiReview.innerHTML = `
     <h3>KI-Rundenurteil</h3>
-    <p>${played ? `Hochrechnung über 18 Loch: ${projected}.` : "Noch keine Hochrechnung möglich."} Wichtigster Hebel aktüll: ${biggest[0]}.</p>
+    <p>${played ? `Hochrechnung über 18 Loch: ${projected}.` : "Noch keine Hochrechnung möglich."} Wichtigster Hebel aktuell: ${biggest[0]}.</p>
     <p>${action}</p>
   `;
 }
@@ -1221,6 +1292,7 @@ function toggleLanguage() {
 }
 
 function shareTo(channel) {
+  if (channel === "pdf") { exportPdf(); return; }
   const link = makeShareLink();
   const plainText = `Meine Runde mit CoursePilot: ${link}`;
   if (navigator.share && channel !== "instagram") {
@@ -1231,14 +1303,8 @@ function shareTo(channel) {
   const urls = {
     whatsapp: `https://wa.me/?text=${text}`,
     imessage: `sms:&body=${text}`,
-    instagram: "",
   };
-  if (channel === "instagram") {
-    els.shareOutput.textContent = "Instagram teilt Links am besten über den kopierten Link oder Screenshot der Analyse.";
-    els.shareOutput.classList.add("active");
-    return;
-  }
-  window.open(urls[channel], "_blank", "noreferrer");
+  if (urls[channel]) window.open(urls[channel], "_blank", "noreferrer");
 }
 
 function saveFeedbackEntry() {
@@ -1277,6 +1343,11 @@ function render() {
   renderGlossary();
   applyLanguage();
 }
+
+/* ── Init ── */
+
+/* Sync state.activeTee from saved profile */
+state.activeTee = state.profile.tee || "yellow";
 
 renderShotButtons();
 
@@ -1324,6 +1395,15 @@ els.playerGoal.addEventListener("change", () => {
   render();
 });
 
+if (els.teeSelect) {
+  els.teeSelect.addEventListener("change", () => {
+    state.activeTee = els.teeSelect.value;
+    state.profile.tee = state.activeTee;
+    saveProfile();
+    render();
+  });
+}
+
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-glossary]");
   if (button) openGlossaryTerm(button.dataset.glossary);
@@ -1366,6 +1446,7 @@ els.closeInfoModal.addEventListener("click", closeInfoModal);
 els.infoModal.addEventListener("click", (event) => {
   if (event.target === els.infoModal) closeInfoModal();
 });
+
 els.shareActions.addEventListener("click", (event) => {
   const button = event.target.closest("[data-share]");
   if (button) shareTo(button.dataset.share);
@@ -1384,17 +1465,26 @@ els.note.addEventListener("input", () => {
 
 els.saveRound.addEventListener("click", saveCurrentRound);
 els.shareRound.addEventListener("click", shareRound);
+if (els.exportPdf) els.exportPdf.addEventListener("click", exportPdf);
 els.resetRound.addEventListener("click", resetRoundInputs);
 
 els.breakTarget.addEventListener("change", () => {
   state.round.breakTarget = Number(els.breakTarget.value);
   state.round.goal = state.round.breakTarget - 1;
+  /* Keep playerGoal in sync with breakTarget for backward-compat */
+  const goalMap = { 90: "break90", 95: "break95", 100: "break100" };
+  const mapped = goalMap[state.round.breakTarget];
+  if (mapped) {
+    state.profile.goal = mapped;
+    els.playerGoal.value = mapped;
+    saveProfile();
+  }
   saveActive();
   render();
 });
 
 els.newRound.addEventListener("click", () => {
-  if (playedHoles().length && !confirm("Neü Runde starten? Die aktülle Runde vorher speichern, falls du sie behalten willst.")) return;
+  if (playedHoles().length && !confirm("Neue Runde starten? Die aktuelle Runde vorher speichern, falls du sie behalten willst.")) return;
   state.round = newRound();
   state.currentHole = 0;
   saveActive();
