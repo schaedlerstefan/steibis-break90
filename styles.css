@@ -378,6 +378,44 @@ h1#appName {
 }
 .hole-btn span { color: var(--muted-2); font-size: .64rem; font-weight: 700; }
 
+/* Current app classes */
+.hole-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 46px;
+  border: 1.5px solid var(--line);
+  border-bottom: 4px solid var(--difficulty, var(--line));
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 800;
+  transition: background .1s, border-color .1s, transform .1s;
+}
+.hole-chip small {
+  color: var(--muted-2);
+  font-size: .62rem;
+  font-weight: 800;
+}
+.hole-chip.played {
+  background: var(--soft);
+  color: var(--ink-2);
+}
+.hole-chip.risk {
+  border-color: rgba(179,66,42,.28);
+}
+.hole-chip.active {
+  border-color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(22,54,39,.08);
+}
+.hole-chip:active { transform: scale(.96); }
+
 /* ── 10. Shot Entry ───────────────────────────────────────────── */
 .shot-entry {
   padding: 16px;
@@ -412,6 +450,36 @@ h1#appName {
   color: #fff;
 }
 .shot-type-btn:active { transform: scale(.96); }
+
+.shot-type {
+  position: relative;
+  min-height: 46px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+  transition: background .12s, border-color .12s, color .12s, transform .1s, box-shadow .12s;
+}
+.shot-type.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(22,54,39,.1);
+}
+.shot-type.active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 18px;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: rgba(255,255,255,.78);
+  transform: translateX(-50%);
+}
+.shot-type:active { transform: scale(.96); }
 
 /* Plan choice */
 .plan-choice {
@@ -490,6 +558,43 @@ h1#appName {
 }
 .shot-btn.penalty { border-color: rgba(179,66,42,.22); background: var(--warn-soft); color: var(--warn); }
 .shot-btn.good    { border-color: rgba(39,107,71,.22); background: var(--success-soft); color: var(--success); }
+
+.shot-button {
+  min-height: 52px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  color: var(--ink-2);
+  font-size: .82rem;
+  font-weight: 800;
+  line-height: 1.3;
+  padding: 8px 10px;
+  text-align: left;
+  transition: background .1s, border-color .1s, transform .1s;
+}
+.shot-button:active { transform: scale(.97); background: var(--soft); }
+.shot-button small {
+  display: block;
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.shot-button[data-category="penalty"] {
+  border-color: rgba(179,66,42,.22);
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.shot-button[data-category="good"] {
+  border-color: rgba(39,107,71,.22);
+  background: var(--success-soft);
+  color: var(--success);
+}
+.shot-button[data-category="putt"] {
+  border-color: rgba(41,94,115,.2);
+  background: var(--accent-2-light);
+  color: var(--accent-2);
+}
 
 /* Wide buttons */
 .wide-button {
@@ -591,6 +696,61 @@ h1#appName {
   background: var(--warn-soft);
   border-radius: var(--r-pill);
   padding: 2px 7px;
+}
+
+.shot-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: .88rem;
+  font-weight: 700;
+}
+.shot-row strong {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 800;
+}
+.shot-row span {
+  color: var(--ink-2);
+  line-height: 1.35;
+}
+.shot-row.penalty span,
+.shot-row.scratch span {
+  color: var(--warn);
+}
+.empty-state {
+  padding: 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.45;
+}
+.empty-state.compact {
+  padding: 10px 11px;
+}
+.rule-badge {
+  float: right;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.72);
+  color: currentColor;
+  font-size: .68rem;
+  font-weight: 900;
 }
 
 /* Score labels */
@@ -731,7 +891,8 @@ h1#appName {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: -4px;
+  margin-top: 8px;
+  margin-bottom: 10px;
 }
 .share-actions button {
   flex: 1;
@@ -1412,6 +1573,12 @@ h1#appName {
 }
 .training-more { margin-top: 14px; }
 
+.next-shot-options .rule-option.recommended {
+  border-color: rgba(39,107,71,.34);
+  background: var(--success-soft);
+  color: var(--success);
+}
+
 /* Caddie topic grid */
 .caddie-topic-grid {
   display: grid;
@@ -1444,18 +1611,23 @@ h1#appName {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: grid;
-  place-items: end center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: max(12px, env(safe-area-inset-top));
   background: rgba(10,20,14,.5);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 .rule-modal {
   width: min(100%, 560px);
-  max-height: min(92dvh, 760px);
+  max-height: calc(100dvh - max(18px, env(safe-area-inset-top)));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   padding: 0 var(--px) max(28px, env(safe-area-inset-bottom));
   background: var(--surface);
@@ -1473,7 +1645,18 @@ h1#appName {
   background: var(--line-2);
   margin: 13px auto 22px;
 }
-.rule-modal .section-title { margin-bottom: 13px; }
+.rule-modal .section-title {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 calc(var(--px) * -1) 13px;
+  padding: 8px var(--px) 10px;
+  background: linear-gradient(180deg, var(--surface) 82%, rgba(255,255,255,0));
+}
+.rule-modal #infoBody,
+.rule-modal #ruleBody {
+  padding-bottom: 18px;
+}
 .rule-modal p {
   color: var(--muted);
   font-size: .9rem;
@@ -1508,6 +1691,58 @@ h1#appName {
   line-height: 1.54;
 }
 .rule-source a { color: var(--accent-2); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+
+@media (max-width: 390px) {
+  :root {
+    --px: 14px;
+  }
+  .app-shell {
+    padding-left: var(--px);
+    padding-right: var(--px);
+  }
+  .scorebar {
+    margin-bottom: 10px;
+  }
+  .scorebar > div {
+    padding: 10px 6px;
+  }
+  .scorebar strong {
+    font-size: 1.34rem;
+  }
+  .hole-top {
+    grid-template-columns: 40px 1fr 40px;
+    padding: 12px 8px;
+  }
+  .hole-strip {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .shot-type-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .plan-button {
+    min-height: 68px;
+    font-size: .86rem;
+  }
+  .ring-grid,
+  .training-subtabs {
+    gap: 4px;
+  }
+  .ring-card {
+    min-height: 118px;
+    padding: 10px 4px;
+  }
+  .stat-ring {
+    width: 68px;
+    height: 68px;
+  }
+  .tabs {
+    min-height: var(--nav-h);
+  }
+  .tab {
+    padding: 8px 2px;
+    font-size: .62rem;
+  }
+}
 
 /* Feedback modal */
 .feedback-list { display: grid; gap: 10px; }

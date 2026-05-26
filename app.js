@@ -775,15 +775,28 @@ function addShot(result, options = {}) {
     at: new Date().toISOString(),
     number: hole().shots.length + 1,
   });
-  advanceShotType(shotType);
+  advanceShotType(shotType, hole());
   saveActive();
   render();
 }
 
-function advanceShotType(shotType) {
-  if (shotType === "Tee") {
-    state.selectedShotType = "Transport";
-    window.setTimeout(() => openShotTypeModal(), 120);
+function shotTypePlan(item = hole()) {
+  if (item.par === 3) return ["Tee", "Putt", "Putt"];
+  if (item.par === 5) return ["Tee", "Transport", "Annäherung", "Putt", "Putt"];
+  return ["Tee", "Annäherung", "Putt", "Putt"];
+}
+
+function nextShotTypeSuggestion(item = hole()) {
+  const plan = shotTypePlan(item);
+  const nextIndex = Math.min(item.shots.length, plan.length - 1);
+  return plan[nextIndex] || "Putt";
+}
+
+function advanceShotType(previousType, item = hole()) {
+  const nextType = nextShotTypeSuggestion(item);
+  state.selectedShotType = nextType;
+  if (item.shots.length >= 1 && item.shots.length <= 4) {
+    window.setTimeout(() => openShotTypeModal(nextType, previousType, item), 120);
   }
 }
 
@@ -1008,7 +1021,7 @@ function renderTrack() {
     : item.shots.length
     ? (() => {
         const shot = item.shots[item.shots.length - 1];
-        return `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><strong>${item.shots.length}</strong><span>${state.language === "en" ? "Last entry" : "Letzte Eingabe"}: ${shot.type || (state.language === "en" ? "Shot" : "Schlag")} · ${shot.result}${shot.note ? ` · ${shot.note}` : ""}${shot.penalty ? ` · +1 ${state.language === "en" ? "penalty stroke" : "Strafschlag"}` : ""}</span></div>`;
+        return `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><span>${state.language === "en" ? "Last entry" : "Letzte Eingabe"}: ${shot.type || (state.language === "en" ? "Shot" : "Schlag")} · ${shot.result}${shot.note ? ` · ${shot.note}` : ""}${shot.penalty ? ` · +1 ${state.language === "en" ? "penalty stroke" : "Strafschlag"}` : ""}</span></div>`;
       })()
     : `<div class="empty-state compact">${state.language === "en" ? "No entry on this hole yet." : "Noch keine Eingabe auf diesem Loch."}</div>`;
 
@@ -1555,6 +1568,7 @@ function caddieBullets(item = hole()) {
   const hcp = Number(state.profile.handicap);
   const warning = paceWarning(item);
   return [
+    `Nächster Schlag: Loch ${item.hole} · Par ${item.par}. Empfehlung wird auf dieses Par, dein Break-Ziel und den aktuellen Schlagtyp bezogen.`,
     warning,
     nextBestDecision(item),
     item.si <= 6 ? `Schweres Loch: Stroke Index ${item.si}. Bogey ist ein gutes Ergebnis.` : "Spiele auf die breite Zielseite und vermeide den Folgefehler.",
@@ -1637,7 +1651,7 @@ function caddieTopicContent(topic, item = hole()) {
 
 function caddieTopicMenu(item = hole()) {
   return `
-    <p>Wähle, was du für Loch ${item.hole} jetzt brauchst.</p>
+    <p><strong>Nächster Schlag: Loch ${item.hole} · Par ${item.par}.</strong> Wähle, was du jetzt brauchst.</p>
     <div class="caddie-topic-grid">
       ${caddieTopics().map(([key, label]) => `<button type="button" data-caddie-topic="${key}">${label}</button>`).join("")}
     </div>
@@ -1698,16 +1712,17 @@ function maybeOpenMentalMomentum() {
   return openMentalModal(bad ? "mentalBad" : "mentalGood");
 }
 
-function openShotTypeModal() {
+function openShotTypeModal(recommended = state.selectedShotType, previous = "", item = hole()) {
   const de = state.language === "de";
+  const plan = shotTypePlan(item);
+  const options = [...new Set([recommended, ...SHOT_TYPES])];
   els.infoEyebrow.textContent = de ? "Nächster Schlag" : "Next shot";
-  els.infoTitle.textContent = de ? "Schlagtyp wählen" : "Choose shot type";
+  els.infoTitle.textContent = de ? "Schlagtyp bestätigen" : "Confirm shot type";
   els.infoBody.innerHTML = `
-    <p>${de ? "Ich habe automatisch auf" : "I automatically switched to"} <strong>Transport</strong>${de ? " gestellt." : "."}</p>
+    <p>${de ? "Empfehlung für" : "Recommendation for"} <strong>Par ${item.par}</strong>: <strong>${recommended}</strong>${de ? "." : "."}</p>
+    <p class="setting-help">${de ? "Planfolge" : "Planned sequence"}: ${plan.join(" → ")}${previous ? ` · ${de ? "letzter Schlag" : "last shot"}: ${previous}` : ""}</p>
     <div class="rule-options next-shot-options">
-      <button class="rule-option" type="button" data-next-shot-type="Transport">${de ? "Transport beibehalten" : "Keep transport shot"}</button>
-      <button class="rule-option" type="button" data-next-shot-type="Annäherung">${de ? "Annäherung" : "Approach"}</button>
-      <button class="rule-option" type="button" data-next-shot-type="Putt">Putt</button>
+      ${options.map((type) => `<button class="rule-option ${type === recommended ? "recommended" : ""}" type="button" data-next-shot-type="${type}">${type === recommended ? "✓ " : ""}${type}</button>`).join("")}
     </div>
   `;
   els.infoModal.hidden = false;
@@ -1735,12 +1750,12 @@ function openInfoModal(kind) {
     },
     tip: {
       eyebrow: state.language === "en" ? "AI caddie" : "KI-Caddie",
-      title: state.language === "en" ? "More recommendations" : "Weitere Empfehlungen vom KI-Caddie",
+      title: state.language === "en" ? `Par ${item.par} recommendation` : `Tipp zum nächsten Schlag · Par ${item.par}`,
       body: caddieTopicMenu(item),
     },
     caddie: {
       eyebrow: state.language === "en" ? "Next-shot tip" : "Tipp zum nächsten Schlag",
-      title: state.language === "en" ? "Your AI caddie recommends" : "Dein KI-Caddie empfiehlt",
+      title: state.language === "en" ? `AI caddie recommends · Par ${item.par}` : `Dein KI-Caddie empfiehlt · Par ${item.par}`,
       body: bulletList(caddieBullets(item)) + caddieMore(),
     },
   }[kind];
