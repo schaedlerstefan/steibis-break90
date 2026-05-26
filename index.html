@@ -6,40 +6,58 @@
     <meta name="theme-color" content="#f3f5f1" />
     <title>CoursePilot</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=28" />
+    <link rel="stylesheet" href="styles.css?v=15" />
   </head>
   <body>
     <div class="app-shell">
 
+      <!-- ═══ TOPBAR ══════════════════════════════════════════════ -->
       <header class="topbar">
         <div class="topbar-brand">
+          <!-- Logo: rounded-square app icon -->
           <div class="app-logo" aria-hidden="true">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="20" cy="20" r="20" fill="#163627"/>
-              <!-- Cross guides -->
-              <line x1="20" y1="9" x2="20" y2="31" stroke="rgba(255,255,255,0.18)" stroke-width="0.8"/>
-              <line x1="9" y1="20" x2="31" y2="20" stroke="rgba(255,255,255,0.18)" stroke-width="0.8"/>
+              <rect width="40" height="40" rx="9" fill="#163627"/>
+              <!-- Subtle tonal gloss -->
+              <rect x="0" y="0" width="40" height="20" rx="9" fill="white" fill-opacity="0.05"/>
               <!-- Pin shaft -->
-              <line x1="20" y1="11" x2="20" y2="30" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="13" y1="7" x2="13" y2="33" stroke="white" stroke-width="1.9" stroke-linecap="round"/>
               <!-- Flag -->
-              <path d="M20 11.5 L28.5 15.5 L20 19.5 Z" fill="white"/>
+              <path d="M13 7.5 L23 11.5 L13 15.5 Z" fill="white"/>
               <!-- Ground shadow -->
-              <ellipse cx="20" cy="30.5" rx="4.5" ry="1.4" fill="white" fill-opacity="0.28"/>
+              <ellipse cx="13" cy="33.5" rx="4.5" ry="1.3" fill="white" fill-opacity="0.28"/>
             </svg>
           </div>
           <div>
+            <p class="eyebrow">Oberstaufen-Steibis</p>
             <h1 id="appName">CoursePilot</h1>
           </div>
         </div>
         <div class="top-actions">
-          <button class="language-toggle" id="languageToggle" type="button">🇩🇪 DE</button>
-          <button class="icon-button" id="welcomeInfo" type="button" aria-label="App-Info" title="App-Info">i</button>
+          <!-- Info button: deliberately subtle -->
+          <button class="icon-button icon-button--ghost" id="aboutApp" type="button"
+                  aria-label="Über die App" title="Über die App">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" width="18" height="18">
+              <circle cx="10" cy="10" r="7.5"/>
+              <line x1="10" y1="9" x2="10" y2="14"/>
+              <circle cx="10" cy="6.5" r=".8" fill="currentColor" stroke="none"/>
+            </svg>
+          </button>
+          <button class="language-toggle" id="languageToggle" type="button">DE</button>
+          <button class="icon-button" id="newRound" type="button"
+                  aria-label="Neue Runde starten" title="Neue Runde starten">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" width="18" height="18">
+              <line x1="10" y1="4" x2="10" y2="16"/>
+              <line x1="4" y1="10" x2="16" y2="10"/>
+            </svg>
+          </button>
         </div>
       </header>
 
       <main>
+        <!-- ═══ SCOREBAR ══════════════════════════════════════════ -->
         <section class="scorebar" aria-label="Rundenergebnis">
           <div>
             <span data-i18n="score">Score</span>
@@ -55,236 +73,315 @@
           </div>
         </section>
 
-        <!-- Bottom Navigation – bleibt als .tabs für JS-Kompatibilität -->
+        <!-- ═══ CHALLENGE PICKER ══════════════════════════════════ -->
+        <label class="challenge-picker">
+          <span data-i18n="challenge">Challenge</span>
+          <select id="breakTarget" aria-label="Break-Ziel auswählen"></select>
+        </label>
+
+        <!-- ═══ PROFIL ════════════════════════════════════════════ -->
+        <section class="profile-card" aria-label="Spielerprofil">
+          <button class="profile-toggle" id="toggleProfile" type="button">
+            <span>Profil</span>
+            <strong id="profileSummary">HCP offen</strong>
+          </button>
+          <div class="profile-fields collapsed" id="profileFields">
+            <label>
+              <span>Handicap Index</span>
+              <input id="handicap" type="number" inputmode="decimal"
+                     step="0.1" min="-10" max="54" placeholder="z.B. 24.5" />
+            </label>
+            <label>
+              <span>Abschlag</span>
+              <select id="teeSelect">
+                <option value="yellow">Gelb (Herren)</option>
+                <option value="blue">Blau (Senioren)</option>
+                <option value="red">Rot (Damen)</option>
+                <option value="orange">Orange (Damen+)</option>
+              </select>
+            </label>
+            <!-- Spielziel: hidden in UI, kept for JS backward-compat -->
+            <label class="hidden-goal">
+              <span>Spielziel</span>
+              <select id="playerGoal">
+                <option value="break90">Break 90</option>
+                <option value="break95">Break 95</option>
+                <option value="break100">Break 100</option>
+                <option value="stabil">Stabilere Runde</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <!-- ═══ BOTTOM NAVIGATION ═════════════════════════════════ -->
         <nav class="tabs" aria-label="Ansichten">
-          <button class="tab active" type="button" data-tab="track"><span class="tab-icon">◎</span><span data-i18n="round">Runde</span></button>
-          <button class="tab" type="button" data-tab="training"><span class="tab-icon">△</span><span data-i18n="training">Training</span></button>
-          <button class="tab" type="button" data-tab="settings"><span class="tab-icon">⚙</span><span data-i18n="settings">Einstellungen</span></button>
+          <button class="tab active" type="button" data-tab="track">
+            <svg class="tab-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="7" y1="17" x2="7" y2="4"/>
+              <path d="M7 4 L15 7.5 L7 11"/>
+              <line x1="4" y1="17" x2="11" y2="17"/>
+            </svg>
+            <span data-i18n="round">Runde</span>
+          </button>
+          <button class="tab" type="button" data-tab="analysis">
+            <svg class="tab-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2,14 6.5,9 10.5,12 18,4"/>
+              <polyline points="14,4 18,4 18,8"/>
+            </svg>
+            <span data-i18n="analysis">Analyse</span>
+          </button>
+          <button class="tab" type="button" data-tab="training">
+            <svg class="tab-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="1.75">
+              <circle cx="10" cy="10" r="7.5"/>
+              <circle cx="10" cy="10" r="4"/>
+              <circle cx="10" cy="10" r=".9" fill="currentColor" stroke="none"/>
+            </svg>
+            <span data-i18n="training">Training</span>
+          </button>
+          <button class="tab" type="button" data-tab="coach">
+            <svg class="tab-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round">
+              <circle cx="10" cy="7" r="3.2"/>
+              <path d="M3.5 18c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/>
+            </svg>
+            <span data-i18n="coach">Coach</span>
+          </button>
+          <button class="tab" type="button" data-tab="archive">
+            <svg class="tab-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="10" cy="10" r="7.5"/>
+              <polyline points="10,6.5 10,10.5 13,13"/>
+            </svg>
+            <span data-i18n="history">Historie</span>
+          </button>
+          <button class="tab" type="button" data-tab="glossary">
+            <svg class="tab-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+              <line x1="7" y1="8" x2="11" y2="8"/>
+              <line x1="7" y1="11.5" x2="11" y2="11.5"/>
+            </svg>
+            <span data-i18n="glossary">Glossar</span>
+          </button>
         </nav>
 
-        <!-- ═══ RUNDE ═══════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- PANEL: RUNDE                                            -->
+        <!-- ═══════════════════════════════════════════════════════ -->
         <section class="panel active" id="trackPanel">
 
+          <!-- Loch-Header: Navigation + Score -->
           <div class="hole-top">
-            <button class="icon-button" id="prevHole" type="button" aria-label="Vorheriges Loch" title="Vorheriges Loch">‹</button>
+            <button class="icon-button" id="prevHole" type="button"
+                    aria-label="Vorheriges Loch" title="Vorheriges Loch">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" width="16" height="16">
+                <polyline points="13,4 7,10 13,16"/>
+              </svg>
+            </button>
             <div>
-              <p class="eyebrow">Loch <span id="holeNumber">1</span> · Par <span id="parValue">4</span> · <span id="lengthValue">308</span> m</p>
+              <p class="eyebrow">
+                Loch <span id="holeNumber">1</span>
+                · Par <span id="parValue">4</span>
+                · <span id="lengthValue">308</span> m
+              </p>
               <h2 id="holeScore">0 Schläge</h2>
               <p class="hole-rating" id="holeRating"></p>
             </div>
-            <button class="icon-button" id="nextHole" type="button" aria-label="Nächstes Loch" title="Nächstes Loch">›</button>
+            <button class="icon-button" id="nextHole" type="button"
+                    aria-label="Nächstes Loch" title="Nächstes Loch">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" width="16" height="16">
+                <polyline points="7,4 13,10 7,16"/>
+              </svg>
+            </button>
           </div>
 
+          <!-- Loch wechseln -->
           <button class="hole-toggle" id="toggleHoleMenu" type="button">Loch wechseln</button>
           <div class="hole-strip collapsed" id="holeStrip" aria-label="Loch auswählen"></div>
 
+          <!-- Historisches Warnbanner -->
+          <div class="warning" id="holeWarning"></div>
+
+          <!-- KI-Caddie (Hero-Feature — prominent, before strategy) -->
+          <div class="ai-card" id="aiCaddie"></div>
+
+          <!-- Lochstrategie (sekundär) -->
+          <div class="strategy-card" id="holePlan"></div>
+
+          <!-- Tipp-Button (secondary style) -->
+          <button class="tip-button" id="openTip" type="button">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" width="15" height="15">
+              <circle cx="10" cy="10" r="7.5"/>
+              <line x1="10" y1="9" x2="10" y2="14"/>
+              <circle cx="10" cy="6.5" r=".8" fill="currentColor" stroke="none"/>
+            </svg>
+            Tipp zum nächsten Schlag
+          </button>
+
+          <!-- Schlag erfassen -->
           <section class="shot-entry" aria-label="Schlag erfassen">
             <p class="eyebrow">Schlagtyp</p>
             <div class="shot-type-grid" id="shotTypeGrid"></div>
-            <p class="eyebrow">Plan-Ergebnis</p>
-            <div class="plan-choice">
-              <button class="plan-button hit" id="planHit" type="button">Plan getroffen</button>
-              <button class="plan-button miss" id="planMiss" type="button">Nicht getroffen</button>
-            </div>
-            <div class="miss-options" id="missOptions" hidden>
-              <p class="eyebrow">Abweichung erfassen</p>
-              <div class="shot-grid" id="shotGrid"></div>
-            </div>
+            <p class="eyebrow">Vorgestellter Schlag</p>
+            <div class="shot-grid" id="shotGrid"></div>
             <p class="eyebrow putt-heading">Putt</p>
-            <div class="plan-choice putt-choice">
-              <button class="plan-button hit" id="puttHit" type="button">Putt-Plan getroffen</button>
-              <button class="plan-button miss" id="puttMiss" type="button">Nicht getroffen</button>
-            </div>
-            <div class="miss-options" id="puttMissOptions" hidden>
-              <p class="eyebrow">Putt-Abweichung</p>
-              <div class="putt-grid" id="puttGrid"></div>
-            </div>
-            <button class="wide-button primary" id="finishHole" type="button">Loch fertig →</button>
+            <div class="putt-grid" id="puttGrid"></div>
+            <button class="wide-button primary" id="finishHole" type="button">
+              Loch fertig →
+            </button>
           </section>
 
-          <section class="last-action" aria-label="Letzte Eingabe">
-            <div class="inline-actions">
-              <button class="compact-button warn" id="scratchHole" type="button">Loch streichen</button>
-              <button class="compact-button" id="undoShot" type="button">Letzte Eingabe widerrufen</button>
+          <!-- Schlagliste -->
+          <section class="shot-list" aria-label="Schläge am Loch">
+            <div class="section-title">
+              <h3>Dieses Loch</h3>
+              <div class="inline-actions">
+                <button class="text-button warn" id="scratchHole" type="button">Streichen</button>
+                <button class="text-button" id="undoShot" type="button">Widerrufen</button>
+              </div>
             </div>
             <div id="shotList"></div>
           </section>
 
-          <div class="ai-card" id="aiCaddie"></div>
+          <!-- Notiz -->
+          <label class="note-field">
+            <span>Notiz</span>
+            <input id="note" list="noteSuggestions"
+                   placeholder="z.B. rechts ins Rough, Layup war gut" autocomplete="off" />
+            <datalist id="noteSuggestions"></datalist>
+          </label>
 
-          <button class="wide-button" id="openTip" type="button">Weitere Empfehlungen vom KI-Caddie</button>
-
-          <input id="note" type="hidden" />
-          <datalist id="noteSuggestions"></datalist>
-          <div class="warning" id="holeWarning" hidden></div>
-
+          <!-- Runde speichern -->
           <div class="actions">
             <button class="wide-button primary" id="saveRound" type="button">Runde speichern</button>
-            <button class="wide-button" id="shareRound" type="button">↗ Teilen</button>
           </div>
 
-          <div class="share-actions" id="shareActions">
-            <button type="button" data-share="pdf" id="exportPdf">PDF</button>
+          <!-- Teilen / Export (4-button grid) -->
+          <div class="share-grid" id="shareActions">
+            <button class="share-btn" id="shareRound" type="button">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                   width="18" height="18" aria-hidden="true">
+                <path d="M13 4l4 4-4 4"/>
+                <path d="M17 8H7a4 4 0 0 0-4 4v2"/>
+              </svg>
+              Link kopieren
+            </button>
+            <button class="share-btn" id="exportPdf" type="button">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                   width="18" height="18" aria-hidden="true">
+                <rect x="4" y="2" width="12" height="16" rx="2"/>
+                <path d="M7 9h6M7 12h4"/>
+                <path d="M12 2v4h4"/>
+              </svg>
+              PDF Export
+            </button>
+            <button class="share-btn" type="button" data-share="whatsapp">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                   width="18" height="18" aria-hidden="true">
+                <path d="M17.5 10a7.5 7.5 0 1 1-13.2-4.9L3 17l6.2-1.3A7.5 7.5 0 0 1 17.5 10z"/>
+              </svg>
+              WhatsApp
+            </button>
+            <button class="share-btn" type="button" data-share="imessage">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                   width="18" height="18" aria-hidden="true">
+                <path d="M3 4h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H7l-4 3V5a1 1 0 0 1 1-1z"/>
+              </svg>
+              iMessage
+            </button>
           </div>
 
-          <button class="wide-button danger" id="resetRound" type="button">Alle Eingaben dieser Runde zurücksetzen</button>
           <p class="share-output" id="shareOutput" aria-live="polite"></p>
+
+          <button class="wide-button danger" id="resetRound" type="button">
+            Alle Eingaben zurücksetzen
+          </button>
         </section>
 
-        <!-- ═══ TRAINING ═════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- PANEL: ANALYSE / STATISTIK                              -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="panel" id="analysisPanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Muster erkennen</p>
+              <h2>Statistik</h2>
+            </div>
+          </div>
+          <div class="summary-grid" id="summaryGrid"></div>
+          <div class="top-three" id="topThree"></div>
+          <div class="ai-card" id="aiReview"></div>
+          <div class="strategy" id="courseStrategy"></div>
+          <div class="insights" id="insights"></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- PANEL: TRAINING                                         -->
+        <!-- ═══════════════════════════════════════════════════════ -->
         <section class="panel" id="trainingPanel">
           <div class="section-title">
             <div>
-              <p class="eyebrow">KI-Caddie Auswertung</p>
-              <h2>Training Center</h2>
+              <p class="eyebrow">Individuelle Empfehlungen</p>
+              <h2>Training</h2>
             </div>
           </div>
-          <div class="training-caddie-hero">
-            <span class="ai-orb" aria-hidden="true">✦</span>
-            <div>
-              <strong>KI-Caddie</strong>
-              <p>Erkennt Muster aus Score, Schlagtyp, HCP und Break-Ziel und übersetzt sie in Training.</p>
-            </div>
-          </div>
-          <div class="training-subtabs" aria-label="Training Bereiche">
-            <button class="active" type="button" data-training-subtab="training">Training</button>
-            <button type="button" data-training-subtab="stats">Statistik</button>
-            <button type="button" data-training-subtab="history">Historie</button>
-          </div>
-
-          <section class="training-subpanel active" id="trainingSubpanel" data-training-panel="training">
-            <div class="training-section-title">
-              <p class="eyebrow">KI-Analyse → Trainingsplan</p>
-              <h3>Individueller KI-Fokus</h3>
-            </div>
-            <div class="training-list" id="trainingList"></div>
-            <div class="top-three" id="topThree"></div>
-            <section class="premium-swing-card">
-              <p class="eyebrow">Premium · Gemini Schwunganalyse</p>
-              <h3>Schwungvideos abgleichen</h3>
-              <p>Starte nach der Runde eine Kamera- oder Upload-Analyse. Nimm zwei kurze Clips auf: frontal und von hinten, jeweils auf Hüfthöhe. Gemini gleicht den Schwung mit deinen KI-Caddie-Mustern ab.</p>
-              <div class="video-upload-grid">
-                <label>
-                  <span>1 · Frontal aufnehmen/hochladen</span>
-                  <small>Handy auf Hüfthöhe, Ball und Füße sichtbar.</small>
-                  <input id="frontSwingVideo" type="file" accept="video/*" capture="environment" />
-                </label>
-                <label>
-                  <span>2 · Von hinten aufnehmen/hochladen</span>
-                  <small>Entlang der Ziellinie, Hände und Schlägerkopf sichtbar.</small>
-                  <input id="rearSwingVideo" type="file" accept="video/*" capture="environment" />
-                </label>
-              </div>
-              <label class="gemini-key-field">
-                <span>Gemini API-Key nur für lokalen Test</span>
-                <input id="geminiApiKey" type="password" autocomplete="off" placeholder="Optional: AIza..." />
-              </label>
-              <button class="wide-button primary" id="analyzeSwing" type="button">Schwung mit Gemini analysieren</button>
-              <p class="swing-status" id="swingStatus">Für Produktion nutzt die App einen sicheren Backend-Endpunkt. Der lokale API-Key ist nur zum Testen gedacht.</p>
-              <div class="swing-result" id="swingResult"></div>
-              <details class="more-panel">
-                <summary>Video-Empfehlungen</summary>
-                <ul class="caddie-bullets">
-                  <li>Smartphone stabil auf Hüfthöhe platzieren, nicht aus der Hand filmen.</li>
-                  <li>Frontal: Kamera auf Brustmitte, Ball und Füße vollständig sichtbar.</li>
-                  <li>Von hinten: Kamera entlang der Ziellinie, Hände, Ball, Schlägerkopf und Zielrichtung sichtbar.</li>
-                  <li>Je Video 1 bis 3 Schwünge, gute Beleuchtung, möglichst 60 fps.</li>
-                  <li>Gemini arbeitet besser, wenn Schlagtyp, Ziel, Ballflug und typischer Fehler im Prompt stehen.</li>
-                </ul>
-              </details>
-            </section>
-          </section>
-
-          <section class="training-subpanel" id="statsSubpanel" data-training-panel="stats">
-            <div class="training-section-title">
-              <p class="eyebrow">Rundenresultate</p>
-              <h3>Statistik</h3>
-            </div>
-            <div class="stat-visuals" id="statVisuals"></div>
-            <div class="summary-grid" id="summaryGrid"></div>
-            <div class="ai-card" id="aiReview"></div>
-            <details class="more-panel training-more">
-              <summary>Weitere Analyse</summary>
-              <div class="coach-report" id="coachReport"></div>
-              <div class="strategy" id="courseStrategy"></div>
-              <div class="insights" id="insights"></div>
-            </details>
-          </section>
-
-          <section class="training-subpanel" id="historySubpanel" data-training-panel="history">
-            <div class="section-title history-heading">
-              <div>
-                <p class="eyebrow">Gespeicherte Runden</p>
-                <h2>Historie</h2>
-              </div>
-              <div class="segmented-control" aria-label="Historie Ansicht">
-                <button class="active" type="button" data-history-view="month">Monat</button>
-                <button type="button" data-history-view="year">Jahr</button>
-              </div>
-            </div>
-            <div class="history-stats" id="historyStats"></div>
-            <div class="archive-list" id="archiveList"></div>
-          </section>
+          <div class="training-list" id="trainingList"></div>
         </section>
 
-        <!-- ═══ EINSTELLUNGEN ═══════════════════════════════════════ -->
-        <section class="panel" id="settingsPanel">
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- PANEL: COACH                                            -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="panel" id="coachPanel">
           <div class="section-title">
             <div>
-              <p class="eyebrow">Vor der Runde</p>
-              <h2>Einstellungen</h2>
+              <p class="eyebrow">Trainer-Version</p>
+              <h2>Coach Report</h2>
             </div>
           </div>
-          <section class="settings-card">
-            <label class="challenge-picker">
-              <span>Break-Ziel</span>
-              <select id="breakTarget" aria-label="Break-Ziel auswählen"></select>
-            </label>
-            <p class="setting-help">Dein Break-Ziel ist der Score, den du unterbieten willst. Die App nutzt es für Risiko, Pace und Caddie-Hinweise.</p>
-            <label class="challenge-picker tee-picker">
-              <span>Abschlag</span>
-              <select id="teeSelect" aria-label="Abschlag auswählen">
-                <option value="yellow">Gelb</option>
-                <option value="blue">Blau</option>
-                <option value="red">Rot</option>
-                <option value="orange">Orange</option>
-              </select>
-            </label>
-            <p class="setting-help">Der Abschlag verändert Längen, Course Rating und Slope. Wähle die Farbe, von der du heute wirklich spielst.</p>
-            <section class="profile-card" aria-label="Spielerprofil">
-              <button class="profile-toggle" id="toggleProfile" type="button">
-                <span>Profil</span>
-                <strong id="profileSummary">HCP offen</strong>
-              </button>
-              <div class="profile-fields" id="profileFields">
-                <label>
-                  <span>Handicap Index</span>
-                  <input id="handicap" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z.B. 24.5" />
-                </label>
-                <input id="playerGoal" type="hidden" value="break90" />
-              </div>
-            </section>
-            <div class="settings-note">
-              <h3>Was macht das HCP?</h3>
-              <p>Dein Handicap ist kein zweites Ziel. Es verändert Strategie, Risiko und Erwartungen: höhere HCPs bekommen defensivere Zielzonen, niedrigere HCPs mehr Par-Chancen.</p>
+          <div class="coach-report" id="coachReport"></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- PANEL: HISTORIE                                         -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="panel" id="archivePanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Gespeicherte Runden</p>
+              <h2>Historie</h2>
             </div>
-            <div class="settings-note">
-              <h3>Historie & Datenschutz</h3>
-              <p>Deine Runden werden lokal auf diesem Gerät im Browser gespeichert. Sie bleiben beim erneuten Öffnen erhalten, solange Browserdaten für diese Seite nicht gelöscht werden. Vor Gerätewechsel oder Cache-Löschung solltest du wichtige Runden als Link oder PDF sichern.</p>
+          </div>
+          <div class="history-stats" id="historyStats"></div>
+          <div class="archive-list" id="archiveList"></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- PANEL: GLOSSAR                                          -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <section class="panel" id="glossaryPanel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Einfach erklärt</p>
+              <h2>Glossar</h2>
             </div>
-            <button class="wide-button" id="aboutApp" type="button">Über die App</button>
-            <button class="wide-button" id="newRound" type="button">Neue Runde starten</button>
-            <details class="glossary-details">
-              <summary>Glossar</summary>
-              <div class="glossary-list" id="glossaryList"></div>
-            </details>
-          </section>
+          </div>
+          <div class="glossary-list" id="glossaryList"></div>
         </section>
 
       </main>
     </div><!-- /.app-shell -->
 
-    <!-- ═══ MODAL: REGEL ═════════════════════════════════════════════ -->
+    <!-- ═══ MODAL: REGEL ════════════════════════════════════════════ -->
     <div class="modal-backdrop" id="ruleModal" hidden>
       <section class="rule-modal" role="dialog" aria-modal="true" aria-labelledby="ruleTitle">
         <div class="section-title">
@@ -292,7 +389,14 @@
             <p class="eyebrow">Regelhinweis</p>
             <h2 id="ruleTitle">Regel</h2>
           </div>
-          <button class="icon-button" id="closeRuleModal" type="button" aria-label="Schließen" title="Schließen">×</button>
+          <button class="icon-button" id="closeRuleModal" type="button"
+                  aria-label="Schließen" title="Schließen">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" width="16" height="16">
+              <line x1="4" y1="4" x2="16" y2="16"/>
+              <line x1="16" y1="4" x2="4" y2="16"/>
+            </svg>
+          </button>
         </div>
         <div id="ruleBody"></div>
         <div class="rule-options" id="ruleOptions"></div>
@@ -300,7 +404,7 @@
       </section>
     </div>
 
-    <!-- ═══ MODAL: FEEDBACK ══════════════════════════════════════════ -->
+    <!-- ═══ MODAL: FEEDBACK ═════════════════════════════════════════ -->
     <div class="modal-backdrop" id="feedbackModal" hidden>
       <section class="rule-modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
         <div class="section-title">
@@ -308,12 +412,20 @@
             <p class="eyebrow">Tester-Feedback</p>
             <h2 id="feedbackTitle">Runde bewerten</h2>
           </div>
-          <button class="icon-button" id="closeFeedbackModal" type="button" aria-label="Schließen" title="Schließen">×</button>
+          <button class="icon-button" id="closeFeedbackModal" type="button"
+                  aria-label="Schließen" title="Schließen">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" width="16" height="16">
+              <line x1="4" y1="4" x2="16" y2="16"/>
+              <line x1="16" y1="4" x2="4" y2="16"/>
+            </svg>
+          </button>
         </div>
         <div class="feedback-list" id="feedbackList"></div>
         <label class="feedback-free">
           <span>Freitext</span>
-          <textarea id="feedbackText" rows="4" placeholder="Was war hilfreich, was hat gestört?"></textarea>
+          <textarea id="feedbackText" rows="4"
+                    placeholder="Was war hilfreich, was hat gestört?"></textarea>
         </label>
         <label class="feedback-free">
           <span>Emotion der Runde</span>
@@ -325,11 +437,13 @@
             <option value="ruhig">Ruhig</option>
           </select>
         </label>
-        <button class="wide-button primary" id="saveFeedback" type="button">Feedback per Mail senden</button>
+        <button class="wide-button primary" id="saveFeedback" type="button">
+          Feedback speichern
+        </button>
       </section>
     </div>
 
-    <!-- ═══ MODAL: INFO / ÜBER ═══════════════════════════════════════ -->
+    <!-- ═══ MODAL: INFO / ÜBER ══════════════════════════════════════ -->
     <div class="modal-backdrop" id="infoModal" hidden>
       <section class="rule-modal" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
         <div class="section-title">
@@ -337,16 +451,23 @@
             <p class="eyebrow" id="infoEyebrow">Info</p>
             <h2 id="infoTitle">Info</h2>
           </div>
-          <button class="icon-button" id="closeInfoModal" type="button" aria-label="Schließen" title="Schließen">×</button>
+          <button class="icon-button" id="closeInfoModal" type="button"
+                  aria-label="Schließen" title="Schließen">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" width="16" height="16">
+              <line x1="4" y1="4" x2="16" y2="16"/>
+              <line x1="16" y1="4" x2="4" y2="16"/>
+            </svg>
+          </button>
         </div>
         <div id="infoBody"></div>
       </section>
     </div>
 
-    <script src="app.js?v=28"></script>
+    <script src="app.js?v=15"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=28");
+        navigator.serviceWorker.register("./sw.js?v=15");
       }
     </script>
   </body>
