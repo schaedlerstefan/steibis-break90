@@ -3,7 +3,14 @@
   "short_name": "CoursePilot",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f5f2ea",
+  "background_color": "#f4f5f2",
   "theme_color": "#174a3a",
-  "icons": []
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
