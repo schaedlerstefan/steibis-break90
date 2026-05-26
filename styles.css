@@ -1,5 +1,5 @@
 /* ================================================================
-   CoursePilot — Design System v2
+   CoursePilot — Design System v29
    Apple-inspired · Golf-Premium · Mobile-first
    ================================================================ */
 
@@ -8,15 +8,15 @@
   color-scheme: light;
 
   /* Backgrounds */
-  --bg:           #f3f5f1;
+  --bg:           #f4f5f2;
   --bg-2:         #edf0eb;
   --surface:      #ffffff;
   --surface-tint: #f9faf8;
 
   /* Text */
-  --ink:       #131918;
-  --ink-2:     #2a3530;
-  --muted:     #63706a;
+  --ink:       #111716;
+  --ink-2:     #263030;
+  --muted:     #62706a;
   --muted-2:   #8a9590;
 
   /* Brand – Forest Green */
@@ -30,53 +30,53 @@
   --accent-2-light: #e4eff5;
 
   /* Functional */
-  --warn:       #b3422a;
-  --warn-soft:  #fcecea;
-  --gold:       #a87820;
-  --gold-soft:  #fdf3de;
-  --success:    #276b47;
+  --warn:         #b3422a;
+  --warn-soft:    #fcecea;
+  --gold:         #a87820;
+  --gold-soft:    #fdf3de;
+  --success:      #276b47;
   --success-soft: #e4f2ec;
 
   /* Neutrals */
-  --soft:      #edf2ee;
-  --line:      #dce4df;
-  --line-2:    #c8d4cc;
+  --soft:   #edf2ee;
+  --line:   #dce4df;
+  --line-2: #c8d4cc;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(12,26,18,.04);
-  --shadow-sm: 0 1px 3px rgba(12,26,18,.04), 0 4px 14px rgba(12,26,18,.06);
-  --shadow:    0 2px 8px rgba(12,26,18,.05), 0 10px 28px rgba(12,26,18,.08);
-  --shadow-lg: 0 8px 20px rgba(12,26,18,.08), 0 24px 60px rgba(12,26,18,.14);
+  /* Shadows – slightly softer */
+  --shadow-xs: 0 1px 2px rgba(12,26,18,.03);
+  --shadow-sm: 0 1px 3px rgba(12,26,18,.04), 0 4px 16px rgba(12,26,18,.05);
+  --shadow:    0 2px 8px rgba(12,26,18,.04), 0 10px 30px rgba(12,26,18,.07);
+  --shadow-lg: 0 8px 24px rgba(12,26,18,.07), 0 24px 64px rgba(12,26,18,.12);
 
   /* Radius */
   --r-xs:   6px;
-  --r-sm:   10px;
-  --r:      15px;
-  --r-lg:   20px;
-  --r-xl:   26px;
+  --r-sm:   12px;
+  --r:      16px;
+  --r-lg:   22px;
+  --r-xl:   28px;
   --r-pill: 999px;
 
   /* Layout */
-  --px:    16px;
-  --gap:   10px;
-  --nav-h: 72px;
+  --px:    18px;
+  --gap:   12px;
+  --nav-h: 76px;
 }
 
 /* ── 2. Reset & Base ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
-
 [hidden] { display: none !important; }
-
 html, body { min-height: 100%; }
+html { height: 100%; }
 
 body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: 16px;
-  line-height: 1.45;
+  line-height: 1.48;
   color: var(--ink);
   background: var(--bg);
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -84,18 +84,18 @@ body {
 button, input, select, textarea { font: inherit; color: inherit; }
 button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 a { color: var(--accent-2); }
-h1, h2, h3, h4 { margin: 0; letter-spacing: -.02em; line-height: 1.15; }
+h1, h2, h3, h4 { margin: 0; letter-spacing: -.025em; line-height: 1.15; }
 p { margin: 0; }
 
 /* ── 3. Shell ─────────────────────────────────────────────────── */
 .app-shell {
   width: min(100%, 560px);
-  min-height: 100svh;
+  min-height: 100dvh;
   margin: 0 auto;
   padding:
     max(16px, env(safe-area-inset-top))
     var(--px)
-    calc(var(--nav-h) + max(20px, env(safe-area-inset-bottom)));
+    calc(var(--nav-h) + max(24px, env(safe-area-inset-bottom)));
 }
 
 /* ── 4. Topbar ────────────────────────────────────────────────── */
@@ -104,17 +104,16 @@ p { margin: 0; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
-
 .topbar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   min-width: 0;
 }
 
-/* Logo mark */
+/* Logo */
 .app-logo {
   flex: 0 0 auto;
   width: 40px;
@@ -127,23 +126,25 @@ p { margin: 0; }
 
 /* App name */
 h1#appName {
-  font-size: 1.5rem;
+  font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: -.04em;
+  letter-spacing: -.045em;
   color: var(--accent);
   line-height: 1;
 }
 
+/* Eyebrow labels */
 .eyebrow {
   display: block;
   margin: 0 0 3px;
   color: var(--muted);
-  font-size: .68rem;
+  font-size: .67rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .08em;
 }
 
+/* Top actions */
 .top-actions {
   display: flex;
   align-items: center;
@@ -162,864 +163,670 @@ h1#appName {
   border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--accent);
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 800;
   box-shadow: var(--shadow-xs);
-  transition: background .14s, transform .1s;
+  transition: background .12s, transform .1s;
 }
 .icon-button:active { transform: scale(.92); background: var(--soft); }
 
 /* Language toggle */
 .language-toggle {
   height: 44px;
-  min-width: 52px;
+  min-width: 56px;
   border: 1.5px solid var(--line);
   border-radius: var(--r-pill);
   background: var(--surface);
-  color: var(--accent);
-  font-size: .8rem;
-  font-weight: 800;
-  letter-spacing: .04em;
-  box-shadow: var(--shadow-xs);
+  color: var(--ink);
+  font-size: .82rem;
+  font-weight: 700;
   padding: 0 12px;
-  transition: background .14s;
+  box-shadow: var(--shadow-xs);
+  transition: background .12s;
 }
 .language-toggle:active { background: var(--soft); }
 
-/* ── 5. Score Bar ─────────────────────────────────────────────── */
+/* ── 5. Scorebar ──────────────────────────────────────────────── */
 .scorebar {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
-  margin-bottom: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-bottom: 16px;
   border: 1.5px solid var(--line);
   border-radius: var(--r);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  background: var(--line);
   overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
 .scorebar > div {
-  padding: 13px 10px 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 13px 8px;
+  background: var(--surface);
   text-align: center;
 }
-.scorebar > div + div { border-left: 1.5px solid var(--line); }
-
 .scorebar span {
-  display: block;
   color: var(--muted);
-  font-size: .65rem;
+  font-size: .62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .07em;
-  margin-bottom: 1px;
+  letter-spacing: .08em;
 }
 .scorebar strong {
-  display: block;
-  font-size: 1.9rem;
+  font-size: 1.7rem;
   font-weight: 800;
-  letter-spacing: -.05em;
+  letter-spacing: -.055em;
   color: var(--ink);
   line-height: 1;
 }
 
-/* ── 6. Challenge Picker ──────────────────────────────────────── */
-.challenge-picker {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 10px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 10px 14px;
-  background: var(--surface);
-  box-shadow: var(--shadow-xs);
-}
-.challenge-picker span {
-  color: var(--muted);
-  font-size: .72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-.challenge-picker select {
-  min-width: 126px;
-  min-height: 38px;
-  border: 1.5px solid rgba(22,54,39,.22);
-  border-radius: var(--r-sm);
-  padding: 0 10px;
-  background: var(--accent-light);
-  color: var(--accent);
-  font-weight: 700;
-  font-size: .9rem;
-}
-
-/* ── 7. Profile Card ──────────────────────────────────────────── */
-.profile-card {
-  margin-bottom: 10px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-.profile-toggle {
-  width: 100%;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 16px;
-  border: none;
-  background: transparent;
-  transition: background .14s;
-}
-.profile-toggle:active { background: var(--soft); }
-
-.profile-toggle > span {
-  color: var(--muted);
-  font-size: .72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-#profileSummary {
-  font-size: .92rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.profile-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 0 16px 16px;
-  border-top: 1.5px solid var(--line);
-}
-.profile-fields.collapsed { display: none; }
-
-.profile-fields label {
-  display: grid;
-  gap: 6px;
-  color: var(--muted);
-  font-size: .7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  padding-top: 12px;
-}
-.profile-fields input,
-.profile-fields select {
-  min-height: 44px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 0 12px;
-  background: var(--surface-tint);
-  color: var(--ink);
-  text-transform: none;
-  font-size: .98rem;
-  letter-spacing: 0;
-}
-
-/* ── 8. Bottom Navigation ─────────────────────────────────────── */
+/* ── 6. Bottom Navigation ─────────────────────────────────────── */
 .tabs {
   position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(100%, 560px);
-  z-index: 50;
+  inset: auto 0 0 0;
+  z-index: 90;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  background: rgba(255,255,255,.95);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-top: 1.5px solid var(--line);
+  grid-template-columns: repeat(3, 1fr);
   padding-bottom: max(8px, env(safe-area-inset-bottom));
-  box-shadow: 0 -2px 18px rgba(12,26,18,.07);
+  background: rgba(18,24,22,.96);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 -1px 0 rgba(255,255,255,.05);
 }
-
 .tab {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 10px 3px 5px;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px;
   border: none;
-  border-top: 2.5px solid transparent;
   background: transparent;
-  color: var(--muted-2);
-  font-size: .63rem;
+  color: rgba(255,255,255,.42);
+  font-size: .68rem;
   font-weight: 700;
-  letter-spacing: -.01em;
-  min-height: 52px;
-  transition: color .15s, border-color .15s;
-  gap: 2px;
-  text-align: center;
-  line-height: 1.2;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  transition: color .18s;
 }
-.tab.active {
-  color: var(--accent);
-  border-top-color: var(--accent);
+.tab.active { color: rgba(255,255,255,.96); }
+.tab-icon {
+  font-size: 1.25rem;
+  line-height: 1;
 }
-.tab:active { opacity: .7; }
 
-/* ── 9. Panels ────────────────────────────────────────────────── */
+/* ── 7. Panels ────────────────────────────────────────────────── */
 .panel { display: none; }
 .panel.active { display: block; }
 
+/* ── 8. Section Titles ────────────────────────────────────────── */
 .section-title {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-h2 { font-size: 1.3rem; font-weight: 800; }
-h3 { font-size: 1rem;   font-weight: 700; }
-
-/* ── 10. Hole Header Card ─────────────────────────────────────── */
-.hole-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 14px 16px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  text-align: center;
+  margin-bottom: 18px;
 }
-.hole-top > div {
-  flex: 1;
-  min-width: 0;
-}
-.hole-top .eyebrow { margin-bottom: 5px; }
-
-#holeScore {
-  font-size: 1.9rem;
+.section-title h2 {
+  font-size: 1.65rem;
   font-weight: 800;
-  letter-spacing: -.05em;
   color: var(--ink);
-  line-height: 1.05;
 }
+.section-title .eyebrow { margin-bottom: 4px; }
 
-.hole-rating {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  margin: 8px 0 0;
-  border-radius: var(--r-pill);
-  padding: 0 11px;
-  color: #fff;
-  font-size: .7rem;
-  font-weight: 700;
-  letter-spacing: .01em;
-  white-space: nowrap;
+.training-section-title {
+  margin: 16px 0 10px;
 }
-
-/* Prev / Next buttons */
-#prevHole, #nextHole {
-  flex: 0 0 auto;
-  width: 50px;
-  height: 50px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface-tint);
-  color: var(--accent);
-  font-size: 1.7rem;
+.training-section-title h3 {
+  font-size: 1.15rem;
   font-weight: 800;
-  box-shadow: var(--shadow-xs);
-  display: grid;
-  place-items: center;
-  transition: background .14s, transform .1s;
+  color: var(--ink);
 }
-#prevHole:active, #nextHole:active {
-  transform: scale(.91);
-  background: var(--soft);
+.training-section-title .eyebrow { margin-bottom: 4px; }
+
+/* ── 9. Hole Navigation ───────────────────────────────────────── */
+.hole-top {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 14px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.hole-top > div { text-align: center; }
+.hole-top h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.hole-rating {
+  margin-top: 3px;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--muted);
 }
 
-/* ── 11. Hole Toggle & Strip ──────────────────────────────────── */
+/* Hole toggle button */
 .hole-toggle {
   width: 100%;
-  min-height: 44px;
-  margin-top: 10px;
+  min-height: 38px;
   border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--accent-2);
+  border-radius: var(--r-pill);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .8rem;
   font-weight: 700;
-  font-size: .88rem;
-  box-shadow: var(--shadow-xs);
-  transition: background .14s;
+  margin-bottom: 6px;
+  transition: background .12s;
 }
-.hole-toggle:active { background: var(--accent-2-light); }
+.hole-toggle:active { background: var(--soft); }
 
+/* Hole strip */
 .hole-strip {
   display: grid;
-  grid-template-columns: repeat(6,1fr);
-  gap: 5px;
-  margin: 9px 0 2px;
-}
-.hole-strip.collapsed { display: none; }
-
-.hole-chip {
-  min-height: 48px;
-  border: 1.5px solid var(--line);
-  border-bottom: 4px solid var(--difficulty, var(--line));
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--muted);
-  font-size: .92rem;
-  font-weight: 800;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  transition: background .14s, color .14s;
-}
-.hole-chip small {
-  display: block;
-  font-size: .58rem;
-  font-weight: 600;
-  color: inherit;
-  opacity: .72;
-}
-.hole-chip.active {
-  border-color: var(--accent);
-  border-bottom-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-sm);
-}
-.hole-chip.played { color: var(--accent); }
-.hole-chip.risk {
-  border-top-color:   rgba(179,66,42,.45);
-  border-left-color:  rgba(179,66,42,.45);
-  border-right-color: rgba(179,66,42,.45);
-}
-
-/* ── 12. Warning Banner ───────────────────────────────────────── */
-.warning {
-  display: none;
-  margin-top: 10px;
-  padding: 12px 14px;
-  border: 1.5px solid transparent;
-  border-radius: var(--r-sm);
-  font-size: .88rem;
-  line-height: 1.48;
-  color: var(--ink);
-}
-.warning.active {
-  display: block;
-  background: var(--warn-soft);
-  border-color: rgba(179,66,42,.22);
-}
-.warning strong { color: var(--warn); }
-
-/* ── 13. Strategy / Plan Card ─────────────────────────────────── */
-.strategy-card {
-  margin-top: 10px;
-  padding: 16px;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
   border: 1.5px solid var(--line);
   border-radius: var(--r);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-.strategy-card h3 { margin-bottom: 6px; color: var(--ink); }
-.strategy-card p {
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: .9rem;
-  line-height: 1.52;
-}
-
-/* ── 14. AI Caddie Card ───────────────────────────────────────── */
-.ai-card {
-  position: relative;
-  margin-top: 10px;
-  padding: 16px;
-  border: 1.5px solid rgba(41,94,115,.22);
-  border-radius: var(--r);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-
-/* Top accent line */
-.ai-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
-  border-radius: var(--r) var(--r) 0 0;
-}
-
-.ai-card.highlight {
-  animation: aiPulse 800ms cubic-bezier(.22,1,.36,1);
-  border-color: rgba(41,94,115,.55);
-  box-shadow: 0 0 0 3px rgba(41,94,115,.1), var(--shadow);
-}
-@keyframes aiPulse {
-  0%   { transform: translateY(-3px); opacity: .88; }
-  100% { transform: translateY(0);    opacity: 1;   }
-}
-
-/* AI card title */
-.ai-card > h3:first-child,
-.ai-card h3 {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--accent-2);
-  margin-bottom: 12px;
-  margin-top: 4px;
-}
-.ai-card > h3:first-child::before,
-.ai-card h3::before {
-  content: '✦';
-  font-size: .68rem;
-  opacity: .65;
-  flex: 0 0 auto;
-}
-
-.ai-card p {
-  color: var(--muted);
-  font-size: .9rem;
-  line-height: 1.5;
-}
-
-/* Metric row */
-.metric-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.metric-pill {
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 12px 12px 10px;
-  background: var(--surface-tint);
-  cursor: pointer;
-  transition: background .14s;
-}
-.metric-pill:active { background: var(--soft); }
-
-.metric-pill span {
-  display: block;
-  color: var(--muted);
-  font-size: .65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .07em;
-}
-.metric-pill strong {
-  display: block;
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -.05em;
-  color: var(--ink);
-  line-height: 1;
-  margin: 3px 0 8px;
-}
-
-/* Progress bar */
-.ai-meter {
-  height: 5px;
-  border-radius: var(--r-pill);
-  background: var(--line);
-  overflow: hidden;
-}
-.ai-meter span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--accent-mid), var(--accent-2));
-  transition: width .5s cubic-bezier(.22,1,.36,1);
-}
-
-/* AI breakdown rows */
-.ai-breakdown { display: grid; }
-.ai-line {
-  border-top: 1px solid var(--line);
-  padding: 10px 0;
-}
-.ai-line:last-child { padding-bottom: 2px; }
-.ai-line strong {
-  display: block;
-  font-size: .7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--ink-2);
-  margin-bottom: 3px;
-}
-.ai-line p {
-  color: var(--muted);
-  font-size: .88rem;
-  line-height: 1.48;
-}
-
-/* Premium / Tier note */
-.premium-note {
-  margin-top: 14px;
-  padding: 10px 12px;
-  border: 1.5px dashed rgba(168,120,32,.4);
-  border-radius: var(--r-sm);
-  background: var(--gold-soft);
-  color: var(--gold);
-  font-size: .82rem;
-  font-weight: 700;
-  line-height: 1.4;
-}
-
-/* ── 15. Shot Entry ───────────────────────────────────────────── */
-.shot-entry {
-  margin-top: 12px;
-  padding: 16px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-.shot-entry > .eyebrow { margin-bottom: 8px; }
-
-/* Shot type row */
-.shot-type-grid {
-  display: grid;
-  grid-template-columns: repeat(5,1fr);
-  gap: 6px;
-  margin-bottom: 16px;
-}
-.shot-type {
-  min-height: 46px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface-tint);
-  color: var(--muted);
-  font-size: .77rem;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  transition: background .12s, color .12s, border-color .12s, transform .1s;
-}
-.shot-type:active { transform: scale(.93); }
-.shot-type.active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
   box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  max-height: 500px;
+  transition: max-height .24s ease, padding .24s ease, margin .24s ease, opacity .24s ease;
 }
-
-/* Shot result grid */
-.shot-grid {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 8px;
+.hole-strip.collapsed {
+  max-height: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
 }
-.putt-heading { margin-top: 14px; }
-.putt-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 8px;
-}
-
-/* Shot button base */
-.shot-button {
-  min-height: 54px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--soft);
-  color: var(--ink);
-  font-size: .85rem;
-  font-weight: 700;
-  text-align: center;
-  padding: 8px 6px;
+.hole-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  line-height: 1.2;
-  transition: transform .1s, opacity .12s;
-}
-.shot-button:active { transform: scale(.93); opacity: .85; }
-
-.shot-button small {
-  display: block;
-  font-size: .65rem;
-  font-weight: 600;
+  min-height: 42px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
   color: var(--muted);
+  font-size: .7rem;
+  font-weight: 700;
+  transition: background .1s, border-color .1s;
 }
-
-/* Category colors */
-.shot-button[data-result="Exakt umgesetzt"] {
-  background: var(--success-soft);
-  border-color: rgba(39,107,71,.3);
-  color: var(--success);
-}
-.shot-button[data-result="Exakt umgesetzt"] small { color: var(--success); }
-
-.shot-button[data-category="direction"] {
-  background: var(--accent-2-light);
-  border-color: rgba(41,94,115,.22);
-  color: var(--accent-2);
-}
-.shot-button[data-category="direction"] small { color: var(--accent-2); opacity: .75; }
-
-.shot-button[data-category="distance"] {
-  background: rgba(168,120,32,.1);
-  border-color: rgba(168,120,32,.25);
-  color: #7a5a0e;
-}
-.shot-button[data-category="distance"] small { color: #7a5a0e; opacity: .75; }
-
-.shot-button[data-category="contact"] {
-  background: rgba(99,112,106,.1);
-  border-color: rgba(99,112,106,.22);
-  color: var(--ink-2);
-}
-
-.shot-button[data-category="penalty"] {
-  background: var(--warn-soft);
-  border-color: rgba(179,66,42,.25);
-  color: var(--warn);
-}
-.shot-button[data-category="penalty"] small { color: var(--warn); opacity: .8; }
-
-.shot-button[data-category="putt"] {
+.hole-btn.active {
+  border-color: var(--accent);
   background: var(--accent-light);
-  border-color: rgba(22,54,39,.2);
-  color: var(--accent-mid);
+  color: var(--accent);
 }
-.shot-button[data-category="putt"] small { color: var(--accent-mid); opacity: .75; }
+.hole-btn.done { background: var(--soft); color: var(--muted-2); }
+.hole-btn strong {
+  display: block;
+  font-size: .88rem;
+  color: inherit;
+}
+.hole-btn span { color: var(--muted-2); font-size: .64rem; font-weight: 700; }
 
-/* Rule info badge */
-.rule-badge {
-  display: inline-flex;
+/* ── 10. Shot Entry ───────────────────────────────────────────── */
+.shot-entry {
+  padding: 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  margin-bottom: 12px;
+}
+.shot-entry > .eyebrow { margin-bottom: 8px; }
+
+/* Shot type grid */
+.shot-type-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.shot-type-btn {
+  min-height: 44px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+  transition: background .12s, border-color .12s, color .12s, transform .1s;
+}
+.shot-type-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.shot-type-btn:active { transform: scale(.96); }
+
+/* Plan choice */
+.plan-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.putt-choice { margin-top: 4px; }
+
+.plan-button {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  margin-left: 4px;
-  border-radius: var(--r-pill);
-  background: rgba(179,66,42,.15);
+  gap: 4px;
+  min-height: 80px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .92rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  transition: transform .1s, background .12s, border-color .12s, color .12s;
+}
+.plan-button:active { transform: scale(.97); }
+.plan-button.hit {
+  background: var(--success-soft);
+  border-color: rgba(39,107,71,.25);
+  color: var(--success);
+}
+.plan-button.miss {
+  background: var(--warn-soft);
+  border-color: rgba(179,66,42,.22);
   color: var(--warn);
-  font-size: .66rem;
-  font-weight: 900;
-  vertical-align: middle;
-  flex-shrink: 0;
 }
 
-/* ── 16. Wide Buttons ─────────────────────────────────────────── */
+/* Putt separator */
+.putt-heading { margin-top: 18px; }
+
+/* Miss options */
+.miss-options { margin-top: 12px; }
+.miss-options > .eyebrow { margin-bottom: 8px; }
+
+/* Shot result grid */
+.shot-grid,
+.putt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.shot-btn,
+.putt-btn {
+  min-height: 52px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  color: var(--ink-2);
+  font-size: .82rem;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 8px 10px;
+  text-align: left;
+  transition: background .1s, border-color .1s, transform .1s;
+}
+.shot-btn:active,
+.putt-btn:active { transform: scale(.97); background: var(--soft); }
+.shot-btn small,
+.putt-btn small {
+  display: block;
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.shot-btn.penalty { border-color: rgba(179,66,42,.22); background: var(--warn-soft); color: var(--warn); }
+.shot-btn.good    { border-color: rgba(39,107,71,.22); background: var(--success-soft); color: var(--success); }
+
+/* Wide buttons */
 .wide-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   min-height: 52px;
-  margin-top: 10px;
   border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
+  border-radius: var(--r);
+  background: var(--surface-tint);
   color: var(--ink);
   font-size: .95rem;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  box-shadow: var(--shadow-xs);
-  transition: background .14s, transform .1s;
+  font-weight: 800;
+  margin-top: 12px;
+  transition: background .12s, transform .1s;
 }
 .wide-button:active { transform: scale(.98); background: var(--soft); }
-
 .wide-button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(22,54,39,.22), 0 6px 18px rgba(22,54,39,.14);
 }
-.wide-button.primary:active { background: var(--accent-mid); transform: scale(.98); }
-
+.wide-button.primary:active { background: var(--accent-mid); }
 .wide-button.danger {
+  background: transparent;
   border-color: rgba(179,66,42,.28);
   color: var(--warn);
-  background: var(--warn-soft);
-  box-shadow: none;
-}
-
-/* Action row (save + share side by side) */
-.actions {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  margin-top: 4px;
-}
-.actions .wide-button { margin-top: 0; flex: 1; }
-
-/* ── 17. Shot List ────────────────────────────────────────────── */
-.shot-list {
-  margin-top: 10px;
-  padding: 14px 16px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.inline-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.text-button {
-  border: none;
-  background: transparent;
-  color: var(--accent-2);
+  font-weight: 700;
   font-size: .88rem;
-  font-weight: 700;
-  padding: 4px 0;
-  transition: opacity .14s;
 }
-.text-button:active { opacity: .55; }
-.text-button.warn { color: var(--warn); }
+.wide-button.danger:active { background: var(--warn-soft); }
+.wide-button:disabled { opacity: .5; cursor: progress; }
 
-.shot-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid var(--line);
-  font-size: .9rem;
-}
-.shot-row:first-child { border-top: none; padding-top: 0; }
-.shot-row strong {
-  font-size: .82rem;
-  font-weight: 700;
-  color: var(--muted-2);
-  flex: 0 0 auto;
-}
-.shot-row span { color: var(--muted); line-height: 1.38; }
-.shot-row.penalty span,
-.shot-row.scratch span { color: var(--warn); font-weight: 700; }
+/* Finish hole button */
+#finishHole { margin-top: 16px; }
 
-.empty-state {
-  padding: 18px 14px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--muted-2);
-  font-size: .9rem;
-  line-height: 1.52;
-  text-align: center;
-}
-
-/* ── 18. Note Field ───────────────────────────────────────────── */
-.note-field {
-  display: block;
-  margin-top: 10px;
-  padding: 12px 14px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r);
-  background: var(--surface);
-  box-shadow: var(--shadow-xs);
-  color: var(--muted);
-  font-size: .7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.note-field input {
-  width: 100%;
-  min-height: 48px;
-  margin-top: 8px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 0 14px;
-  background: var(--surface-tint);
-  color: var(--ink);
-  font-size: 1rem;
-  text-transform: none;
-  letter-spacing: 0;
-}
-.note-field input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-  border-color: var(--accent);
-}
-
-/* ── 19. Share Actions ────────────────────────────────────────── */
-.share-actions {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 8px;
-  margin-top: 8px;
-}
-.share-actions button {
-  min-height: 44px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--accent-2);
-  font-weight: 700;
-  font-size: .82rem;
-  transition: background .14s;
-}
-.share-actions button:active { background: var(--accent-2-light); }
-
-.share-output {
-  display: none;
-  margin-top: 10px;
-  padding: 12px 14px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--muted);
-  font-size: .88rem;
-  line-height: 1.48;
-  word-break: break-word;
-}
-.share-output.active { display: block; }
-
-/* ── 20. Analysis Panel ───────────────────────────────────────── */
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 8px;
-  margin-top: 4px;
-}
-.summary-card {
-  min-height: 86px;
+/* ── 11. Last Action / Shot List ──────────────────────────────── */
+.last-action {
   padding: 14px;
   border: 1.5px solid var(--line);
   border-radius: var(--r);
   background: var(--surface);
   box-shadow: var(--shadow-xs);
+  margin-bottom: 12px;
 }
-.summary-card span {
-  display: block;
+.inline-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.compact-button {
+  min-height: 40px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-tint);
   color: var(--muted);
-  font-size: .65rem;
+  font-size: .78rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .07em;
+  transition: background .12s, transform .1s;
 }
-.summary-card strong {
-  display: block;
-  margin-top: 6px;
-  font-size: 1.8rem;
+.compact-button:active { transform: scale(.97); background: var(--soft); }
+.compact-button.warn {
+  border-color: rgba(179,66,42,.22);
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.compact-button.warn:active { background: rgba(179,66,42,.15); }
+
+/* Shot list items */
+.shot-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  font-size: .9rem;
+}
+.shot-item:first-child { border-top: none; }
+.shot-num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: .72rem;
   font-weight: 800;
-  letter-spacing: -.05em;
-  color: var(--ink);
+}
+.shot-label { color: var(--ink); font-weight: 700; line-height: 1.3; }
+.shot-sub   { color: var(--muted); font-size: .8rem; }
+.shot-penalty {
+  font-size: .72rem;
+  font-weight: 800;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border-radius: var(--r-pill);
+  padding: 2px 7px;
 }
 
-/* ── 21. Content Cards (shared) ───────────────────────────────── */
+/* Score labels */
+.score-label {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+.score-eagle  { background: rgba(41,94,115,.1);  color: var(--accent-2);  border: 1.5px solid rgba(41,94,115,.18); }
+.score-birdie { background: var(--success-soft); color: var(--success);   border: 1.5px solid rgba(39,107,71,.2); }
+.score-par    { background: var(--surface-tint); color: var(--muted);     border: 1.5px solid var(--line); }
+.score-bogey  { background: var(--soft);         color: var(--ink-2);     border: 1.5px solid var(--line-2); }
+.score-double { background: var(--warn-soft);    color: var(--warn);      border: 1.5px solid rgba(179,66,42,.2); }
+.score-triple { background: rgba(179,66,42,.16); color: var(--warn);      border: 1.5px solid rgba(179,66,42,.28); }
+
+/* ── 12. AI Caddie Card ───────────────────────────────────────── */
+.ai-card {
+  position: relative;
+  padding: 16px;
+  border: 1.5px solid rgba(41,94,115,.28);
+  border-radius: var(--r);
+  background: linear-gradient(160deg, var(--accent-2-light) 0%, var(--surface) 58%);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.ai-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--gold));
+  border-radius: var(--r) var(--r) 0 0;
+}
+.ai-card:empty { display: none; }
+
+/* Caddie compact layout */
+.caddie-compact { display: grid; gap: 12px; }
+.caddie-compact-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.caddie-compact-orb {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: .95rem;
+  animation: aiSpark 2s ease-in-out infinite;
+}
+.caddie-compact-title {
+  font-size: .67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--accent-2);
+}
+.caddie-compact-subtitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.caddie-compact-body { color: var(--muted); font-size: .9rem; line-height: 1.56; }
+.caddie-compact-section {
+  padding-top: 10px;
+  border-top: 1px solid rgba(41,94,115,.1);
+}
+.caddie-compact-section > .eyebrow { margin-bottom: 6px; color: var(--accent-2); }
+.caddie-bullets {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--muted);
+  font-size: .88rem;
+  line-height: 1.64;
+}
+.caddie-bullets li { margin-bottom: 3px; }
+
+.tip-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-2);
+  font-size: .85rem;
+  font-weight: 800;
+  margin-top: 8px;
+}
+.tip-button::after { content: ' ›'; }
+
+@keyframes aiSpark {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(41,94,115,.08); }
+  50%       { box-shadow: 0 0 0 7px rgba(41,94,115,.15); }
+}
+
+/* Hole plan */
+.hole-plan {
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .88rem;
+  line-height: 1.58;
+  margin-top: 8px;
+}
+
+/* Warning banner */
+.warning {
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid rgba(179,66,42,.25);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: .88rem;
+  font-weight: 700;
+  line-height: 1.46;
+  margin-bottom: 10px;
+}
+
+/* ── 13. Round Actions ────────────────────────────────────────── */
+.actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.share-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: -4px;
+}
+.share-actions button {
+  flex: 1;
+  min-height: 44px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-tint);
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+  padding: 0 14px;
+  transition: background .12s;
+}
+.share-actions button:active { background: var(--soft); }
+.share-output {
+  display: block;
+  margin-top: 8px;
+  font-size: .82rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ── 14. Training Tab ─────────────────────────────────────────── */
+
+/* Hero */
+.training-caddie-hero {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 16px;
+  border: 1.5px solid rgba(41,94,115,.18);
+  border-radius: var(--r);
+  background: linear-gradient(135deg, var(--accent-2-light), rgba(255,255,255,.92));
+  box-shadow: var(--shadow-sm);
+}
+.ai-orb {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 1.15rem;
+  box-shadow: 0 0 0 5px rgba(41,94,115,.1);
+  animation: aiSpark 1.8s ease-in-out infinite;
+}
+.training-caddie-hero strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1.04rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+.training-caddie-hero p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.46;
+}
+
+/* Subtabs */
+.training-subtabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  padding: 5px;
+  margin: 0 0 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-tint);
+}
+.training-subtabs button {
+  min-height: 38px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.training-subtabs button.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Subpanels */
+.training-subpanel { display: none; }
+.training-subpanel.active { display: block; }
+
+/* ── 15. Training Content Cards ───────────────────────────────── */
 .strategy,
 .top-three,
 .insights,
@@ -1030,7 +837,7 @@ h3 { font-size: 1rem;   font-weight: 700; }
 .glossary-list {
   display: grid;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .strategy,
@@ -1055,7 +862,7 @@ h3 { font-size: 1rem;   font-weight: 700; }
 .archive-card h3 {
   margin: 0 0 6px;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--ink);
 }
 .strategy p,
@@ -1066,23 +873,348 @@ h3 { font-size: 1rem;   font-weight: 700; }
   margin-top: 4px;
   color: var(--muted);
   font-size: .9rem;
-  line-height: 1.52;
+  line-height: 1.56;
 }
-
-/* Training link */
 .training-card a {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   margin-top: 10px;
   color: var(--accent-2);
-  font-weight: 700;
+  font-weight: 800;
   font-size: .88rem;
   text-decoration: none;
 }
 .training-card a::after { content: ' →'; }
 
-/* Archive load button */
+.ai-training-card {
+  border-color: rgba(41,94,115,.18);
+  background: linear-gradient(180deg, var(--accent-2-light), var(--surface) 65%);
+}
+
+.caddie-mini-proof {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1.5px solid rgba(41,94,115,.14);
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,.65);
+}
+.caddie-mini-proof strong,
+.caddie-mini-proof span { display: block; }
+.caddie-mini-proof strong { color: var(--accent-2); font-size: .78rem; }
+.caddie-mini-proof span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.38;
+}
+
+.training-drill-card { border-color: rgba(22,54,39,.1); }
+.drill-meta { display: grid; gap: 6px; margin-top: 12px; }
+.drill-meta span {
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  color: var(--ink-2);
+  font-size: .78rem;
+  font-weight: 800;
+}
+.drill-details { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.drill-details summary { color: var(--accent-2); font-weight: 800; cursor: pointer; }
+.drill-details p { margin-top: 8px; }
+
+/* Expert strip */
+.expert-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.expert-strip article {
+  padding: 11px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,.75);
+}
+.expert-strip strong,
+.expert-strip span { display: block; }
+.expert-strip span { margin-top: 2px; color: var(--accent-2); font-size: .72rem; font-weight: 800; }
+.expert-strip p { margin-top: 6px; font-size: .82rem; }
+
+/* ── 16. Statistics ───────────────────────────────────────────── */
+
+/* Summary grid */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.summary-card {
+  min-height: 80px;
+  padding: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.summary-card span {
+  display: block;
+  color: var(--muted);
+  font-size: .62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.summary-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -.055em;
+  color: var(--ink);
+}
+
+/* Stat card */
+.stat-card small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 700;
+}
+.stat-bar {
+  height: 6px;
+  margin-top: 12px;
+  border-radius: var(--r-pill);
+  background: var(--line);
+  overflow: hidden;
+}
+.stat-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-mid), var(--accent-2));
+}
+
+/* Stat visuals */
+.stat-visuals {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+.stat-hero-card,
+.stat-card-wide {
+  padding: 18px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.stat-hero-card {
+  background: linear-gradient(140deg, var(--accent-2-light), var(--surface) 68%);
+}
+.stat-hero-card h3 {
+  margin: 2px 0 5px;
+  font-size: 1.4rem;
+  letter-spacing: -.03em;
+  color: var(--ink);
+}
+.stat-hero-card p { color: var(--muted); font-size: .9rem; }
+
+/* Ring grid */
+.ring-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.ring-card {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 136px;
+  padding: 14px 8px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.stat-ring {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, var(--surface) 70%, transparent 72%),
+    conic-gradient(var(--accent-2) calc(var(--value) * 1%), var(--line) 0);
+}
+.ring-card.red .stat-ring {
+  background:
+    radial-gradient(circle closest-side, var(--surface) 70%, transparent 72%),
+    conic-gradient(var(--warn) calc(var(--value) * 1%), var(--line) 0);
+}
+.ring-card.green .stat-ring {
+  background:
+    radial-gradient(circle closest-side, var(--surface) 70%, transparent 72%),
+    conic-gradient(var(--accent-mid) calc(var(--value) * 1%), var(--line) 0);
+}
+.stat-ring strong { color: var(--ink); font-size: 1.1rem; font-weight: 800; }
+.ring-card span {
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* Wide bar */
+.wide-bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  overflow: hidden;
+}
+.wide-bar:first-of-type { border-top: none; }
+.wide-bar span,
+.wide-bar strong { position: relative; z-index: 1; }
+.wide-bar span { color: var(--muted); font-size: .84rem; font-weight: 800; }
+.wide-bar strong { color: var(--ink); }
+.wide-bar i {
+  position: absolute;
+  left: 0; bottom: 6px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--accent-mid), var(--accent-2));
+}
+
+/* Chart rows */
+.chart-card { display: grid; gap: 10px; }
+.chart-row {
+  display: grid;
+  grid-template-columns: minmax(105px, 1fr) 34px 2fr;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: .86rem;
+  font-weight: 700;
+}
+.chart-row strong { color: var(--ink); text-align: right; }
+.chart-row i {
+  height: 9px;
+  border-radius: var(--r-pill);
+  background: var(--accent-2);
+}
+.chart-row.good i     { background: var(--success); }
+.chart-row.penalty i  { background: var(--warn); }
+.chart-row.distance i { background: var(--gold); }
+.chart-row.contact i  { background: var(--muted); }
+.chart-row.putt i     { background: var(--accent-mid); }
+
+/* ── 17. Gemini / Swing ───────────────────────────────────────── */
+.premium-swing-card {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1.5px solid rgba(168,120,32,.28);
+  border-radius: var(--r);
+  background: linear-gradient(180deg, var(--gold-soft), var(--surface) 64%);
+  box-shadow: var(--shadow-sm);
+}
+.premium-swing-card h3 { margin-bottom: 7px; font-size: 1.05rem; }
+.premium-swing-card p { color: var(--muted); font-size: .9rem; line-height: 1.52; }
+
+.video-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.video-upload-grid label {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1.5px solid rgba(168,120,32,.2);
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,.65);
+  color: var(--gold);
+  font-size: .78rem;
+  font-weight: 800;
+}
+.video-upload-grid small {
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.38;
+}
+.video-upload-grid input { max-width: 100%; color: var(--muted); }
+
+.gemini-key-field {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--gold);
+  font-size: .74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.gemini-key-field input {
+  min-height: 46px;
+  border: 1.5px solid rgba(168,120,32,.2);
+  border-radius: var(--r-sm);
+  padding: 0 13px;
+  background: rgba(255,255,255,.75);
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.swing-status { margin-top: 10px; font-size: .84rem !important; color: var(--muted); }
+.swing-result { display: grid; gap: 10px; margin-top: 10px; }
+
+/* ── 18. History ──────────────────────────────────────────────── */
+.history-heading { align-items: center; }
+.segmented-control {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 3px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.segmented-control button {
+  min-height: 34px;
+  border: none;
+  border-radius: var(--r-pill);
+  padding: 0 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 800;
+  transition: background .15s, color .15s;
+}
+.segmented-control button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* History cards */
+.history-card h3 { margin: 0 0 2px; font-size: .95rem; }
+.history-card strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.42rem;
+  font-weight: 800;
+  letter-spacing: -.04em;
+}
+
+/* Archive cards */
+.archive-card { border-radius: var(--r); }
 .archive-card button {
   display: inline-flex;
   margin-top: 10px;
@@ -1094,19 +1226,147 @@ h3 { font-size: 1rem;   font-weight: 700; }
   font-size: .88rem;
 }
 
-/* Glossary */
-.glossary-card h3 { margin: 0 0 5px; font-size: 1rem; font-weight: 700; }
-.glossary-card p  { color: var(--muted); font-size: .9rem; line-height: 1.52; margin: 0; }
-.glossary-card.highlight {
-  border-color: rgba(41,94,115,.55);
-  box-shadow: 0 0 0 3px rgba(41,94,115,.1), var(--shadow);
+/* ── 19. Settings ─────────────────────────────────────────────── */
+.settings-card {
+  padding: 18px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 14px;
 }
 
-/* Glossary inline links */
-.glossary-link {
+.challenge-picker {
+  display: grid;
+  gap: 7px;
+}
+.challenge-picker span {
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.challenge-picker select {
+  min-height: 50px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 0 13px;
+  background: var(--surface-tint);
+  color: var(--ink);
+  font-size: 1.02rem;
+  font-weight: 700;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Tee color variants */
+.tee-picker:has(select option[value="yellow"]:checked) select { background: #fffbe8; border-color: rgba(168,120,32,.28); }
+.tee-picker:has(select option[value="blue"]:checked)   select { background: var(--accent-2-light); border-color: rgba(41,94,115,.28); }
+.tee-picker:has(select option[value="red"]:checked)    select { background: var(--warn-soft); border-color: rgba(179,66,42,.28); }
+.tee-picker:has(select option[value="orange"]:checked) select { background: #fff2e0; border-color: rgba(200,100,30,.28); }
+
+.setting-help {
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.56;
+  margin-top: -6px;
+}
+
+/* Profile card */
+.profile-card {
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  overflow: hidden;
+}
+.profile-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 14px;
   border: none;
-  padding: 0;
-  background: none;
+  background: transparent;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.profile-toggle span { color: var(--muted); font-size: .82rem; }
+.profile-toggle strong { color: var(--accent); font-size: .88rem; }
+.profile-toggle:active { background: var(--soft); }
+.profile-fields {
+  padding: 14px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+}
+.profile-fields label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.profile-fields input {
+  min-height: 48px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 0 13px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.profile-fields input:focus {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(41,94,115,.1);
+}
+
+/* Settings notes */
+.settings-note {
+  padding: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+}
+.settings-note h3 { font-size: .88rem; font-weight: 800; color: var(--ink); margin-bottom: 5px; }
+.settings-note p { color: var(--muted); font-size: .86rem; line-height: 1.58; }
+
+/* Glossary */
+.glossary-details {
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-tint);
+  overflow: hidden;
+}
+.glossary-details summary {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  color: var(--accent);
+  font-weight: 800;
+  cursor: pointer;
+}
+.glossary-details .glossary-list { padding: 0 14px 14px; margin-top: 0; }
+.glossary-card h3 { margin: 0 0 5px; font-size: 1rem; font-weight: 700; }
+.glossary-card p  { color: var(--muted); font-size: .9rem; line-height: 1.54; margin: 0; }
+.glossary-card.highlight {
+  border-color: rgba(41,94,115,.5);
+  box-shadow: 0 0 0 3px rgba(41,94,115,.08), var(--shadow);
+}
+.glossary-link {
+  border: 1px solid rgba(41,94,115,.18);
+  border-radius: 999px;
+  padding: 0 5px;
+  background: var(--accent-2-light);
   color: var(--accent-2);
   font: inherit;
   font-weight: 700;
@@ -1115,114 +1375,141 @@ h3 { font-size: 1rem;   font-weight: 700; }
   text-decoration-thickness: 1px;
 }
 
-/* History card */
-.history-card h3 { margin: 0 0 2px; }
-.history-card strong {
-  display: block;
-  margin-top: 4px;
-  font-size: 1.35rem;
-  font-weight: 800;
-  letter-spacing: -.03em;
-}
-
 /* Coach card */
-.coach-card h3 { margin: 0 0 8px; }
+.coach-card h3 { margin: 0 0 8px; font-size: 1rem; }
 .coach-card ul {
   margin: 6px 0 0;
   padding-left: 18px;
   color: var(--muted);
   font-size: .9rem;
-  line-height: 1.55;
+  line-height: 1.58;
 }
+.compact-title { margin-top: 8px; margin-bottom: 2px; }
 
-/* ── 22. Modals / Bottom Sheets ───────────────────────────────── */
+/* ── 20. More Panel ───────────────────────────────────────────── */
+.more-panel {
+  margin-top: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+  overflow: hidden;
+}
+.more-panel summary {
+  padding: 12px 15px;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: .9rem;
+  cursor: pointer;
+}
+.more-panel article { padding: 0 15px 13px; }
+.more-panel article + article { border-top: 1px solid var(--line); padding-top: 12px; }
+.more-panel a {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: .84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.training-more { margin-top: 14px; }
+
+/* Caddie topic grid */
+.caddie-topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.caddie-topic-grid button {
+  min-height: 46px;
+  border: 1.5px solid rgba(41,94,115,.18);
+  border-radius: var(--r-sm);
+  background: var(--accent-2-light);
+  color: var(--accent-2);
+  font-weight: 800;
+  font-size: .88rem;
+  transition: background .12s, transform .1s;
+}
+.caddie-topic-grid button:active { transform: scale(.97); }
+.caddie-topic-result {
+  margin-top: 10px;
+  padding: 13px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+}
+.caddie-topic-result h3 { margin: 0 0 8px; color: var(--ink); font-size: 1rem; }
+
+/* ── 21. Modals / Bottom Sheets ───────────────────────────────── */
 .modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 100;
   display: grid;
   place-items: end center;
-  padding: 0;
-  background: rgba(12,24,16,.48);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
+  background: rgba(10,20,14,.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
-
 .rule-modal {
   width: min(100%, 560px);
-  max-height: 92svh;
+  max-height: min(92dvh, 760px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   padding: 0 var(--px) max(28px, env(safe-area-inset-bottom));
   background: var(--surface);
   box-shadow: var(--shadow-lg);
-  animation: sheetUp .3s cubic-bezier(.32,.72,0,1);
+  animation: sheetUp .28s cubic-bezier(.32,.72,0,1);
 }
-@keyframes sheetUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0);    }
-}
+.modal-actions { margin-top: 12px; }
 
-/* Drag handle */
 .rule-modal::before {
   content: '';
   display: block;
-  width: 38px;
+  width: 36px;
   height: 4px;
   border-radius: var(--r-pill);
   background: var(--line-2);
-  margin: 12px auto 20px;
+  margin: 13px auto 22px;
 }
-
-.rule-modal .section-title { margin-bottom: 12px; }
-
+.rule-modal .section-title { margin-bottom: 13px; }
 .rule-modal p {
   color: var(--muted);
   font-size: .9rem;
-  line-height: 1.56;
+  line-height: 1.58;
   margin-bottom: 8px;
 }
-
-.rule-options {
-  display: grid;
-  gap: 8px;
-  margin-top: 14px;
-}
+.rule-options { display: grid; gap: 8px; margin-top: 14px; }
 .rule-option {
-  min-height: 56px;
+  min-height: 58px;
   border: 1.5px solid var(--line);
   border-radius: var(--r-sm);
-  padding: 12px 14px;
+  padding: 12px 15px;
   background: var(--soft);
   color: var(--ink);
   font-size: .92rem;
   font-weight: 700;
   text-align: left;
-  line-height: 1.38;
-  transition: background .14s, transform .1s;
+  line-height: 1.4;
+  transition: background .12s, transform .1s;
 }
 .rule-option:active { transform: scale(.98); background: var(--line); }
 .rule-option.penalty {
   background: var(--warn-soft);
-  border-color: rgba(179,66,42,.28);
+  border-color: rgba(179,66,42,.25);
   color: var(--warn);
 }
-.rule-option.penalty:active { background: rgba(179,66,42,.18); }
-
+.rule-option.penalty:active { background: rgba(179,66,42,.16); }
 .rule-source {
   margin: 14px 0 0;
   font-size: .82rem;
   color: var(--muted-2);
-  line-height: 1.52;
+  line-height: 1.54;
 }
-.rule-source a {
-  color: var(--accent-2);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
+.rule-source a { color: var(--accent-2); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 
-/* Feedback */
+/* Feedback modal */
 .feedback-list { display: grid; gap: 10px; }
 .feedback-row {
   display: grid;
@@ -1237,10 +1524,10 @@ h3 { font-size: 1rem;   font-weight: 700; }
 .feedback-free textarea,
 .feedback-free select {
   width: 100%;
-  min-height: 44px;
+  min-height: 46px;
   border: 1.5px solid var(--line);
   border-radius: var(--r-sm);
-  padding: 10px 12px;
+  padding: 10px 13px;
   background: var(--surface-tint);
   color: var(--ink);
   font-size: .95rem;
@@ -1257,236 +1544,69 @@ h3 { font-size: 1rem;   font-weight: 700; }
   text-transform: uppercase;
   letter-spacing: .05em;
 }
-.feedback-free textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+.feedback-free textarea { min-height: 88px; resize: vertical; }
 
-/* Focus states */
-input:focus, select:focus, textarea:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-  border-color: var(--accent);
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
-/* ── 23. Responsive tweaks ────────────────────────────────────── */
-@media (max-width: 380px) {
-  .tab        { font-size: .57rem; padding: 10px 2px 5px; }
-  .shot-type  { font-size: .72rem; }
-  h1#appName  { font-size: 1.3rem; }
-  .scorebar strong { font-size: 1.7rem; }
-  .hole-chip  { font-size: .85rem; }
-}
-
-/* ── 24. Print ────────────────────────────────────────────────── */
-@media print {
-  body { background: #fff; }
-
-  .tabs,
-  .shot-entry,
-  .note-field,
-  .actions,
-  .icon-button,
-  .text-button,
-  .share-actions,
-  .hole-toggle,
-  #openTip,
-  #resetRound { display: none !important; }
-
-  .app-shell { width: 100%; padding: 16px; }
-
-  .panel { display: block; margin-top: 20px; page-break-inside: avoid; }
-
-  .modal-backdrop,
-  .rule-modal { display: none !important; }
-
-  /* Print: show share-grid as hidden, tip-button too */
-  .share-grid,
-  .tip-button { display: none !important; }
-}
-
-/* ================================================================
-   v15 ADDITIONS — New components & overrides
-   ================================================================ */
-
-/* ── Ghost variant of icon-button (about / info) ─────────────────── */
-.icon-button--ghost {
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: var(--muted);
-  font-size: .9rem;
-}
-.icon-button--ghost:active { background: var(--soft); color: var(--accent); }
-
-/* ── Tab icons ────────────────────────────────────────────────────── */
-.tab-icon {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
-  margin-bottom: 1px;
-}
-
-/* ── Hidden goal label (playerGoal stays in DOM, never shown) ─────── */
-.hidden-goal { display: none !important; }
-
-/* ── Profile fields: 2-column (HCP + Tee) ────────────────────────── */
-/* The hidden-goal label doesn't consume a grid cell */
-.profile-fields {
-  grid-template-columns: 1fr 1fr;
-}
-
-/* ── Tip button (secondary, compact) ─────────────────────────────── */
-.tip-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  border: none;
-  background: transparent;
-  color: var(--accent-2);
-  font-size: .86rem;
-  font-weight: 700;
-  padding: 6px 0;
-  transition: opacity .14s;
-}
-.tip-button:active { opacity: .55; }
-.tip-button svg { flex: 0 0 auto; }
-
-/* ── Share grid (replaces old .share-actions 3-col layout) ───────── */
-.share-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.share-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-height: 68px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r);
-  background: var(--surface);
-  color: var(--accent-2);
-  font-size: .78rem;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  box-shadow: var(--shadow-xs);
-  transition: background .14s, transform .1s;
-  padding: 10px 8px;
-}
-.share-btn:active {
-  background: var(--accent-2-light);
-  transform: scale(.96);
-}
-.share-btn svg { flex: 0 0 auto; opacity: .75; }
-
-/* ── PGA Score Labels ─────────────────────────────────────────────── */
-.score-label {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 6px;
-  padding: 2px 9px;
-  border-radius: var(--r-pill);
-  font-size: .72rem;
-  font-weight: 800;
-  letter-spacing: .02em;
-  text-transform: uppercase;
-  vertical-align: middle;
-  line-height: 1.7;
-}
-.score-eagle  { background: #e4eff5; color: #1a5c73; border: 1.5px solid rgba(41,94,115,.3); }
-.score-birdie { background: var(--accent-light); color: var(--accent-mid); border: 1.5px solid rgba(22,54,39,.25); }
-.score-par    { background: var(--soft); color: var(--ink-2); border: 1.5px solid var(--line); }
-.score-bogey  { background: var(--gold-soft); color: var(--gold); border: 1.5px solid rgba(168,120,32,.3); }
-.score-double { background: var(--warn-soft); color: var(--warn); border: 1.5px solid rgba(179,66,42,.28); }
-.score-triple { background: rgba(179,66,42,.12); color: #8a2018; border: 1.5px solid rgba(179,66,42,.4); }
-
-/* ── Confetti ─────────────────────────────────────────────────────── */
+/* ── 22. Confetti ─────────────────────────────────────────────── */
 .confetti-wrap {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 999;
+  z-index: 200;
   overflow: hidden;
 }
 .cp {
   position: absolute;
-  top: var(--y, -12px);
-  left: var(--x, 50vw);
+  top: var(--y);
+  left: var(--x);
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: var(--c, #163627);
-  animation: cpFly linear forwards;
-  will-change: transform, opacity;
+  background: var(--c);
+  animation: cp-fall linear forwards;
 }
-@keyframes cpFly {
-  0%   { transform: translateY(0)    rotate(0deg);         opacity: 1; }
-  70%  { opacity: 1; }
-  100% { transform: translateY(120vh) rotate(var(--rot, 400deg)); opacity: 0; }
+@keyframes cp-fall {
+  to { transform: translateY(110vh) rotate(var(--rot)); opacity: 0; }
 }
 
-/* ── Hole-score: allow inline score-label chip ────────────────────── */
-#holeScore {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-/* ── AI Card: elevated hero style ────────────────────────────────── */
-/* Slightly stronger border + background on the round panel caddie */
-#aiCaddie.ai-card {
-  border-color: rgba(41,94,115,.28);
-  background: linear-gradient(160deg, #f9fafb 0%, var(--surface) 100%);
-}
-
-/* ── Strategy card: slightly de-emphasised vs caddie ─────────────── */
-.strategy-card {
-  border-color: var(--line);
-  background: var(--surface-tint);
-}
-
-/* ── Training card: add visual priority badge ─────────────────────── */
-.training-card:first-child {
-  border-color: rgba(22,54,39,.28);
-  background: var(--accent-light);
-}
-.training-card:first-child .eyebrow { color: var(--accent-mid); }
-.training-card:first-child h3 { color: var(--accent); }
-
-/* ── Archive card: load button style upgrade ─────────────────────── */
-.archive-card button {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 10px;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--accent-2);
-  font-weight: 700;
-  font-size: .86rem;
-  box-shadow: var(--shadow-xs);
-  transition: background .14s;
-}
-.archive-card button:active { background: var(--accent-2-light); }
-
-/* ── Responsive tweaks v15 ───────────────────────────────────────── */
-@media (max-width: 380px) {
-  .share-grid { grid-template-columns: 1fr 1fr; }
-  .share-btn  { min-height: 60px; font-size: .72rem; }
-  .tab-icon   { width: 18px; height: 18px; }
-}
-
-/* ── Print: also hide new elements ───────────────────────────────── */
+/* ── 23. Print / PDF ──────────────────────────────────────────── */
 @media print {
-  .share-grid,
-  .tip-button,
-  #exportPdf { display: none !important; }
+  .tabs, .hole-strip, .share-actions, .actions,
+  .plan-choice, .shot-type-grid, .miss-options, .inline-actions,
+  #openTip, #resetRound, #newRound, #aboutApp,
+  .wide-button.danger { display: none !important; }
+
+  body { background: #fff; padding: 0; }
+  .app-shell { padding: 12px; width: 100%; }
+  .scorebar { margin-bottom: 12px; }
+  .ai-card, .last-action, .summary-card { box-shadow: none; border: 1px solid #ccc; }
+  .rule-modal, .modal-backdrop { display: none !important; }
+}
+
+/* ── 24. Tee color accent on hole nav ─────────────────────────── */
+body:has(#teeSelect option[value="yellow"]:checked) .hole-top {
+  border-left: 3px solid #d4a826;
+}
+body:has(#teeSelect option[value="blue"]:checked) .hole-top {
+  border-left: 3px solid var(--accent-2);
+}
+body:has(#teeSelect option[value="red"]:checked) .hole-top {
+  border-left: 3px solid var(--warn);
+}
+body:has(#teeSelect option[value="orange"]:checked) .hole-top {
+  border-left: 3px solid #d4781a;
+}
+
+/* ── 25. Utility ──────────────────────────────────────────────── */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
