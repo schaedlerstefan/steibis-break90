@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=23" />
+    <link rel="stylesheet" href="styles.css?v=28" />
   </head>
   <body>
     <div class="app-shell">
@@ -35,6 +35,7 @@
         </div>
         <div class="top-actions">
           <button class="language-toggle" id="languageToggle" type="button">🇩🇪 DE</button>
+          <button class="icon-button" id="welcomeInfo" type="button" aria-label="App-Info" title="App-Info">i</button>
         </div>
       </header>
 
@@ -109,10 +110,9 @@
             <div id="shotList"></div>
           </section>
 
-          <div class="strategy-card" id="holePlan"></div>
           <div class="ai-card" id="aiCaddie"></div>
 
-          <button class="wide-button" id="openTip" type="button">Trainingstipp anzeigen</button>
+          <button class="wide-button" id="openTip" type="button">Weitere Empfehlungen vom KI-Caddie</button>
 
           <input id="note" type="hidden" />
           <datalist id="noteSuggestions"></datalist>
@@ -135,29 +135,96 @@
         <section class="panel" id="trainingPanel">
           <div class="section-title">
             <div>
-              <p class="eyebrow">KI-automatisiert</p>
-              <h2>Training</h2>
+              <p class="eyebrow">KI-Caddie Auswertung</p>
+              <h2>Training Center</h2>
             </div>
           </div>
-          <div class="summary-grid" id="summaryGrid"></div>
-          <div class="ai-card" id="aiReview"></div>
-          <div class="training-list" id="trainingList"></div>
-          <div class="top-three" id="topThree"></div>
-          <div class="coach-report" id="coachReport"></div>
-          <div class="strategy" id="courseStrategy"></div>
-          <div class="insights" id="insights"></div>
-          <div class="section-title history-heading">
+          <div class="training-caddie-hero">
+            <span class="ai-orb" aria-hidden="true">✦</span>
             <div>
-              <p class="eyebrow">Gespeicherte Runden</p>
-              <h2>Historie</h2>
-            </div>
-            <div class="segmented-control" aria-label="Historie Ansicht">
-              <button class="active" type="button" data-history-view="month">Monat</button>
-              <button type="button" data-history-view="year">Jahr</button>
+              <strong>KI-Caddie</strong>
+              <p>Erkennt Muster aus Score, Schlagtyp, HCP und Break-Ziel und übersetzt sie in Training.</p>
             </div>
           </div>
-          <div class="history-stats" id="historyStats"></div>
-          <div class="archive-list" id="archiveList"></div>
+          <div class="training-subtabs" aria-label="Training Bereiche">
+            <button class="active" type="button" data-training-subtab="training">Training</button>
+            <button type="button" data-training-subtab="stats">Statistik</button>
+            <button type="button" data-training-subtab="history">Historie</button>
+          </div>
+
+          <section class="training-subpanel active" id="trainingSubpanel" data-training-panel="training">
+            <div class="training-section-title">
+              <p class="eyebrow">KI-Analyse → Trainingsplan</p>
+              <h3>Individueller KI-Fokus</h3>
+            </div>
+            <div class="training-list" id="trainingList"></div>
+            <div class="top-three" id="topThree"></div>
+            <section class="premium-swing-card">
+              <p class="eyebrow">Premium · Gemini Schwunganalyse</p>
+              <h3>Schwungvideos abgleichen</h3>
+              <p>Starte nach der Runde eine Kamera- oder Upload-Analyse. Nimm zwei kurze Clips auf: frontal und von hinten, jeweils auf Hüfthöhe. Gemini gleicht den Schwung mit deinen KI-Caddie-Mustern ab.</p>
+              <div class="video-upload-grid">
+                <label>
+                  <span>1 · Frontal aufnehmen/hochladen</span>
+                  <small>Handy auf Hüfthöhe, Ball und Füße sichtbar.</small>
+                  <input id="frontSwingVideo" type="file" accept="video/*" capture="environment" />
+                </label>
+                <label>
+                  <span>2 · Von hinten aufnehmen/hochladen</span>
+                  <small>Entlang der Ziellinie, Hände und Schlägerkopf sichtbar.</small>
+                  <input id="rearSwingVideo" type="file" accept="video/*" capture="environment" />
+                </label>
+              </div>
+              <label class="gemini-key-field">
+                <span>Gemini API-Key nur für lokalen Test</span>
+                <input id="geminiApiKey" type="password" autocomplete="off" placeholder="Optional: AIza..." />
+              </label>
+              <button class="wide-button primary" id="analyzeSwing" type="button">Schwung mit Gemini analysieren</button>
+              <p class="swing-status" id="swingStatus">Für Produktion nutzt die App einen sicheren Backend-Endpunkt. Der lokale API-Key ist nur zum Testen gedacht.</p>
+              <div class="swing-result" id="swingResult"></div>
+              <details class="more-panel">
+                <summary>Video-Empfehlungen</summary>
+                <ul class="caddie-bullets">
+                  <li>Smartphone stabil auf Hüfthöhe platzieren, nicht aus der Hand filmen.</li>
+                  <li>Frontal: Kamera auf Brustmitte, Ball und Füße vollständig sichtbar.</li>
+                  <li>Von hinten: Kamera entlang der Ziellinie, Hände, Ball, Schlägerkopf und Zielrichtung sichtbar.</li>
+                  <li>Je Video 1 bis 3 Schwünge, gute Beleuchtung, möglichst 60 fps.</li>
+                  <li>Gemini arbeitet besser, wenn Schlagtyp, Ziel, Ballflug und typischer Fehler im Prompt stehen.</li>
+                </ul>
+              </details>
+            </section>
+          </section>
+
+          <section class="training-subpanel" id="statsSubpanel" data-training-panel="stats">
+            <div class="training-section-title">
+              <p class="eyebrow">Rundenresultate</p>
+              <h3>Statistik</h3>
+            </div>
+            <div class="stat-visuals" id="statVisuals"></div>
+            <div class="summary-grid" id="summaryGrid"></div>
+            <div class="ai-card" id="aiReview"></div>
+            <details class="more-panel training-more">
+              <summary>Weitere Analyse</summary>
+              <div class="coach-report" id="coachReport"></div>
+              <div class="strategy" id="courseStrategy"></div>
+              <div class="insights" id="insights"></div>
+            </details>
+          </section>
+
+          <section class="training-subpanel" id="historySubpanel" data-training-panel="history">
+            <div class="section-title history-heading">
+              <div>
+                <p class="eyebrow">Gespeicherte Runden</p>
+                <h2>Historie</h2>
+              </div>
+              <div class="segmented-control" aria-label="Historie Ansicht">
+                <button class="active" type="button" data-history-view="month">Monat</button>
+                <button type="button" data-history-view="year">Jahr</button>
+              </div>
+            </div>
+            <div class="history-stats" id="historyStats"></div>
+            <div class="archive-list" id="archiveList"></div>
+          </section>
         </section>
 
         <!-- ═══ EINSTELLUNGEN ═══════════════════════════════════════ -->
@@ -276,10 +343,10 @@
       </section>
     </div>
 
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=28"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=23");
+        navigator.serviceWorker.register("./sw.js?v=28");
       }
     </script>
   </body>

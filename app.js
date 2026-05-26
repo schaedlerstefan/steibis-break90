@@ -1,6 +1,7 @@
 const ACTIVE_KEY = "steibis-break90-active";
 const ARCHIVE_KEY = "steibis-break90-archive";
 const PROFILE_KEY = "steibis-caddie-profile";
+const ONBOARDING_KEY = "coursepilot-onboarding-seen";
 
 /* Tee data checked May 25, 2026.
    Hole lengths: Golfify scorecard. Totals/CR/Slope cross-checked against Albrecht Golf Guide and German Golf Guide. */
@@ -164,7 +165,7 @@ const UI_TEXT = {
     target: "Ziel",
     challenge: "Challenge",
     newRound: "Neue Runde starten",
-    nextTip: "Tipp zum nächsten Schlag",
+    nextTip: "Weitere Empfehlungen vom KI-Caddie",
     saveRound: "Runde speichern",
     shareRound: "↗ Teilen",
     resetRound: "Alle Eingaben dieser Runde zurücksetzen",
@@ -179,7 +180,7 @@ const UI_TEXT = {
     target: "Target",
     challenge: "Challenge",
     newRound: "Start new round",
-    nextTip: "Next-shot tip",
+    nextTip: "More AI caddie recommendations",
     saveRound: "Save round",
     shareRound: "↗ Share",
     resetRound: "Reset this round",
@@ -327,6 +328,44 @@ const TRAINING_SOURCES = {
   },
 };
 
+const TRAINING_DETAILS = {
+  putting: {
+    tools: "Putter, 6 Tees, 3 Bälle",
+    time: "18 Minuten",
+    place: "Putting-Grün",
+    drill: "3 Zonen bei 9, 12 und 15 Metern. Ziel ist nicht Lochen, sondern jeder erste Putt bleibt in einer Putterlänge.",
+    quality: "Butch Harmon steht für einfache, scoreorientierte Routinen. Der Tipp ist deshalb bewusst messbar und nicht technisch überladen.",
+  },
+  strike: {
+    tools: "Eisen 7, Alignment-Stick oder Handtuch, 20 Bälle",
+    time: "22 Minuten",
+    place: "Range oder Kurzspielbereich",
+    drill: "Lege ein flaches Ziel knapp hinter den Ball. Triff 10 Bälle ohne Bodenkontakt vor dem Ball, danach 10 normale Bälle mit gleicher Routine.",
+    quality: "Adam Young arbeitet stark über Kontakt, Low Point und Ballflug. Das passt, wenn fett, getoppt oder Distanzfehler dominieren.",
+  },
+  direction: {
+    tools: "2 Alignment-Sticks, 15 Bälle",
+    time: "20 Minuten",
+    place: "Range",
+    drill: "Markiere eine breite Zielzone. Jeder Ball zählt als gut, wenn er spielbar bleibt. Fahnen oder schmale Ziele werden ignoriert.",
+    quality: "Scott Fawcett/DECADE steht für Streuung, Erwartungswerte und Course Management. Der Tipp schützt vor unnötigen Strafschlägen.",
+  },
+  penalties: {
+    tools: "Scorekarte, Stift, 10 Bälle",
+    time: "15 Minuten plus nächste Runde",
+    place: "Vor der Runde und Tee-Box",
+    drill: "Lege vor jedem Risiko-Loch eine No-Go-Seite und einen defensiven Schläger fest. Treffer zählt, wenn der Ball sicher spielbar bleibt.",
+    quality: "DECADE-Prinzipien reduzieren große Zahlen. Für Break-Ziele ist der vermiedene Strafschlag oft wertvoller als ein perfekter Schlag.",
+  },
+  break90: {
+    tools: "Scorekarte, Putter, Lieblings-Wedge",
+    time: "30 Minuten",
+    place: "Kurzspielbereich",
+    drill: "10 Minuten Lag-Putts, 10 Minuten einfache Chips, 10 Minuten Routine: Ziel, Schlagbild, Commitment.",
+    quality: "Der Ansatz bündelt typische Break-90-Hebel: Ball im Spiel, weniger 3-Putts, weniger Folgefehler.",
+  },
+};
+
 const COURSE_EXPERTS = [
   {
     name: "Butch Harmon",
@@ -383,6 +422,7 @@ const state = {
   activeTee: "yellow",
   showMissOptions: false,
   showPuttMissOptions: false,
+  trainingSubtab: "training",
   historyView: "month",
   archive: loadArchive(),
   round: loadActiveRound(),
@@ -438,6 +478,9 @@ const els = {
   shareRound: document.querySelector("#shareRound"),
   exportPdf: document.querySelector("#exportPdf"),
   shareOutput: document.querySelector("#shareOutput"),
+  trainingSubtabs: document.querySelectorAll("[data-training-subtab]"),
+  trainingSubpanels: document.querySelectorAll("[data-training-panel]"),
+  statVisuals: document.querySelector("#statVisuals"),
   summaryGrid: document.querySelector("#summaryGrid"),
   topThree: document.querySelector("#topThree"),
   aiCaddie: document.querySelector("#aiCaddie"),
@@ -462,7 +505,14 @@ const els = {
   feedbackText: document.querySelector("#feedbackText"),
   roundEmotion: document.querySelector("#roundEmotion"),
   saveFeedback: document.querySelector("#saveFeedback"),
+  frontSwingVideo: document.querySelector("#frontSwingVideo"),
+  rearSwingVideo: document.querySelector("#rearSwingVideo"),
+  geminiApiKey: document.querySelector("#geminiApiKey"),
+  analyzeSwing: document.querySelector("#analyzeSwing"),
+  swingStatus: document.querySelector("#swingStatus"),
+  swingResult: document.querySelector("#swingResult"),
   languageToggle: document.querySelector("#languageToggle"),
+  welcomeInfo: document.querySelector("#welcomeInfo"),
   shareActions: document.querySelector("#shareActions"),
   appName: document.querySelector("#appName"),
   aboutApp: document.querySelector("#aboutApp"),
@@ -802,7 +852,10 @@ function setHole(index, options = {}) {
 
 function finishHole() {
   haptic(12);
-  if (state.currentHole < 17) setHole(state.currentHole + 1, { showCaddie: true });
+  if (state.currentHole < 17) {
+    setHole(state.currentHole + 1, { showCaddie: false });
+    if (!maybeOpenMentalMomentum()) openInfoModal("caddie");
+  }
   else {
     saveCurrentRound();
     state.activeTab = "training";
@@ -889,6 +942,17 @@ function renderTabs() {
   Object.entries(els.panels).forEach(([name, panel]) => panel.classList.toggle("active", name === state.activeTab));
 }
 
+function renderTrainingTabs() {
+  els.trainingSubtabs.forEach((button) => {
+    const active = button.dataset.trainingSubtab === state.trainingSubtab;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", active);
+  });
+  els.trainingSubpanels.forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.trainingPanel === state.trainingSubtab);
+  });
+}
+
 function renderScore() {
   const score = roundScore();
   els.scoreTotal.textContent = score || "0";
@@ -948,7 +1012,6 @@ function renderTrack() {
       })()
     : `<div class="empty-state compact">${state.language === "en" ? "No entry on this hole yet." : "Noch keine Eingabe auf diesem Loch."}</div>`;
 
-  renderHolePlan(item);
   renderAiCaddie(item);
 }
 
@@ -1020,38 +1083,47 @@ function paceWarning(item) {
   return "";
 }
 
+function lastShot(item = hole()) {
+  return item.shots[item.shots.length - 1];
+}
+
+function expertForContext(item = hole()) {
+  const shot = lastShot(item);
+  const result = shot?.result || "";
+  if (["Fett", "Getoppt", "Zu kurz", "Zu lang"].includes(result)) return COURSE_EXPERTS.find((expert) => expert.name === "Chris Como");
+  if (shot?.type === "Putt" || result.startsWith("Putt")) return COURSE_EXPERTS.find((expert) => expert.name === "Bob Rotella");
+  if (shot?.type === "Annäherung" || item.par === 3) return COURSE_EXPERTS.find((expert) => expert.name === "Dan Grieve");
+  return COURSE_EXPERTS.find((expert) => expert.name === "Butch Harmon");
+}
+
+function caddieAttention(item) {
+  const shots = holeScore(item);
+  const risk = holeRisk(item);
+  if (!shots) return `Loch ${item.hole}: Start mit klarer Zielseite. Sicherer Ball im Spiel ist wichtiger als perfekte Länge.`;
+  if (item.shots.some((shot) => shot.penalty) || item.scratched) return "Erster Fokus: großen Score stoppen. Nächster Schlag nur in die größte sichere Zone.";
+  if (risk > 55) return "Risiko erhöht. Plane den nächsten Schlag so, dass ein Fehler noch spielbar bleibt.";
+  return "Einfach halten: Ziel sehen, Schläger wählen, Schlag committen, Ergebnis erfassen.";
+}
+
 function renderAiCaddie(item) {
   const chance = break90Chance();
   const risk = holeRisk(item);
-  const dataPoints = state.archive.reduce((sum, round) => sum + playedHoles(round).length, 0) + playedHoles().length;
   const recommendation = nextBestDecision(item);
-  const why = item.si <= 6
-    ? `Loch ${item.hole} ist Stroke Index ${item.si}. Dein Ziel ist hier kontrolliertes Bogey statt Risiko.`
-    : `Loch ${item.hole} erlaubt mehr Spielraum. Der Plan bleibt: klare Zielzone und nächster einfacher Schlag.`;
-  const alternative = risk > 55 ? "Alternative: defensiver Schläger, Layup oder Mitte Grün." : "Alternative: normaler Schlag auf die breite Zielseite.";
   const warning = paceWarning(item);
-  const expert = item.shots.some((shot) => shot.type === "Putt")
-    ? COURSE_EXPERTS[3]
-    : item.shots.some((shot) => shot.type === "Annäherung")
-      ? COURSE_EXPERTS[1]
-      : COURSE_EXPERTS[0];
+  const expert = expertForContext(item);
   els.aiCaddie.innerHTML = `
-    <h3>KI-Caddie · Trainerwissen</h3>
-    <p class="caddie-lead">Zusammengefasst aus deinen Daten und Prinzipien von ${expert.name}, Dan Grieve, Chris Como und Bob Rotella.</p>
+    <h3>KI-Caddie Loch ${item.hole}</h3>
+    <p class="caddie-lead">${linkGlossary(caddieAttention(item))}</p>
     ${warning ? `<div class="caddie-warning">${linkGlossary(warning)}</div>` : ""}
-    <div class="metric-row">
+    <div class="metric-row compact">
       <div class="metric-pill"><span>Break-Chance</span><strong>${chance}%</strong><div class="ai-meter"><span style="width: ${chance}%"></span></div></div>
       <div class="metric-pill"><span>Lochrisiko</span><strong>${risk}%</strong><div class="ai-meter"><span style="width: ${risk}%"></span></div></div>
     </div>
-    <div class="ai-breakdown">
-      <div class="ai-line"><strong>Empfehlung</strong><p>${linkGlossary(recommendation)}</p></div>
-      <div class="ai-line"><strong>Warum</strong><p>${linkGlossary(why)}</p></div>
-      <div class="ai-line"><strong>Risiko</strong><p>Konservativ ab ${risk > 55 ? "jetzt" : "Fehlerfolge"} denken.</p></div>
-      <div class="ai-line"><strong>Datenbasis</strong><p>${hcpBand()} · ${dataPoints} Lochdaten · ${state.archive.length} gespeicherte Runden</p></div>
-      <div class="ai-line"><strong>Alternative</strong><p>${linkGlossary(alternative)}</p></div>
-      <div class="ai-line"><strong>${expert.name}</strong><p>${linkGlossary(expert.advice)}</p></div>
+    <div class="caddie-compact">
+      <div><span>Jetzt</span><p>${linkGlossary(recommendation)}</p></div>
+      <div><span>Trainerimpuls · ${expert.name}</span><p>${linkGlossary(expert.advice)}</p></div>
     </div>
-    <p class="premium-note">KI-Caddie Pro: verfügbar nach 3 gespeicherten Runden mit Mehr-Runden-Trends.</p>
+    <p class="premium-note">Detailmodus, Vorlesen und Mehr-Runden-Trends: KI-Caddie Pro ab 3 gespeicherten Runden.</p>
   `;
 }
 
@@ -1064,6 +1136,7 @@ function flashAiCaddie() {
 }
 
 function renderHolePlan(item) {
+  if (!els.holePlan) return;
   const hcp = Number(state.profile.handicap);
   const breakTarget = state.round.breakTarget || 90;
   const meters = (TEE_DATA[state.activeTee] || TEE_DATA.yellow).meters[state.currentHole];
@@ -1153,6 +1226,7 @@ function renderAnalysis() {
   ]
     .map(([label, value, width, sub]) => `<article class="summary-card stat-card"><span>${label}</span><strong>${value}</strong><small>${sub}</small><div class="stat-bar"><i style="width:${width}%"></i></div></article>`)
     .join("");
+  renderStatVisuals(counts, { played, score, threePlus, trouble, exactRate, penaltyRate, puttLoad });
 
   renderTopThree(counts, threePlus);
   renderAiReview(counts, threePlus);
@@ -1177,6 +1251,45 @@ function renderAnalysis() {
   els.insights.innerHTML = insights.length
     ? insights.map(([title, text]) => `<article class="insight-card"><h3>${title}</h3><p>${text}</p></article>`).join("")
     : `<div class="empty-state">Noch keine Muster. Nach ein paar Löchern entsteht hier deine persönliche Steibis-Analyse.</div>`;
+}
+
+function renderStatVisuals(counts, metrics) {
+  if (!els.statVisuals) return;
+  const target = state.round.breakTarget || 90;
+  const played = Math.max(1, metrics.played);
+  const projected = metrics.played ? Math.round((metrics.score / played) * 18) : 0;
+  const scoreDelta = metrics.played ? projected - (target - 1) : 0;
+  const data = [
+    ["Plan getroffen", metrics.exactRate, "green"],
+    ["Break-Chance", break90Chance(), "blue"],
+    ["Lochrisiko", holeRisk(hole()), "red"],
+  ];
+  els.statVisuals.innerHTML = `
+    <article class="stat-hero-card">
+      <p class="eyebrow">KI-Caddie Projektion</p>
+      <h3>${metrics.played ? `${projected} über 18 Loch` : "Noch keine Projektion"}</h3>
+      <p>${metrics.played ? (scoreDelta <= 0 ? `${Math.abs(scoreDelta)} Schlag/Schläge vor Break ${target}.` : `${scoreDelta} Schlag/Schläge hinter Break ${target}.`) : "Starte die Runde, dann entsteht hier die erste Hochrechnung."}</p>
+    </article>
+    <div class="ring-grid">
+      ${data.map(([label, value, tone]) => `
+        <article class="ring-card ${tone}" style="--value:${value}">
+          <div class="stat-ring"><strong>${value}%</strong></div>
+          <span>${label}</span>
+        </article>
+      `).join("")}
+    </div>
+    <article class="stat-card-wide">
+      <p class="eyebrow">Fehlerprofil</p>
+      ${[
+        ["Richtung", counts.Rechts + counts.Links],
+        ["Kontakt", counts.Fett + counts.Getoppt],
+        ["Länge", counts["Zu kurz"] + counts["Zu lang"]],
+        ["Penalty", counts.Strafschläge],
+        ["Gestrichen", counts.Gestrichen],
+        ["3+ Putts", metrics.threePlus],
+      ].map(([label, value]) => `<div class="wide-bar"><span>${label}</span><strong>${value}</strong><i style="width:${Math.max(3, Math.min(100, value * 18))}%"></i></div>`).join("")}
+    </article>
+  `;
 }
 
 function renderAiReview(counts, threePlus) {
@@ -1266,22 +1379,14 @@ function renderTraining() {
 
   els.trainingList.innerHTML = `
     <article class="training-card ai-training-card">
-      <p class="eyebrow">Individueller KI-Fokus</p>
-      <h3>${played ? "Dein nächster Trainingshebel" : "Noch keine Rundendaten"}</h3>
+      <p class="eyebrow">KI-Caddie Analyse</p>
+      <h3>${played ? primary.title : "Noch keine Rundendaten"}</h3>
       <p>${linkGlossary(nextAction)}</p>
       <p>${played ? `Datenbasis: ${played} gespielte Löcher · ${counts.Strafschläge} Strafschläge · ${threePlus} Loch/Löcher mit 3+ Putts · HCP-Profil ${hcpText}.` : "Nach der Runde entsteht hier automatisch ein Trainerplan aus Score, HCP, Schlagtyp und Fehlerprofil."}</p>
-    </article>
-    <article class="training-card chart-card">
-      <p class="eyebrow">KI-Statistik</p>
-      <h3>Fehlerprofil</h3>
-      ${[
-        ["Plan getroffen", counts["Exakt umgesetzt"], "good"],
-        ["Richtung", counts.Rechts + counts.Links, "direction"],
-        ["Kontakt", counts.Fett + counts.Getoppt, "contact"],
-        ["Länge", counts["Zu kurz"] + counts["Zu lang"], "distance"],
-        ["Penalty/Gestrichen", counts.Strafschläge + counts.Gestrichen, "penalty"],
-        ["Putts", counts.Putts, "putt"],
-      ].map(([label, value, tone]) => `<div class="chart-row ${tone}"><span>${label}</span><strong>${value}</strong><i style="width:${Math.max(4, Math.round((value / totalSignals) * 100))}%"></i></div>`).join("")}
+      <div class="caddie-mini-proof">
+        <strong>Warum dieser Fokus?</strong>
+        <span>${played ? "Die App priorisiert den größten Score-Hebel, nicht den prominentesten Fehler." : "Ohne Rundendaten startet CoursePilot mit Break-Ziel, HCP und Platzstrategie."}</span>
+      </div>
     </article>
   `;
 
@@ -1289,11 +1394,22 @@ function renderTraining() {
     .slice(0, 3)
     .map(({ key }, index) => {
       const source = TRAINING_SOURCES[key];
+      const detail = TRAINING_DETAILS[key];
       return `
-        <article class="training-card">
-          <p class="eyebrow">${index === 0 ? "Priorität" : source.coach}</p>
+        <article class="training-card training-drill-card">
+          <p class="eyebrow">${index === 0 ? "Priorität 1" : `Priorität ${index + 1}`}</p>
           <h3>${source.title}</h3>
           <p>${source.text}</p>
+          <div class="drill-meta">
+            <span>Ort: ${detail.place}</span>
+            <span>Zeit: ${detail.time}</span>
+            <span>Utensilien: ${detail.tools}</span>
+          </div>
+          <details class="drill-details">
+            <summary>Details zum Tipp</summary>
+            <p><strong>Übung:</strong> ${detail.drill}</p>
+            <p><strong>Qualitätssignal:</strong> ${detail.quality}</p>
+          </details>
           <a href="${source.url}" target="_blank" rel="noreferrer">Quelle öffnen</a>
         </article>
       `;
@@ -1470,6 +1586,118 @@ function caddieMore() {
   `;
 }
 
+function caddieTopics() {
+  return [
+    ["club", "Schlägerwahl"],
+    ["strategy", "Lochstrategie"],
+    ["risk", "Risiko vermeiden"],
+    ["approach", "Annäherung"],
+    ["putt", "Putt & Grün"],
+    ["mental", "Mentaler Tipp"],
+    ["why", "Warum?"],
+  ];
+}
+
+function caddieTopicContent(topic, item = hole()) {
+  const expert = expertForContext(item);
+  const risk = holeRisk(item);
+  const shots = holeScore(item);
+  const base = {
+    club: [
+      shots === 0 ? "Nimm den längsten Schläger, der Aus und Strafzone realistisch aus dem Spiel hält." : "Wähle jetzt den Schläger mit der größten Trefferfläche, nicht den mit der maximalen Distanz.",
+      risk > 55 ? "Bei erhöhtem Lochrisiko ist ein Layup oder ein voller kontrollierter Schläger besser als ein Grenzschlag." : "Wenn die Zielzone breit ist, darfst du normal spielen. Tempo bei 80 bis 90 Prozent halten.",
+    ],
+    strategy: [
+      state.language === "en" ? HOLE_PLANS_EN[item.hole] : HOLE_PLANS[item.hole],
+      item.si <= 6 ? `Stroke Index ${item.si}: Bogey ist ein gutes Ergebnis. Doppelbogey aktiv vermeiden.` : "Nutze die breite Zielseite. Par ist Bonus, Bogey bleibt im Plan.",
+    ],
+    risk: [
+      paceWarning(item) || "Der zweite Fehler ist teurer als der erste. Nach einem schlechten Schlag sofort defensiver werden.",
+      "Vermeide kurzseitige Fehlschläge, rote/weiße Zonen und Schläge aus schlechten Lagen mit zu hoher Erwartung.",
+    ],
+    approach: [
+      "Bei Annäherungen zählt die sichere Grünhälfte. Fahne nur angreifen, wenn Fehlschlag kurz und lang spielbar bleibt.",
+      "Dan-Grieve-Prinzip: vorher entscheiden, ob der Ball rollen oder fliegen soll, dann den einfachsten Schlag wählen.",
+    ],
+    putt: [
+      "Beim ersten Putt zählt Speed vor Linie. Ziel: zweiter Putt stressfrei.",
+      "Bei langen Putts in eine Zone putten, nicht auf Lochkante. 3-Putt-Vermeidung ist direkter Scoregewinn.",
+    ],
+    mental: [
+      "Ein Schlag, ein Auftrag. Nach dem Ergebnis sofort zum nächsten einfachen Schlag wechseln.",
+      "Bob-Rotella-Prinzip: Commitment zum aktuellen Schlag ist wichtiger als Ärger über den letzten.",
+    ],
+    why: [
+      `Datenbasis: ${hcpBand()} · Break ${state.round.breakTarget || 90} · ${playedHoles().length} aktuelle Lochdaten · ${state.archive.length} gespeicherte Runden.`,
+      `${expert.name} passt hier, weil der aktuelle Kontext zu ${expert.role} gehört.`,
+    ],
+  };
+  return base[topic] || caddieBullets(item);
+}
+
+function caddieTopicMenu(item = hole()) {
+  return `
+    <p>Wähle, was du für Loch ${item.hole} jetzt brauchst.</p>
+    <div class="caddie-topic-grid">
+      ${caddieTopics().map(([key, label]) => `<button type="button" data-caddie-topic="${key}">${label}</button>`).join("")}
+    </div>
+    <div class="caddie-topic-result" id="caddieTopicResult">${bulletList(caddieBullets(item).slice(0, 4))}</div>
+    ${caddieMore()}
+  `;
+}
+
+function renderCaddieTopic(topic) {
+  const target = document.querySelector("#caddieTopicResult");
+  if (!target) return;
+  const label = caddieTopics().find(([key]) => key === topic)?.[1] || "Empfehlung";
+  target.innerHTML = `<h3>${label}</h3>${bulletList(caddieTopicContent(topic))}`;
+}
+
+function mentalPopupContent(kind) {
+  const content = {
+    mentalStart: [
+      "Rundenstart",
+      "Mentaler Start",
+      ["Für die ersten drei Löcher zählt nur Rhythmus.", "Vor jedem Schlag: Zielseite wählen, Schlag sehen, committen.", "Bogey ist kein Fehler, wenn der Ball im Spiel bleibt."],
+    ],
+    mentalGood: [
+      "Momentum",
+      "Gute Phase stabilisieren",
+      ["Nichts erzwingen. Der Plan funktioniert gerade.", "Gleiches Tempo, gleiche Routine, gleiche Zielbreite.", "Par ist Bonus. Kein Extra-Risiko wegen eines guten Laufs."],
+    ],
+    mentalBad: [
+      "Reset",
+      "Schaden begrenzen",
+      ["Score loslassen, nächsten einfachen Schlag wählen.", "Keine Fahnenjagd aus schlechter Lage.", "Ziel: Doppel-Fehler stoppen und wieder in den Bogey-Plan kommen."],
+    ],
+  }[kind];
+  return content;
+}
+
+function openMentalModal(kind) {
+  const data = mentalPopupContent(kind);
+  if (!data) return false;
+  els.infoEyebrow.textContent = data[0];
+  els.infoTitle.textContent = data[1];
+  els.infoBody.innerHTML = bulletList(data[2]);
+  els.infoModal.dataset.kind = kind;
+  els.infoModal.hidden = false;
+  return true;
+}
+
+function maybeOpenMentalMomentum() {
+  if (!localStorage.getItem(ONBOARDING_KEY)) return false;
+  const holes = playedHoles();
+  if (holes.length < 2) return false;
+  const lastTwo = holes.slice(-2);
+  const bad = lastTwo.every((item) => item.scratched || holeScore(item) - item.par >= 2);
+  const good = lastTwo.every((item) => !item.scratched && holeScore(item) <= item.par);
+  const key = bad ? `mental-bad-${state.round.id}-${holes.length}` : good ? `mental-good-${state.round.id}-${holes.length}` : "";
+  if (!key || sessionStorage.getItem(key)) return false;
+  sessionStorage.setItem(key, "1");
+  return openMentalModal(bad ? "mentalBad" : "mentalGood");
+}
+
 function openShotTypeModal() {
   const de = state.language === "de";
   els.infoEyebrow.textContent = de ? "Nächster Schlag" : "Next shot";
@@ -1500,10 +1728,15 @@ function openInfoModal(kind) {
       title: "CoursePilot",
       body: "<p>CoursePilot hilft Amateur-Golfern, auf bekannten Plätzen smarter zu spielen: weniger Strafschläge, weniger 3-Putts, klarere Entscheidungen und ein datenbasierter Trainingsfokus.</p><p>Die App ist für Spieler gedacht, die Break-Ziele wie Break 90, 95 oder 100 verfolgen und aus jeder Runde lernen wollen.</p><p>Konzept, Umsetzung und Copyright: Stefan mit KI-Entwicklungspartner Codex, 2026. Regelhinweise ersetzen keine Spielleitung oder offiziellen Rules of Golf.</p>",
     },
+    welcome: {
+      eyebrow: "Willkommen",
+      title: "Willkommen bei CoursePilot",
+      body: `<p>CoursePilot hilft dir, deine Runde bewusster zu spielen und nach der Runde gezielt besser zu werden.</p><p>Du erfasst nicht nur den Score, sondern auch, ob dein geplanter Schlag funktioniert hat. Daraus erkennt die App Muster: zu viele Putts, verlorene Schläge vom Tee, Probleme bei Annäherungen, Strafschläge oder riskante Entscheidungen.</p><p>Der KI-Caddie gibt dir Empfehlungen auf Basis deiner Einstellungen, deines Handicap Index, des gewählten Abschlags und deines Break-Ziels.</p>${bulletList(["welcher Schlag jetzt sinnvoll ist", "wann Risiko zu hoch wird", "wie du dein Break-Ziel im Blick behältst", "welche Trainingsbereiche nach der Runde Priorität haben"])}<p>Deine Daten bleiben lokal auf diesem Gerät gespeichert. Wichtige Runden kannst du als Link oder PDF sichern.</p><button class="wide-button primary" type="button" data-open-settings>Einstellungen öffnen</button>`,
+    },
     tip: {
-      eyebrow: state.language === "en" ? "Next-shot tip" : "Tipp zum nächsten Schlag",
-      title: state.language === "en" ? "Your AI caddie recommends" : "Dein KI-Caddie empfiehlt",
-      body: bulletList(caddieBullets(item)) + caddieMore(),
+      eyebrow: state.language === "en" ? "AI caddie" : "KI-Caddie",
+      title: state.language === "en" ? "More recommendations" : "Weitere Empfehlungen vom KI-Caddie",
+      body: caddieTopicMenu(item),
     },
     caddie: {
       eyebrow: state.language === "en" ? "Next-shot tip" : "Tipp zum nächsten Schlag",
@@ -1511,14 +1744,21 @@ function openInfoModal(kind) {
       body: bulletList(caddieBullets(item)) + caddieMore(),
     },
   }[kind];
+  if (!content) {
+    openMentalModal(kind);
+    return;
+  }
   els.infoEyebrow.textContent = content.eyebrow;
   els.infoTitle.textContent = content.title;
   els.infoBody.innerHTML = content.body;
+  els.infoModal.dataset.kind = kind;
   els.infoModal.hidden = false;
 }
 
 function closeInfoModal() {
+  if (els.infoModal.dataset.kind === "welcome") localStorage.setItem(ONBOARDING_KEY, "1");
   els.infoModal.hidden = true;
+  delete els.infoModal.dataset.kind;
 }
 
 function toggleLanguage() {
@@ -1545,6 +1785,155 @@ function shareTo(channel) {
     els.shareOutput.textContent = `Link: ${link}`;
     els.shareOutput.classList.add("active");
   });
+}
+
+function swingContext() {
+  const counts = resultCounts();
+  const played = playedHoles().length;
+  return {
+    handicap: state.profile.handicap || "nicht gesetzt",
+    breakTarget: state.round.breakTarget || 90,
+    tee: TEE_DATA[state.activeTee]?.label || state.activeTee,
+    playedHoles: played,
+    score: roundScore(),
+    toPar: toPar(),
+    shotTypes: counts.byType,
+    patterns: {
+      rechts: counts.Rechts,
+      links: counts.Links,
+      fett: counts.Fett,
+      getoppt: counts.Getoppt,
+      zuKurz: counts["Zu kurz"],
+      zuLang: counts["Zu lang"],
+      strafschlaege: counts.Strafschläge,
+      gestrichen: counts.Gestrichen,
+      putts: counts.Putts,
+    },
+  };
+}
+
+function swingPrompt(context) {
+  return [
+    "Analysiere diese zwei Golf-Schwungvideos für einen Amateurspieler.",
+    "Video 1 ist frontal, Video 2 ist von hinten entlang der Ziellinie. Beide sollen auf Hüfthöhe gefilmt sein.",
+    "Arbeite wie ein Golfcoach. Gib keine medizinische Diagnose und keine übertriebene Sicherheit vor.",
+    "Vergleiche deine Beobachtungen mit den Rundendaten der App.",
+    "",
+    `Rundendaten: ${JSON.stringify(context)}`,
+    "",
+    "Antwortformat auf Deutsch:",
+    "1. Kurzfazit in maximal 3 Sätzen.",
+    "2. Beobachtungen frontal.",
+    "3. Beobachtungen von hinten.",
+    "4. Zusammenhang zu den CoursePilot-Mustern.",
+    "5. Die 3 wichtigsten Trainingsaufgaben.",
+    "6. Ein einfacher Drill für die nächste Range-Session.",
+    "7. Was im nächsten Video besser gefilmt werden soll.",
+  ].join("\n");
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderSwingAnalysis(text) {
+  const escaped = escapeHtml(text);
+  els.swingResult.innerHTML = `<article class="training-card"><p>${escaped.replace(/\n/g, "</p><p>")}</p></article>`;
+}
+
+function updateSwingCaptureStatus() {
+  const front = els.frontSwingVideo.files?.[0];
+  const rear = els.rearSwingVideo.files?.[0];
+  if (front && rear) {
+    const totalMb = ((front.size + rear.size) / 1024 / 1024).toFixed(1);
+    els.swingStatus.textContent = `Bereit für Gemini: frontal und von hinten ausgewählt (${totalMb} MB gesamt).`;
+    return;
+  }
+  if (front || rear) {
+    els.swingStatus.textContent = front
+      ? "Frontal-Video ist bereit. Bitte noch das Video von hinten aufnehmen oder hochladen."
+      : "Video von hinten ist bereit. Bitte noch das Frontal-Video aufnehmen oder hochladen.";
+    return;
+  }
+  els.swingStatus.textContent = "Nutze auf dem Smartphone direkt die Kamera oder wähle vorhandene Videos aus. Für Produktion nutzt die App einen sicheren Backend-Endpunkt.";
+}
+
+async function analyzeSwingWithGemini() {
+  const front = els.frontSwingVideo.files?.[0];
+  const rear = els.rearSwingVideo.files?.[0];
+  if (!front || !rear) {
+    els.swingStatus.textContent = "Bitte lade ein frontales Video und ein Video von hinten hoch.";
+    return;
+  }
+  const maxBytes = 18 * 1024 * 1024;
+  if (front.size > maxBytes || rear.size > maxBytes) {
+    els.swingStatus.textContent = "Bitte nutze kurze Clips unter 18 MB pro Video. Ideal sind 1 bis 3 Schwünge.";
+    return;
+  }
+
+  els.analyzeSwing.disabled = true;
+  els.swingStatus.textContent = "Videos werden vorbereitet und an Gemini gesendet...";
+  els.swingResult.innerHTML = "";
+
+  try {
+    const prompt = swingPrompt(swingContext());
+    const payload = {
+      prompt,
+      videos: [
+        { label: "Frontal", mimeType: front.type || "video/mp4", data: await fileToBase64(front) },
+        { label: "Von hinten", mimeType: rear.type || "video/mp4", data: await fileToBase64(rear) },
+      ],
+    };
+    const apiKey = els.geminiApiKey.value.trim();
+    const result = apiKey ? await callGeminiDirect(payload, apiKey) : await callGeminiBackend(payload);
+    els.swingStatus.textContent = apiKey
+      ? "Analyse abgeschlossen. Hinweis: Der lokale Testmodus ist nicht für öffentliche Nutzung gedacht."
+      : "Analyse abgeschlossen.";
+    renderSwingAnalysis(result);
+  } catch (error) {
+    els.swingStatus.textContent = `Analyse nicht möglich: ${error.message}`;
+  } finally {
+    els.analyzeSwing.disabled = false;
+  }
+}
+
+async function callGeminiBackend(payload) {
+  const response = await fetch("/api/analyze-swing", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    if (response.status === 404) throw new Error("Backend-Endpunkt fehlt. Für GitHub Pages nutze testweise einen lokalen Gemini API-Key oder deploye die Netlify Function.");
+    throw new Error(await response.text());
+  }
+  const json = await response.json();
+  return json.text || "Keine Analyse erhalten.";
+}
+
+async function callGeminiDirect(payload, apiKey) {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{
+        role: "user",
+        parts: [
+          { text: payload.prompt },
+          ...payload.videos.map((video) => ({ inline_data: { mime_type: video.mimeType, data: video.data } })),
+        ],
+      }],
+      generationConfig: { temperature: 0.2 },
+    }),
+  });
+  const json = await response.json();
+  if (!response.ok) throw new Error(json.error?.message || "Gemini API Fehler.");
+  return json.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n").trim() || "Keine Analyse erhalten.";
 }
 
 function saveFeedbackEntry() {
@@ -1582,6 +1971,7 @@ function escapeHtml(value) {
 
 function render() {
   renderTabs();
+  renderTrainingTabs();
   renderScore();
   renderProfile();
   renderHoleStrip();
@@ -1621,6 +2011,14 @@ els.historyViewButtons.forEach((button) => {
     state.historyView = button.dataset.historyView;
     haptic(5);
     renderArchive();
+  });
+});
+
+els.trainingSubtabs.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.trainingSubtab = button.dataset.trainingSubtab;
+    haptic(5);
+    renderTrainingTabs();
   });
 });
 
@@ -1713,7 +2111,11 @@ els.feedbackModal.addEventListener("click", (event) => {
   if (event.target === els.feedbackModal) closeFeedbackModal();
 });
 els.saveFeedback.addEventListener("click", saveFeedbackEntry);
+els.analyzeSwing.addEventListener("click", analyzeSwingWithGemini);
+els.frontSwingVideo.addEventListener("change", updateSwingCaptureStatus);
+els.rearSwingVideo.addEventListener("change", updateSwingCaptureStatus);
 els.languageToggle.addEventListener("click", toggleLanguage);
+els.welcomeInfo.addEventListener("click", () => openInfoModal("welcome"));
 els.aboutApp.addEventListener("click", () => openInfoModal("about"));
 els.openTip.addEventListener("click", () => openInfoModal("tip"));
 els.aiCaddie.addEventListener("click", (event) => {
@@ -1725,6 +2127,20 @@ els.infoModal.addEventListener("click", (event) => {
 });
 
 els.infoBody.addEventListener("click", (event) => {
+  const topic = event.target.closest("[data-caddie-topic]");
+  if (topic) {
+    haptic(6);
+    renderCaddieTopic(topic.dataset.caddieTopic);
+    return;
+  }
+  const settings = event.target.closest("[data-open-settings]");
+  if (settings) {
+    localStorage.setItem(ONBOARDING_KEY, "1");
+    state.activeTab = "settings";
+    closeInfoModal();
+    render();
+    return;
+  }
   const speak = event.target.closest("[data-speak-caddie]");
   if (speak) {
     const text = [...els.infoBody.querySelectorAll(".caddie-bullets li")].map((item) => item.textContent.trim()).join(". ");
@@ -1803,3 +2219,10 @@ els.archiveList.addEventListener("click", (event) => {
 });
 
 render();
+
+if (!localStorage.getItem(ONBOARDING_KEY)) {
+  window.setTimeout(() => openInfoModal("welcome"), 250);
+} else if (!playedHoles().length && !sessionStorage.getItem(`mental-start-${state.round.id}`)) {
+  sessionStorage.setItem(`mental-start-${state.round.id}`, "1");
+  window.setTimeout(() => openMentalModal("mentalStart"), 350);
+}
