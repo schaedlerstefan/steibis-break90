@@ -1084,6 +1084,59 @@ h1#appName {
 .drill-details summary { color: var(--accent-2); font-weight: 800; cursor: pointer; }
 .drill-details p { margin-top: 8px; }
 
+.mentoring-card {
+  border-color: rgba(22,54,39,.18);
+  background: linear-gradient(180deg, rgba(238,244,235,.96), var(--surface) 72%);
+}
+.mentor-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.mentor-grid div,
+.mentor-review {
+  padding: 11px 12px;
+  border: 1.5px solid rgba(22,54,39,.12);
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,.68);
+}
+.mentor-grid span,
+.mentor-review strong {
+  display: block;
+  color: var(--accent-2);
+  font-size: .72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.mentor-grid strong,
+.mentor-review span {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: .88rem;
+  line-height: 1.42;
+}
+.mentor-steps {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--ink-2);
+  font-size: .88rem;
+  line-height: 1.42;
+}
+.mentor-steps li::marker {
+  color: var(--accent);
+  font-weight: 900;
+}
+.mentor-review { margin-top: 12px; }
+.mentor-rhythm {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+}
+
 /* Expert strip */
 .expert-strip {
   display: grid;

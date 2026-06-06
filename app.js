@@ -1392,6 +1392,81 @@ function renderTopThree(counts, threePlus) {
     .join("");
 }
 
+function mentoringPlan(key, counts, played, projected, threePlus, hcpText) {
+  const target = state.round.breakTarget || 90;
+  const archiveRounds = state.archive.length;
+  const base = {
+    putting: {
+      focus: "Putting-Mentoring",
+      promise: "Ein 3-Putt weniger ist sofort ein Schlag weniger. Ziel ist Distanzkontrolle, nicht perfekte Linie.",
+      roundRule: "Vor jedem langen Putt zuerst den sicheren Zwei-Putt-Korridor wählen.",
+      practice: ["9-12-15-Meter-Zonenputten", "3 Bälle pro Distanz", "Erfolg: 7 von 9 erste Putts innerhalb einer Putterlänge"],
+      reflection: "Wo war der erste Putt zu aggressiv oder zu defensiv?",
+    },
+    strike: {
+      focus: "Kontakt-Mentoring",
+      promise: "Sauberer Ballkontakt reduziert fette, getoppte und zu kurze Schläge schneller als mehr Kraft.",
+      roundRule: "Bei unsicherem Stand keine Fahne attackieren: Mitte Grün oder Layup.",
+      practice: ["Low-Point-Linie am Boden", "10 ruhige Probeschwünge, 20 Bälle", "Erfolg: Bodenberührung nach der Linie"],
+      reflection: "Welche Lage hat den Kontaktfehler ausgelöst?",
+    },
+    penalties: {
+      focus: "Safety-Mentoring",
+      promise: "Break-Ziele werden über vermiedene Strafschläge gewonnen. Der sichere nächste Schlag ist der Standard.",
+      roundRule: "Bei Rot, Weiss oder Ball-verloren-Risiko automatisch sichere Seite oder kürzeren Schläger wählen.",
+      practice: ["Tee-Entscheidungen auf 6 Bahnen simulieren", "für jede Bahn sichere Zielseite notieren", "Erfolg: kein geplanter Schlag über Aus oder Penalty Area"],
+      reflection: "War der riskante Schlag wirklich nötig oder nur verlockend?",
+    },
+    direction: {
+      focus: "Zielzonen-Mentoring",
+      promise: "Rechts/Links ist kein Problem, wenn die Streuung eingeplant ist. Die Zielzone zählt.",
+      roundRule: "Vor jedem vollen Schlag Zielseite und akzeptierte Fehlseite festlegen.",
+      practice: ["Fairway oder Grün in zwei Hälften teilen", "20 Bälle mit bewusster Zielseite", "Erfolg: 70 Prozent auf der sicheren Seite"],
+      reflection: "Welche Fehlseite hat den nächsten Schlag schwer gemacht?",
+    },
+    break90: {
+      focus: `Break-${target}-Mentoring`,
+      promise: "CoursePilot trainiert nicht Perfektion, sondern weniger Folgefehler und stabile Bogeys.",
+      roundRule: "Bogey akzeptieren, Doppelbogey aktiv vermeiden.",
+      practice: ["6-Loch-Szenario planen", "pro Loch konservativen Plan und Notfallplan nennen", "Erfolg: kein Loch mit zwei riskanten Entscheidungen"],
+      reflection: "Wo hast du einen zweiten Fehler nach dem ersten Fehler vermieden?",
+    },
+  };
+  const plan = base[key] || base.break90;
+  const dataLine = played
+    ? `${played} Loch gespielt · Hochrechnung ${projected || "-"} · ${counts.Strafschläge} Strafschläge · ${threePlus} Loch/Löcher mit 3+ Putts`
+    : `Noch keine aktuellen Lochdaten · ${archiveRounds} gespeicherte Runde${archiveRounds === 1 ? "" : "n"} · Profil ${hcpText}`;
+  const weeklyRhythm = archiveRounds >= 3
+    ? "Wochenrhythmus: 1 Fokusdrill, 1 kurze Kontrollrunde, danach Trend mit Historie vergleichen."
+    : "Wochenrhythmus: 1 Fokusdrill, danach eine Runde speichern. Ab 3 Runden wird der Trend belastbarer.";
+
+  return `
+    <article class="training-card mentoring-card">
+      <p class="eyebrow">Persönliches KI-Mentoring</p>
+      <h3>${plan.focus}</h3>
+      <p>${plan.promise}</p>
+      <div class="mentor-grid">
+        <div>
+          <span>Heute</span>
+          <strong>${plan.roundRule}</strong>
+        </div>
+        <div>
+          <span>Datenbasis</span>
+          <strong>${dataLine}</strong>
+        </div>
+      </div>
+      <ol class="mentor-steps">
+        ${plan.practice.map((step) => `<li>${step}</li>`).join("")}
+      </ol>
+      <div class="mentor-review">
+        <strong>Mentor-Frage</strong>
+        <span>${plan.reflection}</span>
+      </div>
+      <p class="mentor-rhythm">${weeklyRhythm}</p>
+    </article>
+  `;
+}
+
 function renderTraining() {
   const counts = resultCounts();
   const played = playedHoles().length;
@@ -1425,6 +1500,8 @@ function renderTraining() {
       </div>
     </article>
   `;
+
+  els.trainingList.insertAdjacentHTML("beforeend", mentoringPlan(priorities[0].key, counts, played, projected, threePlus, hcpText));
 
   els.trainingList.insertAdjacentHTML("beforeend", priorities
     .slice(0, 3)
