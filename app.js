@@ -529,6 +529,29 @@ function haptic(ms = 8) {
   try { navigator.vibrate?.(ms); } catch (_) {}
 }
 
+function isLocalTestHost() {
+  const host = window.location.hostname;
+  return host === "localhost"
+    || host === "127.0.0.1"
+    || host === "::1"
+    || host.endsWith(".local")
+    || /^10\./.test(host)
+    || /^192\.168\./.test(host)
+    || /^172\.(1[6-9]|2\d|3[0-1])\./.test(host);
+}
+
+function setupGeminiAccess() {
+  if (!els.geminiApiKey) return;
+  if (isLocalTestHost()) return;
+
+  els.geminiApiKey.value = "";
+  els.geminiApiKey.disabled = true;
+  els.geminiApiKey.placeholder = "Nur lokal verfügbar";
+  els.geminiApiKey.closest(".gemini-key-field")?.classList.add("disabled");
+  els.swingStatus.textContent = "Öffentlich gehostet: Gemini läuft nur über den sicheren Backend-Endpunkt. Lokale API-Keys sind deaktiviert.";
+}
+
+
 /* ── Confetti ── */
 function showConfetti() {
   const COLORS = ["#163627","#295e73","#a87820","#7dba90","#ffffff","#c8e6d0","#f0c040"];
@@ -1904,7 +1927,7 @@ async function analyzeSwingWithGemini() {
         { label: "Von hinten", mimeType: rear.type || "video/mp4", data: await fileToBase64(rear) },
       ],
     };
-    const apiKey = els.geminiApiKey.value.trim();
+    const apiKey = isLocalTestHost() ? els.geminiApiKey.value.trim() : "";
     const result = apiKey ? await callGeminiDirect(payload, apiKey) : await callGeminiBackend(payload);
     els.swingStatus.textContent = apiKey
       ? "Analyse abgeschlossen. Hinweis: Der lokale Testmodus ist nicht für öffentliche Nutzung gedacht."
@@ -2233,6 +2256,7 @@ els.archiveList.addEventListener("click", (event) => {
   render();
 });
 
+setupGeminiAccess();
 render();
 
 if (!localStorage.getItem(ONBOARDING_KEY)) {

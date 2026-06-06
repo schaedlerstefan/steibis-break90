@@ -1335,6 +1335,14 @@ h1#appName {
   letter-spacing: 0;
 }
 .swing-status { margin-top: 10px; font-size: .84rem !important; color: var(--muted); }
+.gemini-key-field.disabled {
+  opacity: .68;
+}
+.gemini-key-field.disabled input {
+  cursor: not-allowed;
+  background: rgba(255,255,255,.58);
+}
+
 .swing-result { display: grid; gap: 10px; margin-top: 10px; }
 
 /* ── 18. History ──────────────────────────────────────────────── */
