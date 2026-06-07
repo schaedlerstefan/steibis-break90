@@ -1442,7 +1442,7 @@ function mentoringPlan(key, counts, played, projected, threePlus, hcpText) {
 
   return `
     <article class="training-card mentoring-card">
-      <p class="eyebrow">Persönliches KI-Mentoring</p>
+      <p class="eyebrow">KI-Caddie</p>
       <h3>${plan.focus}</h3>
       <p>${plan.promise}</p>
       <div class="mentor-grid">

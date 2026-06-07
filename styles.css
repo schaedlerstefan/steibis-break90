@@ -1344,13 +1344,14 @@ h1#appName {
 
 .video-upload-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
 .video-upload-grid label {
   display: grid;
   gap: 6px;
+  min-width: 0;
   padding: 12px;
   border: 1.5px solid rgba(168,120,32,.2);
   border-radius: var(--r-sm);
@@ -1359,13 +1360,26 @@ h1#appName {
   font-size: .78rem;
   font-weight: 800;
 }
+.video-upload-grid label > span,
+.video-upload-grid small {
+  overflow-wrap: anywhere;
+}
 .video-upload-grid small {
   color: var(--muted);
   font-size: .78rem;
   font-weight: 700;
   line-height: 1.38;
 }
-.video-upload-grid input { max-width: 100%; color: var(--muted); }
+.video-upload-grid input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: .78rem;
+}
+.video-upload-grid input::file-selector-button {
+  margin-right: 8px;
+}
 
 .gemini-key-field {
   display: grid;
@@ -1802,6 +1816,12 @@ h1#appName {
   .tab {
     padding: 8px 2px;
     font-size: .62rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .video-upload-grid {
+    grid-template-columns: 1fr;
   }
 }
 
