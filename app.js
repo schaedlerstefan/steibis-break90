@@ -37,6 +37,20 @@ const COURSE = [
   { hole: 18, par: 5, si:  6 },
 ];
 
+const GPS_DATA = {
+  greens: {
+    1: null,
+  },
+  tees: {
+    yellow: { 1: null },
+    blue: {},
+    red: {},
+    orange: {},
+  },
+  layups: {},
+  hazards: {},
+};
+
 /* Keep for backward-compat with archived rounds that stored meters */
 const COURSE_RATING = { tee: "Gelb", cr: 69.0, slope: 135, par: 70 };
 
@@ -424,6 +438,13 @@ const state = {
   showPuttMissOptions: false,
   trainingSubtab: "training",
   historyView: "month",
+  gps: {
+    active: false,
+    watchId: null,
+    position: null,
+    status: "idle",
+    error: "",
+  },
   archive: loadArchive(),
   round: loadActiveRound(),
   profile: loadProfile(),
@@ -455,6 +476,11 @@ const els = {
   lengthValue: document.querySelector("#lengthValue"),
   holeScore: document.querySelector("#holeScore"),
   holeRating: document.querySelector("#holeRating"),
+  gpsCard: document.querySelector("#gpsCard"),
+  gpsEyebrow: document.querySelector("#gpsEyebrow"),
+  gpsDistance: document.querySelector("#gpsDistance"),
+  gpsStatus: document.querySelector("#gpsStatus"),
+  enableGps: document.querySelector("#enableGps"),
   toggleHoleMenu: document.querySelector("#toggleHoleMenu"),
   holeStrip: document.querySelector("#holeStrip"),
   holeWarning: document.querySelector("#holeWarning"),
@@ -482,6 +508,7 @@ const els = {
   trainingSubpanels: document.querySelectorAll("[data-training-panel]"),
   statVisuals: document.querySelector("#statVisuals"),
   summaryGrid: document.querySelector("#summaryGrid"),
+  holeShotOverview: document.querySelector("#holeShotOverview"),
   topThree: document.querySelector("#topThree"),
   aiCaddie: document.querySelector("#aiCaddie"),
   aiReview: document.querySelector("#aiReview"),
@@ -782,6 +809,119 @@ function formatToPar(value) {
   return value > 0 ? `+${value}` : `${value}`;
 }
 
+function gpsPoint(value) {
+  if (!value || !Number.isFinite(value.lat) || !Number.isFinite(value.lng)) return null;
+  return value;
+}
+
+function gpsPointFor(kind, holeNumber = hole().hole) {
+  if (kind === "green") return gpsPoint(GPS_DATA.greens[holeNumber]);
+  if (kind === "tee") return gpsPoint(GPS_DATA.tees[state.activeTee]?.[holeNumber]);
+  return null;
+}
+
+function distanceMeters(from, to) {
+  const earthRadius = 6371000;
+  const toRad = (value) => (value * Math.PI) / 180;
+  const dLat = toRad(to.lat - from.lat);
+  const dLng = toRad(to.lng - from.lng);
+  const lat1 = toRad(from.lat);
+  const lat2 = toRad(to.lat);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return Math.round(earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function formatDistance(meters) {
+  if (!Number.isFinite(meters)) return "-";
+  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
+  return `${meters} m`;
+}
+
+function startGps() {
+  if (!navigator.geolocation) {
+    state.gps.status = "error";
+    state.gps.error = "GPS wird von diesem Browser nicht unterstützt.";
+    renderGps();
+    return;
+  }
+  state.gps.active = true;
+  state.gps.status = "pending";
+  state.gps.error = "";
+  renderGps();
+  if (state.gps.watchId !== null) navigator.geolocation.clearWatch(state.gps.watchId);
+  state.gps.watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      state.gps.position = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: Math.round(position.coords.accuracy || 0),
+        at: Date.now(),
+      };
+      state.gps.status = "ready";
+      state.gps.error = "";
+      renderGps();
+    },
+    (error) => {
+      state.gps.status = "error";
+      state.gps.error = error.message || "GPS-Position konnte nicht gelesen werden.";
+      renderGps();
+    },
+    { enableHighAccuracy: true, maximumAge: 8000, timeout: 15000 },
+  );
+}
+
+function renderGps() {
+  if (!els.gpsCard) return;
+  const item = hole();
+  const green = gpsPointFor("green", item.hole);
+  const tee = gpsPointFor("tee", item.hole);
+  const hasAnyPoint = Boolean(green || tee);
+  els.gpsCard.classList.toggle("missing-data", !hasAnyPoint);
+  els.gpsEyebrow.textContent = `GPS · Loch ${item.hole}`;
+
+  if (!hasAnyPoint) {
+    els.gpsDistance.textContent = "Koordinaten fehlen";
+    els.gpsStatus.textContent = item.hole === 1
+      ? "Trage Tee und Grünmitte für Loch 1 in GPS_DATA ein."
+      : "Für dieses Loch sind noch keine GPS-Daten hinterlegt.";
+    els.enableGps.disabled = false;
+    els.enableGps.textContent = state.gps.active ? "GPS läuft" : "GPS aktivieren";
+    return;
+  }
+
+  if (!state.gps.active) {
+    els.gpsDistance.textContent = green ? "Distanz zum Grün bereit" : "Tee-Distanz bereit";
+    els.gpsStatus.textContent = "GPS startet erst nach deiner Freigabe.";
+    els.enableGps.disabled = false;
+    els.enableGps.textContent = "GPS aktivieren";
+    return;
+  }
+
+  if (state.gps.status === "pending") {
+    els.gpsDistance.textContent = "Position wird gesucht";
+    els.gpsStatus.textContent = "Einen Moment ruhig halten, bis GPS stabil ist.";
+    els.enableGps.disabled = true;
+    els.enableGps.textContent = "Suche...";
+    return;
+  }
+
+  if (state.gps.status === "error") {
+    els.gpsDistance.textContent = "GPS nicht verfügbar";
+    els.gpsStatus.textContent = state.gps.error || "Bitte Berechtigung und Empfang prüfen.";
+    els.enableGps.disabled = false;
+    els.enableGps.textContent = "Erneut versuchen";
+    return;
+  }
+
+  const position = state.gps.position;
+  const greenDistance = green && position ? distanceMeters(position, green) : null;
+  const teeDistance = tee && position ? distanceMeters(position, tee) : null;
+  els.gpsDistance.textContent = greenDistance !== null ? `${formatDistance(greenDistance)} bis Grünmitte` : `${formatDistance(teeDistance)} bis Tee`;
+  els.gpsStatus.textContent = `Genauigkeit ca. ${position.accuracy || "-"} m${teeDistance !== null ? ` · ${formatDistance(teeDistance)} vom Tee` : ""}`;
+  els.enableGps.disabled = true;
+  els.enableGps.textContent = "GPS läuft";
+}
+
 function addShot(result, options = {}) {
   haptic(result === "Exakt umgesetzt" ? 18 : 8);
   if (result === "Exakt umgesetzt") showConfetti();
@@ -1038,6 +1178,7 @@ function renderTrack() {
   els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · CR ${tee.cr.toFixed(1)} / Slope ${tee.slope}`;
   els.holeRating.style.background = difficultyColor(item.si);
   if (els.note) els.note.value = item.note;
+  renderGps();
 
   els.shotList.innerHTML = item.scratched
     ? `<div class="shot-row scratch"><strong>-</strong><span>${state.language === "en" ? "Hole picked up" : "Loch gestrichen"} · ${holeScore(item)} ${state.language === "en" ? "shots" : "Schläge"}</span></div>`
@@ -1263,6 +1404,7 @@ function renderAnalysis() {
     .map(([label, value, width, sub]) => `<article class="summary-card stat-card"><span>${label}</span><strong>${value}</strong><small>${sub}</small><div class="stat-bar"><i style="width:${width}%"></i></div></article>`)
     .join("");
   renderStatVisuals(counts, { played, score, threePlus, trouble, exactRate, penaltyRate, puttLoad });
+  renderHoleShotOverview();
 
   renderTopThree(counts, threePlus);
   renderAiReview(counts, threePlus);
@@ -1326,6 +1468,61 @@ function renderStatVisuals(counts, metrics) {
       ].map(([label, value]) => `<div class="wide-bar"><span>${label}</span><strong>${value}</strong><i style="width:${Math.max(3, Math.min(100, value * 18))}%"></i></div>`).join("")}
     </article>
   `;
+}
+
+function compactShotLabel(shot) {
+  const typeMap = {
+    Tee: "Tee",
+    Transport: "Tr",
+    Annäherung: "Ann",
+    Putt: "Putt",
+  };
+  const resultMap = {
+    "Exakt umgesetzt": "Plan",
+    Rechts: "R",
+    Links: "L",
+    "Zu kurz": "kurz",
+    "Zu lang": "lang",
+    Getoppt: "Top",
+    Fett: "Fett",
+    "Putt: Exakt": "Plan",
+    "Putt: Rechts": "R",
+    "Putt: Links": "L",
+    "Putt: Zu kurz": "kurz",
+    "Putt: Zu lang": "lang",
+  };
+  const type = typeMap[shot.type] || "S";
+  const result = resultMap[shot.result] || shot.result;
+  const penalty = shot.penalty ? " +1" : "";
+  return `${shot.number || ""}${shot.number ? ". " : ""}${type} ${result}${shot.note ? ` (${shot.note})` : ""}${penalty}`;
+}
+
+function renderHoleShotOverview() {
+  if (!els.holeShotOverview) return;
+  const played = playedHoles();
+  if (!played.length) {
+    els.holeShotOverview.innerHTML = `<div class="empty-state compact">Noch keine Schläge erfasst. Nach den ersten Eingaben siehst du hier Loch für Loch die komprimierte Runde.</div>`;
+    return;
+  }
+  els.holeShotOverview.innerHTML = state.round.holes
+    .filter((item) => item.shots.length || item.scratched)
+    .map((item) => {
+      const score = holeScore(item);
+      const scoreLabel = holeScoreLabel(score, item.par);
+      const entries = item.scratched
+        ? ["Loch gestrichen"]
+        : item.shots.map(compactShotLabel);
+      return `
+        <article class="hole-shot-card">
+          <div class="hole-shot-head">
+            <strong>Loch ${item.hole}</strong>
+            <span>Par ${item.par} · ${score} Schl.${scoreLabel ? ` · ${scoreLabel.name}` : ""}</span>
+          </div>
+          <p>${entries.map(escapeHtml).join(" · ")}</p>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function renderAiReview(counts, threePlus) {
@@ -2153,6 +2350,8 @@ els.shotTypeGrid.addEventListener("click", (event) => {
 els.toggleHoleMenu.addEventListener("click", () => {
   els.holeStrip.classList.toggle("collapsed");
 });
+
+els.enableGps.addEventListener("click", startGps);
 
 els.toggleProfile.addEventListener("click", () => {
   els.profileFields.classList.toggle("collapsed");

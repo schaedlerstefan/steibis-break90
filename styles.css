@@ -313,6 +313,43 @@ h1#appName {
   color: var(--muted);
 }
 
+.gps-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 13px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.gps-card strong {
+  display: block;
+  margin: 2px 0 3px;
+  font-size: .98rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.gps-card span {
+  display: block;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.35;
+}
+.gps-card.missing-data {
+  background: var(--surface-tint);
+}
+.gps-card .compact-button {
+  min-width: 104px;
+  white-space: nowrap;
+}
+.gps-card .compact-button:disabled {
+  opacity: .72;
+  cursor: default;
+}
+
 /* Hole toggle button */
 .hole-toggle {
   width: 100%;
@@ -1209,6 +1246,43 @@ h1#appName {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent-mid), var(--accent-2));
+}
+
+.shot-overview-panel {
+  margin-top: 12px;
+}
+.hole-shot-overview {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.hole-shot-card {
+  padding: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-tint);
+}
+.hole-shot-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.hole-shot-head strong {
+  color: var(--ink);
+  font-size: .94rem;
+}
+.hole-shot-head span {
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.hole-shot-card p {
+  color: var(--ink-2);
+  font-size: .84rem;
+  line-height: 1.42;
 }
 
 /* Stat visuals */

@@ -75,6 +75,15 @@
             <button class="icon-button" id="nextHole" type="button" aria-label="Nächstes Loch" title="Nächstes Loch">›</button>
           </div>
 
+          <section class="gps-card" id="gpsCard" aria-label="GPS-Distanz">
+            <div>
+              <p class="eyebrow" id="gpsEyebrow">GPS</p>
+              <strong id="gpsDistance">Distanz zum Grün offen</strong>
+              <span id="gpsStatus">Loch 1 Koordinaten eintragen, dann GPS aktivieren.</span>
+            </div>
+            <button class="compact-button" id="enableGps" type="button">GPS aktivieren</button>
+          </section>
+
           <button class="hole-toggle" id="toggleHoleMenu" type="button">Loch wechseln</button>
           <div class="hole-strip collapsed" id="holeStrip" aria-label="Loch auswählen"></div>
 
@@ -202,6 +211,10 @@
             </div>
             <div class="stat-visuals" id="statVisuals"></div>
             <div class="summary-grid" id="summaryGrid"></div>
+            <details class="more-panel shot-overview-panel" open>
+              <summary>Schläge pro Loch</summary>
+              <div class="hole-shot-overview" id="holeShotOverview"></div>
+            </details>
             <div class="ai-card" id="aiReview"></div>
             <details class="more-panel training-more">
               <summary>Weitere Analyse</summary>
