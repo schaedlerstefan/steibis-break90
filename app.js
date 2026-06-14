@@ -85,9 +85,8 @@ const GLOSSARY = {
   Biotop: "Meist Spielverbotszone. Ob straflos oder mit Strafschlag erleichtert wird, hängt von Markierung und lokalen Regeln ab.",
   "Break 90": "Runde unter 90 Schlägen. Auf Par 70 bedeutet das maximal 89 Schläge.",
   Layup: "Bewusst kürzerer, sicherer Schlag in eine gute Position.",
-  "Low Point": "Tiefster Punkt des Schwungs. Entscheidend für sauberen Ballkontakt.",
-  "3-Putt": "Drei Putts auf einem Grün. Einer der schnellsten Hebel für bessere Scores.",
   "Low Point": "Tiefster Punkt des Schwungs. Er entscheidet oft, ob du fett, dünn oder sauber triffst.",
+  "3-Putt": "Drei Putts auf einem Grün. Einer der schnellsten Hebel für bessere Scores.",
   Zielseite: "Die Seite, auf der der nächste Schlag einfacher bleibt, auch wenn der aktuelle Schlag nicht perfekt ist.",
   "Pre-Shot-Routine": "Kurzer, wiederholbarer Ablauf vor dem Schlag: Ziel wählen, Schlag sehen, ausrichten, ausführen.",
 };
@@ -484,7 +483,6 @@ const els = {
   toggleHoleMenu: document.querySelector("#toggleHoleMenu"),
   holeStrip: document.querySelector("#holeStrip"),
   holeWarning: document.querySelector("#holeWarning"),
-  holePlan: document.querySelector("#holePlan"),
   shotTypeGrid: document.querySelector("#shotTypeGrid"),
   planHit: document.querySelector("#planHit"),
   planMiss: document.querySelector("#planMiss"),
@@ -708,7 +706,9 @@ function normalizeRound(round) {
 function importFromHash() {
   if (!location.hash.startsWith("#round=")) return null;
   try {
-    const json = decodeURIComponent(escape(atob(location.hash.replace("#round=", ""))));
+    const binary = atob(location.hash.replace("#round=", ""));
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    const json = new TextDecoder().decode(bytes);
     return normalizeRound(JSON.parse(json));
   } catch {
     return null;
@@ -938,7 +938,7 @@ function addShot(result, options = {}) {
     at: new Date().toISOString(),
     number: hole().shots.length + 1,
   });
-  advanceShotType(shotType, hole());
+  advanceShotType(hole());
   saveActive();
   render();
 }
@@ -955,12 +955,8 @@ function nextShotTypeSuggestion(item = hole()) {
   return plan[nextIndex] || "Putt";
 }
 
-function advanceShotType(previousType, item = hole()) {
-  const nextType = nextShotTypeSuggestion(item);
-  state.selectedShotType = nextType;
-  if (item.shots.length >= 1 && item.shots.length <= 4) {
-    window.setTimeout(() => openShotTypeModal(nextType, previousType, item), 120);
-  }
+function advanceShotType(item = hole()) {
+  state.selectedShotType = nextShotTypeSuggestion(item);
 }
 
 function undoShot() {
@@ -1101,7 +1097,8 @@ function saveCurrentRound() {
 }
 
 function makeShareLink() {
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(state.round))));
+  const bytes = new TextEncoder().encode(JSON.stringify(state.round));
+  const encoded = btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
   return `${location.origin}${location.pathname}#round=${encoded}`;
 }
 
@@ -1310,31 +1307,6 @@ function flashAiCaddie() {
     els.aiCaddie.classList.add("highlight");
     window.setTimeout(() => els.aiCaddie.classList.remove("highlight"), 1100);
   });
-}
-
-function renderHolePlan(item) {
-  if (!els.holePlan) return;
-  const hcp = Number(state.profile.handicap);
-  const breakTarget = state.round.breakTarget || 90;
-  const meters = (TEE_DATA[state.activeTee] || TEE_DATA.yellow).meters[state.currentHole];
-  const target = item.si <= 6 || breakTarget >= 95 || hcp >= 24 ? "Bogey-Plan" : item.par === 3 && meters <= 140 ? "Par-Chance" : "Bogey-Par";
-  const scoreNow = holeScore(item);
-  const risks = historicRisks(item);
-  const paceText = scoreNow
-    ? `Aktuell: ${scoreNow} Schläge auf diesem Loch.`
-    : Number.isFinite(hcp)
-      ? `Vor dem Schlag: Zielzone passend zu HCP ${hcp} und Break ${breakTarget} festlegen.`
-      : "Vor dem Schlag: Zielzone festlegen, dann Ergebnis tippen.";
-  els.holePlan.innerHTML = `
-    <h3>${risks.length ? "Warnung & " : ""}${target} · Loch ${item.hole}</h3>
-    ${risks.length ? `<p class="plan-warning"><strong>Historisch häufig:</strong> ${risks.slice(0, 2).join(" / ")}. Sichere Zielzone priorisieren.</p>` : ""}
-    <p>${linkGlossary(state.language === "en" ? HOLE_PLANS_EN[item.hole] : HOLE_PLANS[item.hole])}</p>
-    <p>${linkGlossary(paceText)}</p>
-    <div class="expert-strip">
-      ${COURSE_EXPERTS.map((expert) => `<article><strong>${expert.name}</strong><span>${expert.role}</span><p>${expert.advice}</p></article>`).join("")}
-    </div>
-  `;
-  els.holePlan.classList.toggle("has-warning", risks.length > 0);
 }
 
 function historicRisks(item) {
@@ -2294,7 +2266,6 @@ function render() {
   renderTraining();
   renderCoachReport();
   renderArchive();
-  renderGlossary();
   applyLanguage();
 }
 
@@ -2534,6 +2505,7 @@ els.archiveList.addEventListener("click", (event) => {
 
 setupGeminiAccess();
 render();
+renderGlossary();
 
 if (!localStorage.getItem(ONBOARDING_KEY)) {
   window.setTimeout(() => openInfoModal("welcome"), 250);

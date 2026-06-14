@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=34" />
+    <link rel="stylesheet" href="styles.css?v=35" />
   </head>
   <body>
     <div class="app-shell">
@@ -123,7 +123,10 @@
 
           <button class="wide-button" id="openTip" type="button">Weitere Empfehlungen vom KI-Caddie</button>
 
-          <input id="note" type="hidden" />
+          <label class="note-label">
+            <span>Lochnotiz</span>
+            <input id="note" type="text" list="noteSuggestions" placeholder="z.B. Tee links, Wind von rechts …" autocomplete="off" />
+          </label>
           <datalist id="noteSuggestions"></datalist>
           <div class="warning" id="holeWarning" hidden></div>
 
@@ -356,10 +359,10 @@
       </section>
     </div>
 
-    <script src="app.js?v=34"></script>
+    <script src="app.js?v=35"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=34");
+        navigator.serviceWorker.register("./sw.js?v=35");
       }
     </script>
   </body>

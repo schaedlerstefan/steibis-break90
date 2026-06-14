@@ -1,4 +1,4 @@
-const CACHE_NAME = "coursepilot-v34";
+const CACHE_NAME = "coursepilot-v35";
 const ASSETS = ["./", "./index.html", "./styles.css?v=34", "./app.js?v=34", "./manifest.webmanifest", "./app-icon.svg"];
 
 self.addEventListener("install", (event) => {
