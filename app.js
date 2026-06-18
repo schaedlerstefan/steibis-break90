@@ -1182,7 +1182,7 @@ function renderTrack() {
     : item.shots.length
     ? (() => {
         const shot = item.shots[item.shots.length - 1];
-        return `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><span>${state.language === "en" ? "Last entry" : "Letzte Eingabe"}: ${shot.type || (state.language === "en" ? "Shot" : "Schlag")} · ${shot.result}${shot.note ? ` · ${shot.note}` : ""}${shot.penalty ? ` · +1 ${state.language === "en" ? "penalty stroke" : "Strafschlag"}` : ""}</span></div>`;
+        return `<div class="shot-row ${shot.penalty ? "penalty" : ""}"><span>${state.language === "en" ? "Last entry" : "Letzte Eingabe"}: ${shot.type || (state.language === "en" ? "Shot" : "Schlag")} · ${shot.result}${shot.note ? ` · ${escapeHtml(shot.note)}` : ""}${shot.penalty ? ` · +1 ${state.language === "en" ? "penalty stroke" : "Strafschlag"}` : ""}</span></div>`;
       })()
     : `<div class="empty-state compact">${state.language === "en" ? "No entry on this hole yet." : "Noch keine Eingabe auf diesem Loch."}</div>`;
 
@@ -1214,7 +1214,7 @@ function break90Chance() {
   const projected = Math.round((score / played) * 18);
   const counts = currentRoundCounts();
   const penalty = counts.Rechts + counts.Links + counts.Fett + counts.Getoppt + counts["Aus Gelb"] * 2 + counts["Aus Rot"] * 2 + counts["Aus Weiß"] * 2 + counts["Ball verloren"] * 3 + counts.Unspielbar * 2 + counts.Biotop * 2 + counts.Gestrichen * 3 + counts.Sonstiges;
-  const chance = 100 - Math.max(0, projected - 89) * 8 - penalty * 2;
+  const chance = 100 - Math.max(0, projected - ((state.round.breakTarget || 90) - 1)) * 8 - penalty * 2;
   return Math.max(8, Math.min(92, chance));
 }
 
@@ -1317,18 +1317,6 @@ function historicRisks(item) {
     .map(([result]) => result);
 }
 
-function renderWarning(item) {
-  const risks = historicRisks(item);
-
-  if (!risks.length) {
-    els.holeWarning.classList.remove("active");
-    els.holeWarning.textContent = "";
-    return;
-  }
-
-  els.holeWarning.innerHTML = `<strong>Warnung Loch ${item.hole}:</strong> Historisch häufig ${risks.slice(0, 2).join(" / ")}. Break-90-Plan: Mitte Grün oder sichere Layup-Zone, keinen Heldenschlag erzwingen.`;
-  els.holeWarning.classList.add("active");
-}
 
 function renderShotButtons() {
   els.shotTypeGrid.innerHTML = SHOT_TYPES.map((type) => `<button class="shot-type ${type === state.selectedShotType ? "active" : ""}" type="button" data-shot-type="${type}">${type}</button>`).join("");
@@ -1643,7 +1631,6 @@ function renderTraining() {
   const projected = played ? Math.round((score / played) * 18) : 0;
   const threePlus = state.round.holes.filter((item) => item.shots.filter((shot) => shot.result === "Putt" || shot.type === "putt").length >= 3).length;
   const trouble = counts.Rechts + counts.Links + counts.Getoppt + counts.Fett + counts["Zu kurz"] + counts["Zu lang"] + counts["Aus Gelb"] + counts["Aus Rot"] + counts["Aus Weiß"] + counts["Ball verloren"] + counts.Unspielbar + counts.Dropzone + counts.Biotop + counts.Sonstiges + counts.Gestrichen;
-  const totalSignals = Math.max(1, counts["Exakt umgesetzt"] + trouble + counts.Putts + counts.Strafschläge);
   const priorities = [
     { key: "putting", score: threePlus * 4 + counts.Putts / 10 },
     { key: "strike", score: counts.Fett * 3 + counts.Getoppt * 3 + counts["Zu kurz"] + counts["Zu lang"] },
@@ -1981,21 +1968,6 @@ function maybeOpenMentalMomentum() {
   return openMentalModal(bad ? "mentalBad" : "mentalGood");
 }
 
-function openShotTypeModal(recommended = state.selectedShotType, previous = "", item = hole()) {
-  const de = state.language === "de";
-  const plan = shotTypePlan(item);
-  const options = [...new Set([recommended, ...SHOT_TYPES])];
-  els.infoEyebrow.textContent = de ? "Nächster Schlag" : "Next shot";
-  els.infoTitle.textContent = de ? "Schlagtyp bestätigen" : "Confirm shot type";
-  els.infoBody.innerHTML = `
-    <p>${de ? "Empfehlung für" : "Recommendation for"} <strong>Par ${item.par}</strong>: <strong>${recommended}</strong>${de ? "." : "."}</p>
-    <p class="setting-help">${de ? "Planfolge" : "Planned sequence"}: ${plan.join(" → ")}${previous ? ` · ${de ? "letzter Schlag" : "last shot"}: ${previous}` : ""}</p>
-    <div class="rule-options next-shot-options">
-      ${options.map((type) => `<button class="rule-option ${type === recommended ? "recommended" : ""}" type="button" data-next-shot-type="${type}">${type === recommended ? "✓ " : ""}${type}</button>`).join("")}
-    </div>
-  `;
-  els.infoModal.hidden = false;
-}
 
 function openInfoModal(kind) {
   const item = hole();
