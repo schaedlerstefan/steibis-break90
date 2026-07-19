@@ -189,7 +189,7 @@ h1#appName {
 /* ── 5. Scorebar ──────────────────────────────────────────────── */
 .scorebar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   margin-bottom: 16px;
   border: 1.5px solid var(--line);
@@ -216,11 +216,25 @@ h1#appName {
   letter-spacing: .08em;
 }
 .scorebar strong {
-  font-size: 1.7rem;
+  font-size: 1.55rem;
   font-weight: 800;
   letter-spacing: -.055em;
   color: var(--ink);
   line-height: 1;
+}
+.scorebar #stablefordTotal { color: var(--accent); }
+
+/* Stableford-Punkte-Badge am Loch */
+.score-points {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: .72rem;
+  font-weight: 800;
+  vertical-align: middle;
 }
 
 /* ── 6. Bottom Navigation ─────────────────────────────────────── */

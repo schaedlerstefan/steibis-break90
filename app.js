@@ -175,6 +175,7 @@ const UI_TEXT = {
   de: {
     score: "Score",
     toPar: "zu Par",
+    points: "Punkte",
     target: "Ziel",
     challenge: "Challenge",
     newRound: "Neue Runde starten",
@@ -190,6 +191,7 @@ const UI_TEXT = {
   en: {
     score: "Score",
     toPar: "to par",
+    points: "Points",
     target: "Target",
     challenge: "Challenge",
     newRound: "Start new round",
@@ -453,6 +455,7 @@ const els = {
   newRound: document.querySelector("#newRound"),
   resetRound: document.querySelector("#resetRound"),
   scoreTotal: document.querySelector("#scoreTotal"),
+  stablefordTotal: document.querySelector("#stablefordTotal"),
   toPar: document.querySelector("#toPar"),
   targetPace: document.querySelector("#targetPace"),
   breakTarget: document.querySelector("#breakTarget"),
@@ -735,6 +738,42 @@ function linkGlossary(text) {
       const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       return html.replace(new RegExp(`\\b${escaped}\\b`, "g"), `<button class="glossary-link" type="button" data-glossary="${term}">${term}</button>`);
     }, text);
+}
+
+/* ── Stableford / WHS ── */
+function courseHandicap() {
+  if (state.profile.handicap === "" || state.profile.handicap == null) return null;
+  const hcp = Number(String(state.profile.handicap).replace(",", "."));
+  if (!Number.isFinite(hcp)) return null;
+  const tee = TEE_DATA[state.activeTee] || TEE_DATA.yellow;
+  const coursePar = COURSE.reduce((sum, item) => sum + item.par, 0);
+  return Math.round(hcp * (tee.slope / 113) + (tee.cr - coursePar));
+}
+
+function strokesForHole(item, ch = courseHandicap()) {
+  if (ch === null) return 0;
+  if (ch >= 0) {
+    const base = Math.floor(ch / 18);
+    const extra = ch % 18;
+    return base + (item.si <= extra ? 1 : 0);
+  }
+  const give = Math.abs(ch);
+  return -(Math.floor(give / 18) + (item.si >= 19 - (give % 18) ? 1 : 0));
+}
+
+function stablefordPoints(item) {
+  if (item.scratched) return 0;
+  const shots = holeScore(item);
+  if (!shots) return null;
+  return Math.max(0, 2 + item.par + strokesForHole(item) - shots);
+}
+
+function stablefordTotal(round = state.round) {
+  return playedHoles(round).reduce((sum, item) => sum + (stablefordPoints(item) ?? 0), 0);
+}
+
+function nettoDoubleBogeyLimit(item) {
+  return item.par + strokesForHole(item) + 2;
 }
 
 function hcpBand() {
@@ -1102,6 +1141,9 @@ function renderScore() {
   els.scoreTotal.textContent = score || "0";
   els.toPar.textContent = playedHoles().length ? formatToPar(toPar()) : "E";
   els.targetPace.textContent = playedHoles().length ? targetForPlayed() : `B${state.round.breakTarget || 90}`;
+  if (els.stablefordTotal) {
+    els.stablefordTotal.textContent = courseHandicap() === null ? "–" : String(stablefordTotal());
+  }
   els.breakTarget.value = String(state.round.breakTarget || 90);
 }
 
@@ -1110,8 +1152,10 @@ function renderProfile() {
   els.playerGoal.value = state.profile.goal;
   if (els.teeSelect) els.teeSelect.value = state.activeTee;
   const teeLabel = TEE_DATA[state.activeTee]?.label || "Gelb";
+  const ch = courseHandicap();
+  const chPart = ch === null ? "" : ` · Spielvorgabe ${ch >= 0 ? ch : `+${Math.abs(ch)}`}`;
   const hcpPart = state.profile.handicap === "" ? "HCP offen" : `HCP ${state.profile.handicap} · ${hcpBand()}`;
-  els.profileSummary.textContent = `${hcpPart} · ${teeLabel}`;
+  els.profileSummary.textContent = `${hcpPart}${chPart} · ${teeLabel}`;
 }
 
 function renderHoleStrip() {
@@ -1136,15 +1180,34 @@ function renderTrack() {
   els.lengthValue.textContent = meters;
 
   const shots = holeScore(item);
+  const ch = courseHandicap();
+  const strokes = strokesForHole(item, ch);
+  const points = ch === null ? null : stablefordPoints(item);
   const label = shots > 0 ? holeScoreLabel(shots, item.par) : null;
   if (label) {
-    els.holeScore.innerHTML = `${shots} ${state.language === "en" ? (shots === 1 ? "shot" : "shots") : "Schl."} <span class="score-label score-${label.css}">${label.name}</span>`;
+    const pointsBadge = points === null ? "" : ` <span class="score-points">${points} ${state.language === "en" ? "pts" : "Pkt."}</span>`;
+    els.holeScore.innerHTML = `${shots} ${state.language === "en" ? (shots === 1 ? "shot" : "shots") : "Schl."} <span class="score-label score-${label.css}">${label.name}</span>${pointsBadge}`;
   } else {
     els.holeScore.textContent = state.language === "en" ? "0 shots" : "0 Schläge";
   }
 
-  els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · CR ${tee.cr.toFixed(1)} / Slope ${tee.slope}`;
+  const strokesText = ch === null
+    ? `CR ${tee.cr.toFixed(1)} / Slope ${tee.slope}`
+    : state.language === "en"
+      ? `${strokes} ${Math.abs(strokes) === 1 ? "stroke" : "strokes"} received`
+      : `${strokes} Vorgabeschl${Math.abs(strokes) === 1 ? "ag" : "äge"}`;
+  els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · ${strokesText}`;
   els.holeRating.style.background = difficultyColor(item.si);
+
+  if (els.holeWarning) {
+    const overLimit = ch !== null && !item.scratched && shots >= nettoDoubleBogeyLimit(item);
+    els.holeWarning.hidden = !overLimit;
+    if (overLimit) {
+      els.holeWarning.textContent = state.language === "en"
+        ? "Net double bogey reached: 0 points on this hole. In Stableford you can pick up and move on."
+        : "Netto-Doppelbogey erreicht: 0 Punkte auf diesem Loch. Im Stableford kannst du aufheben und weitergehen.";
+    }
+  }
   if (els.note) els.note.value = item.note;
   renderGps();
 
