@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=39" />
+    <link rel="stylesheet" href="styles.css?v=40" />
   </head>
   <body>
     <div class="app-shell">
@@ -99,25 +99,50 @@
           <div class="hole-strip collapsed" id="holeStrip" aria-label="Loch auswählen"></div>
 
           <section class="shot-entry" aria-label="Schlag erfassen">
-            <p class="eyebrow">Schlagtyp</p>
-            <div class="shot-type-grid" id="shotTypeGrid"></div>
-            <p class="eyebrow">Plan-Ergebnis</p>
-            <div class="plan-choice">
-              <button class="plan-button hit" id="planHit" type="button">Plan getroffen</button>
-              <button class="plan-button miss" id="planMiss" type="button">Nicht getroffen</button>
+            <div class="entry-mode" id="entryMode" role="tablist" aria-label="Eingabemodus">
+              <button type="button" id="modeDetail" class="active">Detail</button>
+              <button type="button" id="modeQuick">Turnier</button>
             </div>
-            <div class="miss-options" id="missOptions" hidden>
-              <p class="eyebrow">Abweichung erfassen</p>
-              <div class="shot-grid" id="shotGrid"></div>
+            <div id="detailEntry">
+              <p class="eyebrow">Schlagtyp</p>
+              <div class="shot-type-grid" id="shotTypeGrid"></div>
+              <p class="eyebrow">Plan-Ergebnis</p>
+              <div class="plan-choice">
+                <button class="plan-button hit" id="planHit" type="button">Plan getroffen</button>
+                <button class="plan-button miss" id="planMiss" type="button">Nicht getroffen</button>
+              </div>
+              <div class="miss-options" id="missOptions" hidden>
+                <p class="eyebrow">Abweichung erfassen</p>
+                <div class="shot-grid" id="shotGrid"></div>
+              </div>
+              <p class="eyebrow putt-heading">Putt</p>
+              <div class="plan-choice putt-choice">
+                <button class="plan-button hit" id="puttHit" type="button">Putt-Plan getroffen</button>
+                <button class="plan-button miss" id="puttMiss" type="button">Nicht getroffen</button>
+              </div>
+              <div class="miss-options" id="puttMissOptions" hidden>
+                <p class="eyebrow">Putt-Abweichung</p>
+                <div class="putt-grid" id="puttGrid"></div>
+              </div>
             </div>
-            <p class="eyebrow putt-heading">Putt</p>
-            <div class="plan-choice putt-choice">
-              <button class="plan-button hit" id="puttHit" type="button">Putt-Plan getroffen</button>
-              <button class="plan-button miss" id="puttMiss" type="button">Nicht getroffen</button>
-            </div>
-            <div class="miss-options" id="puttMissOptions" hidden>
-              <p class="eyebrow">Putt-Abweichung</p>
-              <div class="putt-grid" id="puttGrid"></div>
+            <div id="quickEntry" hidden>
+              <div class="quick-counter">
+                <span>Schläge gesamt</span>
+                <div class="quick-stepper">
+                  <button type="button" id="quickShotsMinus" aria-label="Schlag weniger">−</button>
+                  <strong id="quickShotsValue">0</strong>
+                  <button type="button" id="quickShotsPlus" aria-label="Schlag mehr">+</button>
+                </div>
+              </div>
+              <div class="quick-counter">
+                <span>davon Putts</span>
+                <div class="quick-stepper">
+                  <button type="button" id="quickPuttsMinus" aria-label="Putt weniger">−</button>
+                  <strong id="quickPuttsValue">0</strong>
+                  <button type="button" id="quickPuttsPlus" aria-label="Putt mehr">+</button>
+                </div>
+              </div>
+              <p class="setting-help">Turniermodus: nur zählen, keine Fehlererfassung. Für Training und Analyse den Detail-Modus nutzen.</p>
             </div>
             <button class="wide-button primary" id="finishHole" type="button">Loch fertig →</button>
           </section>
@@ -337,10 +362,10 @@
       </section>
     </div>
 
-    <script src="app.js?v=39"></script>
+    <script src="app.js?v=40"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=39");
+        navigator.serviceWorker.register("./sw.js?v=40");
       }
     </script>
   </body>

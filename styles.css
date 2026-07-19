@@ -224,6 +224,74 @@ h1#appName {
 }
 .scorebar #stablefordTotal { color: var(--accent); }
 
+/* Turniermodus: Eingabemodus-Umschalter + Schnellzähler */
+.entry-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  padding: 3px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+}
+.entry-mode button {
+  min-height: 38px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+}
+.entry-mode button.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-xs);
+}
+.quick-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+.quick-counter > span {
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.quick-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quick-stepper button {
+  width: 52px;
+  height: 52px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.quick-stepper button:active { background: var(--accent); color: #fff; }
+.quick-stepper strong {
+  min-width: 34px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -.04em;
+}
+
 /* HCP-Prognose (Statistik) */
 .hcp-forecast { margin-bottom: 12px; }
 .hcp-forecast-card {

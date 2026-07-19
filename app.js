@@ -457,6 +457,16 @@ const els = {
   scoreTotal: document.querySelector("#scoreTotal"),
   stablefordTotal: document.querySelector("#stablefordTotal"),
   hcpForecast: document.querySelector("#hcpForecast"),
+  modeDetail: document.querySelector("#modeDetail"),
+  modeQuick: document.querySelector("#modeQuick"),
+  detailEntry: document.querySelector("#detailEntry"),
+  quickEntry: document.querySelector("#quickEntry"),
+  quickShotsMinus: document.querySelector("#quickShotsMinus"),
+  quickShotsPlus: document.querySelector("#quickShotsPlus"),
+  quickShotsValue: document.querySelector("#quickShotsValue"),
+  quickPuttsMinus: document.querySelector("#quickPuttsMinus"),
+  quickPuttsPlus: document.querySelector("#quickPuttsPlus"),
+  quickPuttsValue: document.querySelector("#quickPuttsValue"),
   toPar: document.querySelector("#toPar"),
   targetPace: document.querySelector("#targetPace"),
   breakTarget: document.querySelector("#breakTarget"),
@@ -596,12 +606,13 @@ function loadProfile() {
         handicap: saved.handicap ?? "",
         goal: saved.goal || "break90",
         tee: saved.tee || "yellow",
+        entryMode: saved.entryMode === "quick" ? "quick" : "detail",
       };
     }
   } catch {
     localStorage.removeItem(PROFILE_KEY);
   }
-  return { handicap: "", goal: "break90", tee: "yellow" };
+  return { handicap: "", goal: "break90", tee: "yellow", entryMode: "detail" };
 }
 
 function saveProfile() {
@@ -775,6 +786,31 @@ function stablefordTotal(round = state.round) {
 
 function nettoDoubleBogeyLimit(item) {
   return item.par + strokesForHole(item) + 2;
+}
+
+/* ── Turniermodus / Schnelleingabe ── */
+function quickCounts(item = hole()) {
+  const putts = item.shots.filter((shot) => shot.type === "Putt" || shot.result === "Putt").length;
+  return { total: item.shots.length, putts };
+}
+
+function rebuildQuickShots(total, putts) {
+  const item = hole();
+  const safeTotal = Math.max(0, Math.min(15, total));
+  const safePutts = Math.max(0, Math.min(safeTotal, putts));
+  const now = new Date().toISOString();
+  item.scratched = false;
+  item.shots = [
+    ...Array.from({ length: safeTotal - safePutts }, (_, i) => ({
+      result: "Ohne Details", penalty: false, type: "Schlag", note: "", at: now, number: i + 1, quick: true,
+    })),
+    ...Array.from({ length: safePutts }, (_, i) => ({
+      result: "Putt", penalty: false, type: "Putt", note: "", at: now, number: safeTotal - safePutts + i + 1, quick: true,
+    })),
+  ];
+  haptic();
+  saveActive();
+  render();
 }
 
 function roundStableford(round) {
@@ -1238,6 +1274,17 @@ function renderTrack() {
       : `${strokes} Vorgabeschl${Math.abs(strokes) === 1 ? "ag" : "äge"}`;
   els.holeRating.textContent = `SI ${item.si} · ${difficultyLabel(item.si)} · ${strokesText}`;
   els.holeRating.style.background = difficultyColor(item.si);
+
+  if (els.modeDetail && els.quickEntry) {
+    const mode = state.profile.entryMode || "detail";
+    els.modeDetail.classList.toggle("active", mode === "detail");
+    els.modeQuick.classList.toggle("active", mode === "quick");
+    els.detailEntry.hidden = mode === "quick";
+    els.quickEntry.hidden = mode !== "quick";
+    const qc = quickCounts(item);
+    els.quickShotsValue.textContent = qc.total;
+    els.quickPuttsValue.textContent = qc.putts;
+  }
 
   if (els.holeWarning) {
     const overLimit = ch !== null && !item.scratched && shots >= nettoDoubleBogeyLimit(item);
@@ -2330,6 +2377,33 @@ els.feedbackModal.addEventListener("click", (event) => {
   if (event.target === els.feedbackModal) closeFeedbackModal();
 });
 els.saveFeedback.addEventListener("click", saveFeedbackEntry);
+els.modeDetail.addEventListener("click", () => {
+  state.profile.entryMode = "detail";
+  saveProfile();
+  render();
+});
+els.modeQuick.addEventListener("click", () => {
+  state.profile.entryMode = "quick";
+  saveProfile();
+  render();
+});
+els.quickShotsPlus.addEventListener("click", () => {
+  const { total, putts } = quickCounts();
+  rebuildQuickShots(total + 1, putts);
+});
+els.quickShotsMinus.addEventListener("click", () => {
+  const { total, putts } = quickCounts();
+  rebuildQuickShots(total - 1, Math.min(putts, Math.max(0, total - 1)));
+});
+els.quickPuttsPlus.addEventListener("click", () => {
+  const { total, putts } = quickCounts();
+  if (putts < total) rebuildQuickShots(total, putts + 1);
+  else rebuildQuickShots(total + 1, putts + 1);
+});
+els.quickPuttsMinus.addEventListener("click", () => {
+  const { total, putts } = quickCounts();
+  rebuildQuickShots(total, putts - 1);
+});
 els.languageToggle.addEventListener("click", toggleLanguage);
 els.welcomeInfo.addEventListener("click", () => openInfoModal("welcome"));
 els.aboutApp.addEventListener("click", () => openInfoModal("about"));
