@@ -456,6 +456,7 @@ const els = {
   resetRound: document.querySelector("#resetRound"),
   scoreTotal: document.querySelector("#scoreTotal"),
   stablefordTotal: document.querySelector("#stablefordTotal"),
+  hcpForecast: document.querySelector("#hcpForecast"),
   toPar: document.querySelector("#toPar"),
   targetPace: document.querySelector("#targetPace"),
   breakTarget: document.querySelector("#breakTarget"),
@@ -776,6 +777,36 @@ function nettoDoubleBogeyLimit(item) {
   return item.par + strokesForHole(item) + 2;
 }
 
+function roundStableford(round) {
+  if (round.stableford?.points != null) return round.stableford.points;
+  if (courseHandicap() === null) return null;
+  return stablefordTotal(round);
+}
+
+/* Adjusted Gross (WHS): gespielte Löcher auf Netto-Doppelbogey gekappt,
+   ungespielte Löcher zählen als Netto-Par. */
+function adjustedGrossProjection(round = state.round) {
+  return round.holes.reduce((sum, item) => {
+    const limit = nettoDoubleBogeyLimit(item);
+    const played = item.shots.length > 0 || item.scratched;
+    if (!played) return sum + item.par + strokesForHole(item);
+    return sum + Math.min(holeScore(item), limit);
+  }, 0);
+}
+
+function scoreDifferentialProjection(round = state.round) {
+  const tee = TEE_DATA[state.activeTee] || TEE_DATA.yellow;
+  return (113 / tee.slope) * (adjustedGrossProjection(round) - tee.cr);
+}
+
+function pointsNeededForBuffer() {
+  const hcp = Number(String(state.profile.handicap).replace(",", "."));
+  const tee = TEE_DATA[state.activeTee] || TEE_DATA.yellow;
+  const coursePar = COURSE.reduce((sum, item) => sum + item.par, 0);
+  const ch = courseHandicap();
+  return Math.max(1, Math.ceil(36 + coursePar + ch - tee.cr - (hcp * tee.slope) / 113 + 0.001));
+}
+
 function hcpBand() {
   const hcp = Number(state.profile.handicap);
   if (!Number.isFinite(hcp)) return "ohne HCP-Daten";
@@ -1094,6 +1125,15 @@ function noteSuggestions() {
 
 function saveCurrentRound() {
   const normalized = normalizeRound(state.round);
+  const ch = courseHandicap();
+  if (ch !== null) {
+    normalized.stableford = {
+      points: stablefordTotal(state.round),
+      courseHandicap: ch,
+      hcp: state.profile.handicap,
+      tee: state.activeTee,
+    };
+  }
   const index = state.archive.findIndex((item) => item.id === normalized.id);
   if (index >= 0) state.archive[index] = normalized;
   else state.archive.unshift(normalized);
@@ -1374,7 +1414,39 @@ function renderNotes() {
   els.noteSuggestions.innerHTML = noteSuggestions().map((note) => `<option value="${escapeHtml(note)}"></option>`).join("");
 }
 
+function renderHcpForecast() {
+  if (!els.hcpForecast) return;
+  const ch = courseHandicap();
+  const played = playedHoles().length;
+  if (ch === null || !played) {
+    els.hcpForecast.innerHTML = ch === null
+      ? `<div class="empty-state compact">HCP in den Einstellungen setzen, dann erscheint hier die Handicap-Prognose.</div>`
+      : "";
+    return;
+  }
+  const hcp = Number(String(state.profile.handicap).replace(",", "."));
+  const sd = scoreDifferentialProjection();
+  const sdText = sd.toFixed(1);
+  const diff = sd - hcp;
+  const points = stablefordTotal();
+  const needed = pointsNeededForBuffer();
+  let verdict;
+  let css;
+  if (diff < -0.4) { verdict = "Unterspielung in Reichweite"; css = "good"; }
+  else if (diff <= 0.5) { verdict = "auf HCP-Kurs"; css = "neutral"; }
+  else { verdict = "über deinem HCP (Hochspielung max. +0,1)"; css = "warn"; }
+  els.hcpForecast.innerHTML = `
+    <article class="hcp-forecast-card ${css}">
+      <p class="eyebrow">HCP-Prognose · live</p>
+      <h3>Score Differential ${sdText} <span class="hcp-forecast-verdict">${verdict}</span></h3>
+      <p>${points} Punkte nach ${played} Loch. Restlöcher als Netto-Par gerechnet. Ab <strong>${needed} Punkten</strong> unterspielst du dein HCP ${state.profile.handicap}.</p>
+      <p class="setting-help">Prognose ohne PCC-Anpassung — offiziell zählt die Auswertung des Verbands.</p>
+    </article>
+  `;
+}
+
 function renderAnalysis() {
+  renderHcpForecast();
   const counts = resultCounts();
   const played = playedHoles().length;
   const score = roundScore();
@@ -1761,9 +1833,10 @@ function renderArchive() {
         .map((round) => {
           const date = new Date(round.updatedAt || round.createdAt).toLocaleDateString("de-DE");
           const holes = playedHoles(round).length;
+          const pts = roundStableford(round);
           return `
             <article class="archive-card">
-              <h3>${date} · ${holes} Loch · Score ${roundScore(round) || 0}</h3>
+              <h3>${date} · ${holes} Loch · Score ${roundScore(round) || 0}${pts === null ? "" : ` · ${pts} Pkt.`}</h3>
               <p>${round.course}</p>
               <button type="button" data-load-round="${round.id}">Runde laden</button>
             </article>
@@ -1803,7 +1876,11 @@ function renderHistoryStats() {
           <h3>${group.rounds.length} Runde${group.rounds.length === 1 ? "" : "n"}</h3>
           <strong>Ø ${avgScore} auf Ø ${avgHoles} Loch</strong>
           <div class="stat-bar"><i style="width:${Math.min(100, Math.round((avgHoles / 18) * 100))}%"></i></div>
-          <p>Bester Score: ${Number.isFinite(best) ? best : "-"}</p>
+          <p>Bester Score: ${Number.isFinite(best) ? best : "-"}${(() => {
+            const withPts = group.rounds.map((r) => roundStableford(r)).filter((p) => p !== null);
+            if (!withPts.length) return "";
+            return ` · Ø ${Math.round(withPts.reduce((a, b) => a + b, 0) / withPts.length)} Pkt.`;
+          })()}</p>
         </article>
       `;
     })

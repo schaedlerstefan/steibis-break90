@@ -224,6 +224,34 @@ h1#appName {
 }
 .scorebar #stablefordTotal { color: var(--accent); }
 
+/* HCP-Prognose (Statistik) */
+.hcp-forecast { margin-bottom: 12px; }
+.hcp-forecast-card {
+  padding: 16px;
+  border: 1.5px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.hcp-forecast-card.good { border-left-color: var(--success); }
+.hcp-forecast-card.warn { border-left-color: var(--warn); }
+.hcp-forecast-card h3 { margin: 4px 0 6px; font-size: 1.02rem; }
+.hcp-forecast-card p { color: var(--muted); font-size: .88rem; line-height: 1.5; }
+.hcp-forecast-verdict {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: .72rem;
+  font-weight: 800;
+  vertical-align: middle;
+}
+.hcp-forecast-card.warn .hcp-forecast-verdict { background: var(--warn-soft); color: var(--warn); }
+.hcp-forecast-card.good .hcp-forecast-verdict { background: var(--success-soft); color: var(--success); }
+
 /* Stableford-Punkte-Badge am Loch */
 .score-points {
   display: inline-block;
