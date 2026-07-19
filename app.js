@@ -699,6 +699,7 @@ const els = {
   ruleTitle: document.querySelector("#ruleTitle"),
   ruleBody: document.querySelector("#ruleBody"),
   ruleOptions: document.querySelector("#ruleOptions"),
+  openRules: document.querySelector("#openRules"),
   ruleSource: document.querySelector("#ruleSource"),
   feedbackModal: document.querySelector("#feedbackModal"),
   closeFeedbackModal: document.querySelector("#closeFeedbackModal"),
@@ -1214,22 +1215,35 @@ function scratchHole() {
   finishHole();
 }
 
-function openRuleModal(ruleKey) {
+function openRuleModal(ruleKey, readonly = false) {
   const info = RULE_INFO[ruleKey];
   if (!info) return;
   els.ruleTitle.textContent = RULE_TITLES[ruleKey] || info.title;
   els.ruleBody.innerHTML = `<p>${info.body}</p>`;
   els.ruleSource.innerHTML = `${info.source} <a href="${info.url}" target="_blank" rel="noreferrer">Offizielle Regel prüfen</a>`;
-  els.ruleOptions.innerHTML = info.options
-    .map(
-      (option, index) => `
+  els.ruleOptions.innerHTML = readonly
+    ? `<button class="rule-option" type="button" data-rule-back="1">‹ Zurück zur Regelübersicht</button>`
+    : info.options
+        .map(
+          (option, index) => `
         <button class="rule-option ${option.penalty ? "penalty" : ""}" type="button" data-rule-option="${index}">
           ${option.label}
         </button>
       `,
-    )
-    .join("");
+        )
+        .join("");
   els.ruleModal.dataset.rule = ruleKey;
+  els.ruleModal.hidden = false;
+}
+
+function openRulesIndex() {
+  els.ruleTitle.textContent = "Golfregeln · Schnellzugriff";
+  els.ruleBody.innerHTML = `<p>Die häufigsten Fälle, amateurgerecht erklärt. Im Turnier gelten die offiziellen Regeln und die lokalen Platzregeln — im Zweifel Spielleitung fragen.</p>`;
+  els.ruleOptions.innerHTML = Object.entries(RULE_TITLES)
+    .map(([key, label]) => `<button class="rule-option" type="button" data-rule-open="${key}">${label}</button>`)
+    .join("");
+  els.ruleSource.innerHTML = `<a href="https://www.randa.org/de-de/rog/the-rules-of-golf" target="_blank" rel="noreferrer">Offizielles Regelwerk öffnen (R&amp;A)</a>`;
+  delete els.ruleModal.dataset.rule;
   els.ruleModal.hidden = false;
 }
 
@@ -2621,6 +2635,10 @@ els.puttGrid.addEventListener("click", (event) => {
 });
 
 els.ruleOptions.addEventListener("click", (event) => {
+  const openButton = event.target.closest("[data-rule-open]");
+  if (openButton) return openRuleModal(openButton.dataset.ruleOpen, true);
+  const backButton = event.target.closest("[data-rule-back]");
+  if (backButton) return openRulesIndex();
   const button = event.target.closest("[data-rule-option]");
   if (button) chooseRuleOption(Number(button.dataset.ruleOption));
 });
@@ -2649,6 +2667,7 @@ els.drillList?.addEventListener("click", (event) => {
   const doneButton = event.target.closest("[data-drill-done]");
   if (doneButton) toggleDrillDone(doneButton.dataset.drillDone);
 });
+els.openRules?.addEventListener("click", openRulesIndex);
 els.modeDetail.addEventListener("click", () => {
   state.profile.entryMode = "detail";
   saveProfile();

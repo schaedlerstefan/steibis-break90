@@ -224,6 +224,15 @@ h1#appName {
 }
 .scorebar #stablefordTotal { color: var(--accent); }
 
+/* Runde: Schnellzugriff-Reihe (Loch wechseln + Regeln) */
+.round-quick-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.round-quick-row .hole-toggle { width: 100%; }
+.rules-button { color: var(--accent); font-weight: 800; }
+
 /* KI-Trainer: Übungsfilter + Session */
 .drill-filters { display: grid; gap: 8px; margin: 10px 0 12px; }
 .filter-chips {

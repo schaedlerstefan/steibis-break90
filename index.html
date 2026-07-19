@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=41" />
+    <link rel="stylesheet" href="styles.css?v=42" />
   </head>
   <body>
     <div class="app-shell">
@@ -95,7 +95,10 @@
             <button class="compact-button" id="enableGps" type="button">GPS aktivieren</button>
           </section>
 
-          <button class="hole-toggle" id="toggleHoleMenu" type="button">Loch wechseln</button>
+          <div class="round-quick-row">
+            <button class="hole-toggle" id="toggleHoleMenu" type="button">Loch wechseln</button>
+            <button class="hole-toggle rules-button" id="openRules" type="button">§ Golfregeln</button>
+          </div>
           <div class="hole-strip collapsed" id="holeStrip" aria-label="Loch auswählen"></div>
 
           <section class="shot-entry" aria-label="Schlag erfassen">
@@ -368,10 +371,10 @@
       </section>
     </div>
 
-    <script src="app.js?v=41"></script>
+    <script src="app.js?v=42"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=41");
+        navigator.serviceWorker.register("./sw.js?v=42");
       }
     </script>
   </body>
