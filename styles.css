@@ -1,6 +1,6 @@
 /* ================================================================
-   CoursePilot — Design System v29
-   Apple-inspired · Golf-Premium · Mobile-first
+   CoursePilot — Design System v36 "Hell & Clean"
+   Apple-inspired · viel Weiß · ein starker Grün-Akzent · Mobile-first
    ================================================================ */
 
 /* ── 1. Design Tokens ─────────────────────────────────────────── */
@@ -8,39 +8,39 @@
   color-scheme: light;
 
   /* Backgrounds */
-  --bg:           #f4f5f2;
-  --bg-2:         #edf0eb;
+  --bg:           #fbfcfb;
+  --bg-2:         #f5f7f6;
   --surface:      #ffffff;
-  --surface-tint: #f9faf8;
+  --surface-tint: #fafcfb;
 
   /* Text */
-  --ink:       #111716;
-  --ink-2:     #263030;
-  --muted:     #62706a;
-  --muted-2:   #8a9590;
+  --ink:       #17201c;
+  --ink-2:     #2a3430;
+  --muted:     #66716c;
+  --muted-2:   #939c97;
 
-  /* Brand – Forest Green */
-  --accent:       #163627;
-  --accent-mid:   #1e4d38;
-  --accent-muted: #2d6b4a;
-  --accent-light: #e7f2ec;
+  /* Brand – Vivid Golf Green */
+  --accent:       #0c7a45;
+  --accent-mid:   #0a6238;
+  --accent-muted: #3f9e6f;
+  --accent-light: #e8f6ee;
 
-  /* Secondary – Slate Blue */
-  --accent-2:       #295e73;
-  --accent-2-light: #e4eff5;
+  /* Secondary – Subdued Slate */
+  --accent-2:       #33566a;
+  --accent-2-light: #edf3f6;
 
   /* Functional */
-  --warn:         #b3422a;
-  --warn-soft:    #fcecea;
-  --gold:         #a87820;
-  --gold-soft:    #fdf3de;
-  --success:      #276b47;
-  --success-soft: #e4f2ec;
+  --warn:         #c2402a;
+  --warn-soft:    #fdedea;
+  --gold:         #a97f1f;
+  --gold-soft:    #faf4e4;
+  --success:      #17804d;
+  --success-soft: #e6f5ec;
 
   /* Neutrals */
-  --soft:   #edf2ee;
-  --line:   #dce4df;
-  --line-2: #c8d4cc;
+  --soft:   #f0f4f1;
+  --line:   #e7ece9;
+  --line-2: #d8e0da;
 
   /* Shadows – slightly softer */
   --shadow-xs: 0 1px 2px rgba(12,26,18,.03);
