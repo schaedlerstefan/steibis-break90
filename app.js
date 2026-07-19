@@ -530,12 +530,6 @@ const els = {
   feedbackText: document.querySelector("#feedbackText"),
   roundEmotion: document.querySelector("#roundEmotion"),
   saveFeedback: document.querySelector("#saveFeedback"),
-  frontSwingVideo: document.querySelector("#frontSwingVideo"),
-  rearSwingVideo: document.querySelector("#rearSwingVideo"),
-  geminiApiKey: document.querySelector("#geminiApiKey"),
-  analyzeSwing: document.querySelector("#analyzeSwing"),
-  swingStatus: document.querySelector("#swingStatus"),
-  swingResult: document.querySelector("#swingResult"),
   languageToggle: document.querySelector("#languageToggle"),
   welcomeInfo: document.querySelector("#welcomeInfo"),
   shareActions: document.querySelector("#shareActions"),
@@ -553,29 +547,6 @@ const els = {
 function haptic(ms = 8) {
   try { navigator.vibrate?.(ms); } catch (_) {}
 }
-
-function isLocalTestHost() {
-  const host = window.location.hostname;
-  return host === "localhost"
-    || host === "127.0.0.1"
-    || host === "::1"
-    || host.endsWith(".local")
-    || /^10\./.test(host)
-    || /^192\.168\./.test(host)
-    || /^172\.(1[6-9]|2\d|3[0-1])\./.test(host);
-}
-
-function setupGeminiAccess() {
-  if (!els.geminiApiKey) return;
-  if (isLocalTestHost()) return;
-
-  els.geminiApiKey.value = "";
-  els.geminiApiKey.disabled = true;
-  els.geminiApiKey.placeholder = "Nur lokal verfügbar";
-  els.geminiApiKey.closest(".gemini-key-field")?.classList.add("disabled");
-  els.swingStatus.textContent = "Öffentlich gehostet: Gemini läuft nur über den sicheren Backend-Endpunkt. Lokale API-Keys sind deaktiviert.";
-}
-
 
 /* ── Confetti ── */
 function showConfetti() {
@@ -2043,155 +2014,6 @@ function shareTo(channel) {
   });
 }
 
-function swingContext() {
-  const counts = resultCounts();
-  const played = playedHoles().length;
-  return {
-    handicap: state.profile.handicap || "nicht gesetzt",
-    breakTarget: state.round.breakTarget || 90,
-    tee: TEE_DATA[state.activeTee]?.label || state.activeTee,
-    playedHoles: played,
-    score: roundScore(),
-    toPar: toPar(),
-    shotTypes: counts.byType,
-    patterns: {
-      rechts: counts.Rechts,
-      links: counts.Links,
-      fett: counts.Fett,
-      getoppt: counts.Getoppt,
-      zuKurz: counts["Zu kurz"],
-      zuLang: counts["Zu lang"],
-      strafschlaege: counts.Strafschläge,
-      gestrichen: counts.Gestrichen,
-      putts: counts.Putts,
-    },
-  };
-}
-
-function swingPrompt(context) {
-  return [
-    "Analysiere diese zwei Golf-Schwungvideos für einen Amateurspieler.",
-    "Video 1 ist frontal, Video 2 ist von hinten entlang der Ziellinie. Beide sollen auf Hüfthöhe gefilmt sein.",
-    "Arbeite wie ein Golfcoach. Gib keine medizinische Diagnose und keine übertriebene Sicherheit vor.",
-    "Vergleiche deine Beobachtungen mit den Rundendaten der App.",
-    "",
-    `Rundendaten: ${JSON.stringify(context)}`,
-    "",
-    "Antwortformat auf Deutsch:",
-    "1. Kurzfazit in maximal 3 Sätzen.",
-    "2. Beobachtungen frontal.",
-    "3. Beobachtungen von hinten.",
-    "4. Zusammenhang zu den CoursePilot-Mustern.",
-    "5. Die 3 wichtigsten Trainingsaufgaben.",
-    "6. Ein einfacher Drill für die nächste Range-Session.",
-    "7. Was im nächsten Video besser gefilmt werden soll.",
-  ].join("\n");
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function renderSwingAnalysis(text) {
-  const escaped = escapeHtml(text);
-  els.swingResult.innerHTML = `<article class="training-card"><p>${escaped.replace(/\n/g, "</p><p>")}</p></article>`;
-}
-
-function updateSwingCaptureStatus() {
-  const front = els.frontSwingVideo.files?.[0];
-  const rear = els.rearSwingVideo.files?.[0];
-  if (front && rear) {
-    const totalMb = ((front.size + rear.size) / 1024 / 1024).toFixed(1);
-    els.swingStatus.textContent = `Bereit für Gemini: frontal und von hinten ausgewählt (${totalMb} MB gesamt).`;
-    return;
-  }
-  if (front || rear) {
-    els.swingStatus.textContent = front
-      ? "Frontal-Video ist bereit. Bitte noch das Video von hinten aufnehmen oder hochladen."
-      : "Video von hinten ist bereit. Bitte noch das Frontal-Video aufnehmen oder hochladen.";
-    return;
-  }
-  els.swingStatus.textContent = "Nutze auf dem Smartphone direkt die Kamera oder wähle vorhandene Videos aus. Für Produktion nutzt die App einen sicheren Backend-Endpunkt.";
-}
-
-async function analyzeSwingWithGemini() {
-  const front = els.frontSwingVideo.files?.[0];
-  const rear = els.rearSwingVideo.files?.[0];
-  if (!front || !rear) {
-    els.swingStatus.textContent = "Bitte lade ein frontales Video und ein Video von hinten hoch.";
-    return;
-  }
-  const maxBytes = 18 * 1024 * 1024;
-  if (front.size > maxBytes || rear.size > maxBytes) {
-    els.swingStatus.textContent = "Bitte nutze kurze Clips unter 18 MB pro Video. Ideal sind 1 bis 3 Schwünge.";
-    return;
-  }
-
-  els.analyzeSwing.disabled = true;
-  els.swingStatus.textContent = "Videos werden vorbereitet und an Gemini gesendet...";
-  els.swingResult.innerHTML = "";
-
-  try {
-    const prompt = swingPrompt(swingContext());
-    const payload = {
-      prompt,
-      videos: [
-        { label: "Frontal", mimeType: front.type || "video/mp4", data: await fileToBase64(front) },
-        { label: "Von hinten", mimeType: rear.type || "video/mp4", data: await fileToBase64(rear) },
-      ],
-    };
-    const apiKey = isLocalTestHost() ? els.geminiApiKey.value.trim() : "";
-    const result = apiKey ? await callGeminiDirect(payload, apiKey) : await callGeminiBackend(payload);
-    els.swingStatus.textContent = apiKey
-      ? "Analyse abgeschlossen. Hinweis: Der lokale Testmodus ist nicht für öffentliche Nutzung gedacht."
-      : "Analyse abgeschlossen.";
-    renderSwingAnalysis(result);
-  } catch (error) {
-    els.swingStatus.textContent = `Analyse nicht möglich: ${error.message}`;
-  } finally {
-    els.analyzeSwing.disabled = false;
-  }
-}
-
-async function callGeminiBackend(payload) {
-  const response = await fetch("/api/analyze-swing", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    if (response.status === 404) throw new Error("Backend-Endpunkt fehlt. Für GitHub Pages nutze testweise einen lokalen Gemini API-Key oder deploye die Netlify Function.");
-    throw new Error(await response.text());
-  }
-  const json = await response.json();
-  return json.text || "Keine Analyse erhalten.";
-}
-
-async function callGeminiDirect(payload, apiKey) {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{
-        role: "user",
-        parts: [
-          { text: payload.prompt },
-          ...payload.videos.map((video) => ({ inline_data: { mime_type: video.mimeType, data: video.data } })),
-        ],
-      }],
-      generationConfig: { temperature: 0.2 },
-    }),
-  });
-  const json = await response.json();
-  if (!response.ok) throw new Error(json.error?.message || "Gemini API Fehler.");
-  return json.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n").trim() || "Keine Analyse erhalten.";
-}
-
 function saveFeedbackEntry() {
   const answers = [...els.feedbackList.querySelectorAll("[data-feedback]")].map((select, index) => ({
     question: FEEDBACK_QUESTIONS[index],
@@ -2368,9 +2190,6 @@ els.feedbackModal.addEventListener("click", (event) => {
   if (event.target === els.feedbackModal) closeFeedbackModal();
 });
 els.saveFeedback.addEventListener("click", saveFeedbackEntry);
-els.analyzeSwing.addEventListener("click", analyzeSwingWithGemini);
-els.frontSwingVideo.addEventListener("change", updateSwingCaptureStatus);
-els.rearSwingVideo.addEventListener("change", updateSwingCaptureStatus);
 els.languageToggle.addEventListener("click", toggleLanguage);
 els.welcomeInfo.addEventListener("click", () => openInfoModal("welcome"));
 els.aboutApp.addEventListener("click", () => openInfoModal("about"));
@@ -2475,7 +2294,6 @@ els.archiveList.addEventListener("click", (event) => {
   render();
 });
 
-setupGeminiAccess();
 render();
 renderGlossary();
 

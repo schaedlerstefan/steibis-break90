@@ -1431,88 +1431,6 @@ h1#appName {
 .chart-row.contact i  { background: var(--muted); }
 .chart-row.putt i     { background: var(--accent-mid); }
 
-/* ── 17. Gemini / Swing ───────────────────────────────────────── */
-.premium-swing-card {
-  margin-top: 14px;
-  padding: 18px;
-  border: 1.5px solid rgba(168,120,32,.28);
-  border-radius: var(--r);
-  background: linear-gradient(180deg, var(--gold-soft), var(--surface) 64%);
-  box-shadow: var(--shadow-sm);
-}
-.premium-swing-card h3 { margin-bottom: 7px; font-size: 1.05rem; }
-.premium-swing-card p { color: var(--muted); font-size: .9rem; line-height: 1.52; }
-
-.video-upload-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 8px;
-  margin-top: 12px;
-}
-.video-upload-grid label {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-  padding: 12px;
-  border: 1.5px solid rgba(168,120,32,.2);
-  border-radius: var(--r-sm);
-  background: rgba(255,255,255,.65);
-  color: var(--gold);
-  font-size: .78rem;
-  font-weight: 800;
-}
-.video-upload-grid label > span,
-.video-upload-grid small {
-  overflow-wrap: anywhere;
-}
-.video-upload-grid small {
-  color: var(--muted);
-  font-size: .78rem;
-  font-weight: 700;
-  line-height: 1.38;
-}
-.video-upload-grid input {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  color: var(--muted);
-  font-size: .78rem;
-}
-.video-upload-grid input::file-selector-button {
-  margin-right: 8px;
-}
-
-.gemini-key-field {
-  display: grid;
-  gap: 6px;
-  margin-top: 12px;
-  color: var(--gold);
-  font-size: .74rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-.gemini-key-field input {
-  min-height: 46px;
-  border: 1.5px solid rgba(168,120,32,.2);
-  border-radius: var(--r-sm);
-  padding: 0 13px;
-  background: rgba(255,255,255,.75);
-  color: var(--ink);
-  text-transform: none;
-  letter-spacing: 0;
-}
-.swing-status { margin-top: 10px; font-size: .84rem !important; color: var(--muted); }
-.gemini-key-field.disabled {
-  opacity: .68;
-}
-.gemini-key-field.disabled input {
-  cursor: not-allowed;
-  background: rgba(255,255,255,.58);
-}
-
-.swing-result { display: grid; gap: 10px; margin-top: 10px; }
-
 /* ── 18. History ──────────────────────────────────────────────── */
 .history-heading { align-items: center; }
 .segmented-control {
@@ -1917,12 +1835,6 @@ h1#appName {
   .tab {
     padding: 8px 2px;
     font-size: .62rem;
-  }
-}
-
-@media (max-width: 680px) {
-  .video-upload-grid {
-    grid-template-columns: 1fr;
   }
 }
 

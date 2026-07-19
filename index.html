@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=35" />
+    <link rel="stylesheet" href="styles.css?v=36" />
   </head>
   <body>
     <div class="app-shell">
@@ -171,40 +171,6 @@
             </div>
             <div class="training-list" id="trainingList"></div>
             <div class="top-three" id="topThree"></div>
-            <section class="premium-swing-card">
-              <p class="eyebrow">Premium · Gemini Schwunganalyse</p>
-              <h3>Schwungvideos abgleichen</h3>
-              <p>Starte nach der Runde eine Kamera- oder Upload-Analyse. Nimm zwei kurze Clips auf: frontal und von hinten, jeweils auf Hüfthöhe. Gemini gleicht den Schwung mit deinen KI-Caddie-Mustern ab.</p>
-              <div class="video-upload-grid">
-                <label>
-                  <span>1 · Frontal aufnehmen/hochladen</span>
-                  <small>Handy auf Hüfthöhe, Ball und Füße sichtbar.</small>
-                  <input id="frontSwingVideo" type="file" accept="video/*" capture="environment" />
-                </label>
-                <label>
-                  <span>2 · Von hinten aufnehmen/hochladen</span>
-                  <small>Entlang der Ziellinie, Hände und Schlägerkopf sichtbar.</small>
-                  <input id="rearSwingVideo" type="file" accept="video/*" capture="environment" />
-                </label>
-              </div>
-              <label class="gemini-key-field">
-                <span>Gemini API-Key nur für lokalen Test</span>
-                <input id="geminiApiKey" type="password" autocomplete="off" placeholder="Optional: AIza..." />
-              </label>
-              <button class="wide-button primary" id="analyzeSwing" type="button">Schwung mit Gemini analysieren</button>
-              <p class="swing-status" id="swingStatus">Für Produktion nutzt die App einen sicheren Backend-Endpunkt. Der lokale API-Key ist nur zum Testen gedacht.</p>
-              <div class="swing-result" id="swingResult"></div>
-              <details class="more-panel">
-                <summary>Video-Empfehlungen</summary>
-                <ul class="caddie-bullets">
-                  <li>Smartphone stabil auf Hüfthöhe platzieren, nicht aus der Hand filmen.</li>
-                  <li>Frontal: Kamera auf Brustmitte, Ball und Füße vollständig sichtbar.</li>
-                  <li>Von hinten: Kamera entlang der Ziellinie, Hände, Ball, Schlägerkopf und Zielrichtung sichtbar.</li>
-                  <li>Je Video 1 bis 3 Schwünge, gute Beleuchtung, möglichst 60 fps.</li>
-                  <li>Gemini arbeitet besser, wenn Schlagtyp, Ziel, Ballflug und typischer Fehler im Prompt stehen.</li>
-                </ul>
-              </details>
-            </section>
           </section>
 
           <section class="training-subpanel" id="statsSubpanel" data-training-panel="stats">
@@ -359,10 +325,10 @@
       </section>
     </div>
 
-    <script src="app.js?v=35"></script>
+    <script src="app.js?v=36"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=35");
+        navigator.serviceWorker.register("./sw.js?v=36");
       }
     </script>
   </body>
