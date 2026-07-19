@@ -381,6 +381,164 @@ const TRAINING_DETAILS = {
   },
 };
 
+/* ── Übungsbibliothek KI-Trainer ─────────────────────────────────
+   Kategorien: putten, chippen, pitchen, range. Zeiten: 15/30/45.
+   targets = Gewichtung je Fehlerdimension für die Empfehlungslogik. */
+const DRILL_CATEGORIES = [
+  { key: "alle", label: "Alle" },
+  { key: "putten", label: "Putten" },
+  { key: "chippen", label: "Chippen" },
+  { key: "pitchen", label: "Pitchen" },
+  { key: "range", label: "Drivingrange" },
+];
+const DRILL_TIMES = [15, 30, 45];
+const DRILLS = [
+  {
+    id: "p-leiter", cat: "putten", time: 15, title: "Leiter-Putts: Distanzkontrolle",
+    coach: "Dave Pelz", place: "Putting-Grün", tools: "Putter, 3 Bälle, 3 Tees",
+    goal: "Erster Putt bleibt immer in Putterlänge — 3-Putts eliminieren.",
+    drill: "Markiere Ziele bei 9, 12 und 15 Metern. Putte je 3 Bälle pro Distanz in Zonen statt aufs Loch. Zähle, wie viele in einer Putterlänge enden.",
+    quality: "7 von 9 Bällen in Putterlänge — dann Distanzen mischen.",
+    url: "https://golf.com/instruction/putting/timeless-tips-dave-pelz-putting-system/",
+    targets: { threePutt: 4, distanz: 1 },
+  },
+  {
+    id: "p-uhr", cat: "putten", time: 15, title: "Uhr-Drill: kurze Putts sicher machen",
+    coach: "Phil Mickelson", place: "Putting-Grün", tools: "Putter, 6-12 Bälle",
+    goal: "1-Meter-Putts werden Automatismus — Druckresistenz.",
+    drill: "Lege Bälle im Kreis (Uhrpositionen) 1 Meter ums Loch. Loche alle in Serie. Bei einem Fehler beginnt die Runde von vorn. Danach Radius auf 2 Meter erhöhen.",
+    quality: "12 in Serie aus 1 m ohne Fehler.",
+    url: "https://2ndshotmvp.com/blogs/news/golf-putting-practice-drills",
+    targets: { threePutt: 3 },
+  },
+  {
+    id: "p-gate", cat: "putten", time: 15, title: "Gate-Drill: Startlinie kontrollieren",
+    coach: "Tiger Woods / Tour-Standard", place: "Putting-Grün", tools: "Putter, 2 Tees, 3 Bälle",
+    goal: "Schlagfläche im Treffmoment square — Startrichtung stabilisieren.",
+    drill: "Stecke 2 Tees als Tor knapp breiter als der Ball, ca. 10 cm vor dem Ball auf 1,5-m-Putts. 10 Putts durchs Tor ohne Berührung.",
+    quality: "9 von 10 durchs Tor, danach mit geschlossenen Augen prüfen.",
+    url: "https://2ndshotmvp.com/blogs/news/golf-putting-practice-drills",
+    targets: { threePutt: 2, richtung: 1 },
+  },
+  {
+    id: "p-18", cat: "putten", time: 30, title: "Putt-18: Druck simulieren",
+    coach: "Dave Stockton (Prinzip)", place: "Putting-Grün", tools: "Putter, 1 Ball, Scorecard",
+    goal: "Zwei-Putt-Quote unter Turnierdruck.",
+    drill: "Spiele 18 'Löcher' auf dem Putting-Grün mit wechselnden Distanzen (3-15 m), jedes Loch max. 2 Putts als Ziel. Notiere den Score wie eine Runde.",
+    quality: "36 oder besser — jede Wiederholung gegen den eigenen Rekord.",
+    url: "https://oldduffergolf.com/putting-drills/",
+    targets: { threePutt: 3, base: 1 },
+  },
+  {
+    id: "c-towel", cat: "chippen", time: 15, title: "Handtuch-Drill: sauberer Ballkontakt",
+    coach: "Standard-Tour-Drill", place: "Chipping-Bereich", tools: "Wedge, Handtuch, 10 Bälle",
+    goal: "Ball zuerst, dann Boden — fette und getoppte Chips abstellen.",
+    drill: "Lege ein Handtuch ca. 5 cm hinter den Ball. Chippe 10 Bälle, ohne das Handtuch zu berühren. Danach 10 ohne Handtuch mit gleichem Gefühl.",
+    quality: "10 von 10 ohne Handtuchkontakt bei sauberem Treffmoment.",
+    url: "https://breakxgolf.com/best-chipping-drills/",
+    targets: { kontakt: 4 },
+  },
+  {
+    id: "c-leiter", cat: "chippen", time: 15, title: "Leiter-Chips: Längengefühl",
+    coach: "Break X / Standard", place: "Chipping-Grün", tools: "Wedge, 9 Bälle, 3 Ziele",
+    goal: "Chip-Längen über die Landezone steuern.",
+    drill: "Drei Ziele bei 5, 10 und 15 Metern. Chippe je 3 Bälle, immer von nah nach fern und zurück. Der Landepunkt zählt, nicht das Ausrollen.",
+    quality: "6 von 9 Bällen in einer Schlägerlänge um das Ziel.",
+    url: "https://thegolfexperts.com/chipping-drills-for-beginners/",
+    targets: { distanz: 3, threePutt: 1 },
+  },
+  {
+    id: "c-clock", cat: "chippen", time: 30, title: "Rund-ums-Grün: Lagen-Vielfalt",
+    coach: "Uhr-Prinzip", place: "Chipping-Grün", tools: "2 Wedges, 8 Bälle",
+    goal: "Aus jeder Lage die einfachste Variante wählen.",
+    drill: "Verteile 8 Bälle rund ums Grün (Uhrpositionen) in unterschiedliche Lagen. Spiele jeden Ball mit bewusster Entscheidung: Landepunkt, Schläger, Flugbahn.",
+    quality: "6 von 8 innerhalb von 2 Metern — sonst Variante vereinfachen.",
+    url: "https://thegolfexperts.com/chipping-and-pitching-drills/",
+    targets: { distanz: 2, kontakt: 1, base: 1 },
+  },
+  {
+    id: "c-updown", cat: "chippen", time: 30, title: "Up-and-Down-Spiel: Scrambling",
+    coach: "Turniersimulation", place: "Chipping-Grün", tools: "Wedge, Putter, 9 Bälle",
+    goal: "Chip + Putt als Einheit — Bogey retten wie im Turnier.",
+    drill: "9 Bälle in zufällige Lagen werfen. Jede Lage zu Ende spielen: Chip plus Putts. Zähle, wie oft du mit maximal 3 Schlägen einlochst (Up-and-Down).",
+    quality: "4 von 9 Up-and-Downs entspricht solidem Amateur-Niveau — Rekord notieren.",
+    url: "https://hackmotion.com/best-short-game-drills/",
+    targets: { threePutt: 1, kontakt: 1, distanz: 1, base: 1 },
+  },
+  {
+    id: "pi-uhrzeiger", cat: "pitchen", time: 30, title: "Uhrzeiger-System: 3 feste Längen",
+    coach: "Dave Pelz", place: "Range oder Pitch-Bereich", tools: "Wedges, 15 Bälle",
+    goal: "Berechenbare Pitch-Distanzen statt Gefühl im Blindflug.",
+    drill: "Schwinge das Wedge bis 9, 10 und 11 Uhr (Rückschwung) und notiere die Carry-Distanz je Länge und Schläger. Je 5 Bälle pro Position mit voller Routine.",
+    quality: "Eigene Distanz-Tabelle mit 3 Längen × 2 Wedges — abfotografieren und in die Lochnotizen legen.",
+    url: "https://hackmotion.com/best-short-game-drills/",
+    targets: { distanz: 4 },
+  },
+  {
+    id: "pi-landeleiter", cat: "pitchen", time: 15, title: "Landepunkt-Leiter 10/20/30",
+    coach: "Ladder-Prinzip", place: "Pitch-Bereich", tools: "Wedge, 9 Bälle, 3 Handtücher",
+    goal: "Landepunkt statt Endposition ansteuern.",
+    drill: "Lege Handtücher bei 10, 20 und 30 Metern. Pitche je 3 Bälle und bewerte nur den ersten Aufsprung. Reihenfolge mischen.",
+    quality: "5 von 9 Landungen innerhalb von 2 Metern am Handtuch.",
+    url: "https://thegolfexperts.com/chipping-and-pitching-drills/",
+    targets: { distanz: 3, threePutt: 1 },
+  },
+  {
+    id: "pi-lowpoint", cat: "pitchen", time: 15, title: "Low-Point-Linie: Kontakt vor dem Ball",
+    coach: "Adam Young", place: "Range (Matte oder Rasen)", tools: "Wedge, Kreide/Tee, 10 Bälle",
+    goal: "Tiefster Punkt vor dem Ball — kein Fett, kein Getoppt.",
+    drill: "Ziehe eine Linie (oder lege ein Tee) direkt vor den Ball. Triff 10 Bälle so, dass der Boden erst nach der Linie berührt wird.",
+    quality: "8 von 10 mit Bodenkontakt nach der Linie.",
+    url: "https://www.adamyounggolf.com/",
+    targets: { kontakt: 4 },
+  },
+  {
+    id: "pi-flug", cat: "pitchen", time: 30, title: "Flughöhen-Wechsel: hoch, mittel, flach",
+    coach: "Tour-Standard", place: "Pitch-Bereich", tools: "2 Wedges, 15 Bälle",
+    goal: "Drei Flugbahnen für unterschiedliche Fahnenpositionen.",
+    drill: "Gleiche Distanz (20 m), drei Flugbahnen: hoch (Ball vorn), mittel (Standard), flach (Ball zurück, Hände vor). Je 5 Bälle, Ergebnis vergleichen.",
+    quality: "Alle drei Varianten landen im 3-Meter-Radius — sonst nur Standard nutzen.",
+    url: "https://hackmotion.com/best-short-game-drills/",
+    targets: { distanz: 1, base: 1 },
+  },
+  {
+    id: "r-fairway", cat: "range", time: 15, title: "Fairway-Finder: Drives unter Druck",
+    coach: "The Left Rough / Turnierprinzip", place: "Drivingrange", tools: "Driver, 10 Bälle",
+    goal: "Abschläge im Spiel halten — Penalty-Löcher entschärfen.",
+    drill: "Definiere eine Fairway-Zone zwischen zwei Fahnen. Schlage 5 Drives in die Zone; bei 2 Fehlern beginnt die Serie von vorn. Volle Pre-Shot-Routine je Ball.",
+    quality: "5er-Serie mit maximal 1 Fehler — dann Zone schmaler wählen.",
+    url: "https://theleftrough.com/golf-practice-drills/",
+    targets: { penalty: 4, richtung: 2 },
+  },
+  {
+    id: "r-streuung", cat: "range", time: 30, title: "Streuungs-Mapping: die eigene Zielzone",
+    coach: "Scott Fawcett / DECADE", place: "Drivingrange", tools: "7er-Eisen, 20 Bälle, Notiz-App",
+    goal: "Realistische Streuung kennen und mit ihr planen statt gegen sie.",
+    drill: "20 Bälle mit dem 7er-Eisen auf ein festes Ziel. Notiere jede Endposition (links/rechts/kurz/lang). Das Ergebnis ist deine echte Zielzone für die Platzstrategie.",
+    quality: "Streuungsbild notiert und mit dem KI-Caddie-Fehlerprofil abgeglichen.",
+    url: "https://decade.golf/",
+    targets: { richtung: 4, distanz: 1 },
+  },
+  {
+    id: "r-blockrandom", cat: "range", time: 45, title: "Block + Random: Range wie der Platz",
+    coach: "Jason Birnbaum / Golf.com", place: "Drivingrange", tools: "Volles Bag, 35 Bälle",
+    goal: "Technik festigen und dann unter Platzbedingungen abrufen.",
+    drill: "20 Bälle Block-Training (ein Schläger, ein technischer Fokus). Danach 15 Bälle random: jeder Schlag anderes Ziel, anderer Schläger, volle Routine — nie zwei gleiche hintereinander.",
+    quality: "Im Random-Teil 10 von 15 spielbare Ergebnisse.",
+    url: "https://golf.com/instruction/3-things-incorporate-driving-range-session-jason-birnbaum/",
+    targets: { kontakt: 2, richtung: 1, base: 2 },
+  },
+  {
+    id: "r-steibis9", cat: "range", time: 45, title: "Steibis-Simulation: 9 Löcher auf der Range",
+    coach: "CoursePilot-Spezial", place: "Drivingrange", tools: "Volles Bag, 25 Bälle",
+    goal: "Platzstrategie für Oberstaufen-Steibis mental einüben.",
+    drill: "Spiele die Löcher 1-9 von Steibis auf der Range durch: je Loch den geplanten Abschlag und die Annäherung mit dem echten Schläger und voller Routine. Nutze die Lochpläne aus dem KI-Caddie.",
+    quality: "Je Loch beide Schläge in der geplanten Zielzone — Fehler wie auf dem Platz notieren.",
+    url: "https://theleftrough.com/golf-practice-drills/",
+    targets: { penalty: 2, base: 2 },
+  },
+];
+
 const COURSE_EXPERTS = [
   {
     name: "Butch Harmon",
@@ -439,6 +597,8 @@ const state = {
   showPuttMissOptions: false,
   trainingSubtab: "training",
   historyView: "month",
+  drillCat: "alle",
+  drillTime: 30,
   gps: {
     active: false,
     watchId: null,
@@ -527,6 +687,8 @@ const els = {
   courseStrategy: document.querySelector("#courseStrategy"),
   insights: document.querySelector("#insights"),
   trainingList: document.querySelector("#trainingList"),
+  drillFilters: document.querySelector("#drillFilters"),
+  drillList: document.querySelector("#drillList"),
   coachReport: document.querySelector("#coachReport"),
   archiveList: document.querySelector("#archiveList"),
   historyStats: document.querySelector("#historyStats"),
@@ -1777,6 +1939,127 @@ function mentoringPlan(key, counts, played, projected, threePlus, hcpText) {
   `;
 }
 
+/* ── KI-Trainer 2.0: Fehlerprofil + Übungsempfehlung ── */
+const DRILL_LOG_KEY = "coursepilot-drill-log";
+
+function loadDrillLog() {
+  try {
+    const log = JSON.parse(localStorage.getItem(DRILL_LOG_KEY));
+    return log && typeof log === "object" ? log : {};
+  } catch {
+    return {};
+  }
+}
+
+function toggleDrillDone(id) {
+  const log = loadDrillLog();
+  const today = new Date().toISOString().slice(0, 10);
+  const entries = Array.isArray(log[id]) ? log[id] : [];
+  if (entries.includes(today)) log[id] = entries.filter((d) => d !== today);
+  else log[id] = [...entries, today];
+  localStorage.setItem(DRILL_LOG_KEY, JSON.stringify(log));
+  renderDrills();
+}
+
+function errorProfile() {
+  const rounds = [state.round, ...state.archive.slice(0, 5)];
+  const counts = resultCounts(rounds);
+  const threePutt = rounds.reduce(
+    (sum, round) => sum + round.holes.filter(
+      (h) => h.shots.filter((s) => s.result === "Putt" || s.type === "Putt" || s.type === "putt").length >= 3,
+    ).length,
+    0,
+  );
+  return {
+    threePutt,
+    kontakt: counts.Fett + counts.Getoppt,
+    richtung: counts.Rechts + counts.Links,
+    distanz: counts["Zu kurz"] + counts["Zu lang"],
+    penalty: counts.Strafschläge + counts["Ball verloren"] + counts["Aus Gelb"] + counts["Aus Rot"] + counts["Aus Weiß"] + counts.Unspielbar,
+    base: 1,
+  };
+}
+
+const PROFILE_REASONS = {
+  threePutt: (n) => `${n} ${n === 1 ? "Loch" : "Löcher"} mit 3+ Putts`,
+  kontakt: (n) => `${n}× Fett/Getoppt`,
+  richtung: (n) => `${n}× Rechts/Links`,
+  distanz: (n) => `${n}× zu kurz/zu lang`,
+  penalty: (n) => `${n} Strafschläge/verlorene Bälle`,
+};
+
+function drillScore(drill, profile) {
+  return Object.entries(drill.targets).reduce((sum, [dim, weight]) => sum + weight * (profile[dim] || 0), 0);
+}
+
+function drillReason(drill, profile) {
+  const best = Object.entries(drill.targets)
+    .filter(([dim]) => dim !== "base" && (profile[dim] || 0) > 0)
+    .sort((a, b) => b[1] * profile[b[0]] - a[1] * profile[a[0]])[0];
+  if (!best) return "Basistraining für dein Break-Ziel.";
+  return `Weil: ${PROFILE_REASONS[best[0]](profile[best[0]])} in den letzten Runden.`;
+}
+
+function buildSession() {
+  const profile = errorProfile();
+  const pool = DRILLS
+    .filter((drill) => state.drillCat === "alle" || drill.cat === state.drillCat)
+    .map((drill) => ({ ...drill, score: drillScore(drill, profile), reason: drillReason(drill, profile) }))
+    .sort((a, b) => b.score - a.score);
+  const session = [];
+  let remaining = state.drillTime;
+  pool.forEach((drill) => {
+    if (drill.time <= remaining) {
+      session.push(drill);
+      remaining -= drill.time;
+    }
+  });
+  return { session, rest: pool.filter((d) => !session.includes(d)) };
+}
+
+function renderDrills() {
+  if (!els.drillFilters || !els.drillList) return;
+  els.drillFilters.innerHTML = `
+    <div class="filter-chips" data-filter="cat">
+      ${DRILL_CATEGORIES.map((c) => `<button type="button" class="${state.drillCat === c.key ? "active" : ""}" data-cat="${c.key}">${c.label}</button>`).join("")}
+    </div>
+    <div class="filter-chips" data-filter="time">
+      ${DRILL_TIMES.map((t) => `<button type="button" class="${state.drillTime === t ? "active" : ""}" data-time="${t}">${t} min</button>`).join("")}
+    </div>
+  `;
+  const { session } = buildSession();
+  const log = loadDrillLog();
+  const catLabel = DRILL_CATEGORIES.find((c) => c.key === state.drillCat)?.label || "Alle";
+  const totalTime = session.reduce((sum, d) => sum + d.time, 0);
+  els.drillList.innerHTML = `
+    <p class="drill-session-summary">Deine Session: <strong>${catLabel} · ${totalTime} min</strong> · aus deinen Rundendaten priorisiert.</p>
+    ${session.map((drill) => {
+      const doneCount = (log[drill.id] || []).length;
+      const doneToday = (log[drill.id] || []).includes(new Date().toISOString().slice(0, 10));
+      return `
+        <article class="training-card training-drill-card ${doneToday ? "drill-done" : ""}">
+          <p class="eyebrow">${DRILL_CATEGORIES.find((c) => c.key === drill.cat)?.label} · ${drill.time} min · ${drill.coach}</p>
+          <h3>${drill.title}</h3>
+          <p class="drill-reason">${drill.reason}</p>
+          <p>${drill.goal}</p>
+          <div class="drill-meta">
+            <span>Ort: ${drill.place}</span>
+            <span>Utensilien: ${drill.tools}</span>
+            ${doneCount ? `<span>${doneCount}× absolviert</span>` : ""}
+          </div>
+          <details class="drill-details">
+            <summary>Ablauf & Qualitätsmerkmal</summary>
+            <p><strong>Ablauf:</strong> ${drill.drill}</p>
+            <p><strong>Qualitätsmerkmal:</strong> ${drill.quality}</p>
+            <p><a href="${drill.url}" target="_blank" rel="noreferrer">Quelle öffnen</a></p>
+          </details>
+          <button class="compact-button drill-done-button" type="button" data-drill-done="${drill.id}">${doneToday ? "✓ Heute erledigt" : "Als erledigt markieren"}</button>
+        </article>
+      `;
+    }).join("")}
+  `;
+}
+
 function renderTraining() {
   const counts = resultCounts();
   const played = playedHoles().length;
@@ -1812,32 +2095,7 @@ function renderTraining() {
 
   els.trainingList.insertAdjacentHTML("beforeend", mentoringPlan(priorities[0].key, counts, played, projected, threePlus, hcpText));
 
-  els.trainingList.insertAdjacentHTML("beforeend", priorities
-    .slice(0, 3)
-    .map(({ key }, index) => {
-      const source = TRAINING_SOURCES[key];
-      const detail = TRAINING_DETAILS[key];
-      return `
-        <article class="training-card training-drill-card">
-          <p class="eyebrow">${index === 0 ? "Priorität 1" : `Priorität ${index + 1}`}</p>
-          <h3>${source.title}</h3>
-          <p>${source.text}</p>
-          <div class="drill-meta">
-            <span>Ort: ${detail.place}</span>
-            <span>Zeit: ${detail.time}</span>
-            <span>Utensilien: ${detail.tools}</span>
-          </div>
-          <details class="drill-details">
-            <summary>Details zum Tipp</summary>
-            <p><strong>Übung:</strong> ${detail.drill}</p>
-            <p><strong>Qualitätssignal:</strong> ${detail.quality}</p>
-          </details>
-          <a href="${source.url}" target="_blank" rel="noreferrer">Quelle öffnen</a>
-        </article>
-      `;
-    })
-    .join(""));
-  els.trainingList.insertAdjacentHTML("beforeend", `<div class="premium-note">Mehr-Runden-Trends: Premium. Trainerbericht: Pro-Feature.</div>`);
+  renderDrills();
 }
 
 function renderCoachReport() {
@@ -2377,6 +2635,20 @@ els.feedbackModal.addEventListener("click", (event) => {
   if (event.target === els.feedbackModal) closeFeedbackModal();
 });
 els.saveFeedback.addEventListener("click", saveFeedbackEntry);
+els.drillFilters?.addEventListener("click", (event) => {
+  const catButton = event.target.closest("[data-cat]");
+  const timeButton = event.target.closest("[data-time]");
+  if (catButton) state.drillCat = catButton.dataset.cat;
+  if (timeButton) state.drillTime = Number(timeButton.dataset.time);
+  if (catButton || timeButton) {
+    haptic();
+    renderDrills();
+  }
+});
+els.drillList?.addEventListener("click", (event) => {
+  const doneButton = event.target.closest("[data-drill-done]");
+  if (doneButton) toggleDrillDone(doneButton.dataset.drillDone);
+});
 els.modeDetail.addEventListener("click", () => {
   state.profile.entryMode = "detail";
   saveProfile();

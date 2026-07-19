@@ -224,6 +224,48 @@ h1#appName {
 }
 .scorebar #stablefordTotal { color: var(--accent); }
 
+/* KI-Trainer: Übungsfilter + Session */
+.drill-filters { display: grid; gap: 8px; margin: 10px 0 12px; }
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.filter-chips button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 800;
+}
+.filter-chips button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.drill-session-summary {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: .86rem;
+}
+.drill-session-summary strong { color: var(--ink); }
+.drill-reason {
+  display: inline-block;
+  padding: 3px 10px;
+  margin-bottom: 6px;
+  border-radius: var(--r-pill);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: .76rem;
+  font-weight: 800;
+}
+.training-drill-card.drill-done { opacity: .62; }
+.training-drill-card.drill-done h3 { text-decoration: line-through; }
+.drill-done-button { margin-top: 10px; }
+
 /* Turniermodus: Eingabemodus-Umschalter + Schnellzähler */
 .entry-mode {
   display: grid;
