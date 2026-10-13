@@ -2,6 +2,11 @@ const ACTIVE_KEY = "steibis-break90-active";
 const ARCHIVE_KEY = "steibis-break90-archive";
 const PROFILE_KEY = "steibis-caddie-profile";
 const ONBOARDING_KEY = "coursepilot-onboarding-seen";
+const COURSE_NOTES_KEY = "coursepilot-learned-course-notes";
+const PERSONAL_DATA = window.COURSEPILOT_PERSONAL_DATA || null;
+const CORE = window.CoursePilotCore;
+const REVIEW = window.CoursePilotReview;
+const HOLE_CAUSES = ["Tee", "Penalty", "Annäherung", "Kurzspiel", "Putten", "Entscheidung"];
 
 /* Tee data checked May 25, 2026.
    Hole lengths: Golfify scorecard. Totals/CR/Slope cross-checked against Albrecht Golf Guide and German Golf Guide. */
@@ -159,6 +164,67 @@ const FEEDBACK_QUESTIONS = [
   "Waren Regeln und Glossar verständlich?",
   "Würdest du die App in der nächsten Runde wieder nutzen?",
 ];
+
+/* Randy Joyner / Tour Techniques: live stays short and external;
+   the fuller learning task belongs in practice, away from the ball. */
+const JOYNER_ESSENTIALS = [
+  {
+    cue: "Sieh Ziel und Flugkurve. Lass daraus die Bewegung entstehen.",
+    title: "Der Schlag erzeugt den Schwung",
+    practice: "Wähle vor jedem Ball Ziel, Startkurve und Flughöhe. Erst danach greifst du zum Schläger. Bewerte den erzeugten Ballflug, nicht Körperpositionen.",
+  },
+  {
+    cue: "Bewege den Schläger – der Körper darf darauf reagieren.",
+    title: "Schläger statt Körperteile",
+    practice: "Schwinge den Schläger zunächst einhändig und spüre Kopfgewicht und Richtung. Füge die zweite Hand hinzu, ohne die Bewegung künstlich größer zu machen.",
+  },
+  {
+    cue: "Spüre das Gewicht des Schlägers und nutze es für Geschwindigkeit.",
+    title: "Gewicht und Schwerkraft nutzen",
+    practice: "Wechsle fünf lockere Probeschwünge mit fünf Bällen ab. Geschwindigkeit entsteht aus einer freien Schlägerbewegung, nicht aus zusätzlicher Körperspannung.",
+  },
+  {
+    cue: "Schicke Druck durch den Ball in Richtung Ziel.",
+    title: "Kompression durch die Treffzone",
+    practice: "Markiere eine Linie am Boden. Ballkontakt und Bodenkontakt sollen vorwärts durch die Treffzone gehen. Das Ergebnis ist der Maßstab, nicht eine isolierte Pose.",
+  },
+  {
+    cue: "Ein stabiler Griff, aber genug Freiheit für den Schlägerkopf.",
+    title: "Griff gibt Richtung, nicht Spannung",
+    practice: "Prüfe Schlagfläche und Griff vor der Serie. Halte sicher genug für Kontrolle, aber locker genug, dass du das Gewicht des Schlägerkopfs wahrnimmst.",
+  },
+  {
+    cue: "So wenig Zusatzbewegung wie nötig. Klarer Auftrag, freie Reaktion.",
+    title: "Unnötige Bewegung entfernen",
+    practice: "Spiele Bälle mit bewusst kompaktem Bewegungsumfang. Wird der Kontakt besser, behalte die Einfachheit und vergrößere nicht sofort den Schwung.",
+  },
+  {
+    cue: "Gib dem Schläger einen Korridor und lass ihn hindurchschwingen.",
+    title: "Channel Drill",
+    practice: "Baue mit zwei weichen Markierungen einen breiten Korridor durch die Treffzone. Der Schläger bewegt sich durch den Korridor zum Ziel; der Ballflug liefert das Feedback.",
+  },
+];
+
+const DAY_GAMES = {
+  A: {
+    label: "A-Spiel",
+    short: "Normal",
+    live: "Normaler voller Schlag auf dein klares Zielbild.",
+    detail: "Dein normaler Ballflug und voller, athletischer Schlag sind heute verfügbar.",
+  },
+  B: {
+    label: "B-Spiel",
+    short: "Kontrolliert",
+    live: "Ein Schläger mehr, kompakter Dreiviertelschlag.",
+    detail: "Heute zählt kontrollierte Länge: ein Schläger mehr und weniger Bewegungsumfang.",
+  },
+  C: {
+    label: "C-Spiel",
+    short: "Einfach",
+    live: "Zwei Schläger mehr, kompakt und flach zur breiten Zielzone.",
+    detail: "Heute wird nicht repariert: zwei Schläger mehr, kompakte Bewegung, Ball spielbar halten.",
+  },
+};
 
 /* ── PGA score names ── */
 const SCORE_NAMES_DE = {
@@ -330,15 +396,15 @@ const TRAINING_SOURCES = {
     url: "https://decade.golf/",
   },
   penalties: {
-    title: "Penalty vermeiden: grosse Zahlen stoppen",
+    title: "Spielbare Zielzone: freie nächste Position",
     coach: "DECADE / Course Management",
-    text: "Wenn Rot oder Weiss droht, wird die sichere Seite zum Ziel. Break 90 gewinnt man oft durch den vermiedenen Strafschlag.",
+    text: "Wenn Rot oder Weiss den Zielraum verengen, wird die breite spielbare Seite zum klaren Zielbild.",
     url: "https://decade.golf/",
   },
   break90: {
-    title: "Break 90: weniger Trouble, weniger 3-Putts",
+    title: "Break 90: gute Positionen und stabiler Putt-Speed",
     coach: "Shot-Scope-Daten / Golf Monthly",
-    text: "Der größte Hebel ist nicht Perfektion, sondern eine Runde mit weniger unspielbaren Abschlägen und einem 3-Putt weniger.",
+    text: "Der größte Hebel ist nicht Perfektion, sondern eine Folge spielbarer Positionen und ein erster Putt in die breite Zwei-Putt-Zone.",
     url: "https://www.golfmonthly.com/tips/how-to-break-90",
   },
 };
@@ -430,6 +496,15 @@ const DRILLS = [
     targets: { threePutt: 3, base: 1 },
   },
   {
+    id: "p-haende", cat: "putten", time: 15, title: "Drei Hände-Serien: Speed fühlen",
+    coach: "Randy Joyner", place: "Putting-Grün", tools: "Putter, 9 Bälle, 3 Distanzzonen",
+    goal: "Schlägergewicht und Geschwindigkeit wahrnehmen, bevor eine Linie kontrolliert wird.",
+    drill: "Je 3 Putts nur mit rechts, nur mit links und beidhändig. Jede Serie auf eine andere Distanzzone. Sieh vorher die Kurve und bewerte nur, ob Start und Speed zusammenpassten.",
+    quality: "Mindestens 6 von 9 Putts enden in der gewählten breiten Zielzone.",
+    url: "https://www.youtube.com/watch?v=9JZOS_Rq0t4",
+    targets: { threePutt: 4, distanz: 2, base: 1 },
+  },
+  {
     id: "c-towel", cat: "chippen", time: 15, title: "Handtuch-Drill: sauberer Ballkontakt",
     coach: "Standard-Tour-Drill", place: "Chipping-Bereich", tools: "Wedge, Handtuch, 10 Bälle",
     goal: "Ball zuerst, dann Boden — fette und getoppte Chips abstellen.",
@@ -451,7 +526,7 @@ const DRILLS = [
     id: "c-clock", cat: "chippen", time: 30, title: "Rund-ums-Grün: Lagen-Vielfalt",
     coach: "Uhr-Prinzip", place: "Chipping-Grün", tools: "2 Wedges, 8 Bälle",
     goal: "Aus jeder Lage die einfachste Variante wählen.",
-    drill: "Verteile 8 Bälle rund ums Grün (Uhrpositionen) in unterschiedliche Lagen. Spiele jeden Ball mit bewusster Entscheidung: Landepunkt, Schläger, Flugbahn.",
+    drill: "Verteile 8 Bälle in unterschiedliche Lagen. Entscheide jedes Mal in dieser Reihenfolge: putten, niedrig rollen oder höher fliegen. Nutze nur eine kniehohe und eine flaggenhohe Flugbahn.",
     quality: "6 von 8 innerhalb von 2 Metern — sonst Variante vereinfachen.",
     url: "https://thegolfexperts.com/chipping-and-pitching-drills/",
     targets: { distanz: 2, kontakt: 1, base: 1 },
@@ -520,13 +595,31 @@ const DRILLS = [
     targets: { richtung: 4, distanz: 1 },
   },
   {
-    id: "r-blockrandom", cat: "range", time: 45, title: "Block + Random: Range wie der Platz",
-    coach: "Jason Birnbaum / Golf.com", place: "Drivingrange", tools: "Volles Bag, 35 Bälle",
-    goal: "Technik festigen und dann unter Platzbedingungen abrufen.",
-    drill: "20 Bälle Block-Training (ein Schläger, ein technischer Fokus). Danach 15 Bälle random: jeder Schlag anderes Ziel, anderer Schläger, volle Routine — nie zwei gleiche hintereinander.",
-    quality: "Im Random-Teil 10 von 15 spielbare Ergebnisse.",
-    url: "https://golf.com/instruction/3-things-incorporate-driving-range-session-jason-birnbaum/",
-    targets: { kontakt: 2, richtung: 1, base: 2 },
+    id: "r-joyner-hand", cat: "range", time: 15, title: "Einhand zum Ballflug",
+    coach: "Randy Joyner", place: "Drivingrange", tools: "Wedge oder kurzes Eisen, 15 Bälle",
+    goal: "Den Schläger bewegen und den Körper darauf reagieren lassen.",
+    drill: "Fünf kleine Schwünge mit der hinteren Hand, fünf mit der vorderen Hand, fünf beidhändig. Vor jedem Ball Ziel und Flugkurve sehen; keine Körperposition korrigieren.",
+    quality: "Der Ball startet wiederholt in der gesehenen Richtung und der Kontakt bleibt bei zunehmender Freiheit stabil.",
+    url: "https://www.youtube.com/watch?v=f_g5GR90EvI",
+    targets: { kontakt: 3, richtung: 2, base: 2 },
+  },
+  {
+    id: "r-joyner-channel", cat: "range", time: 30, title: "Channel Drill: Schläger durch die Treffzone",
+    coach: "Randy Joyner", place: "Drivingrange", tools: "Eisen 7, 2 weiche Markierungen, 18 Bälle",
+    goal: "Schlägerrichtung, Druck durch den Ball und freien Körperrhythmus verbinden.",
+    drill: "Lege einen breiten Korridor durch die Treffzone. Spiele 6 halbe, 6 Dreiviertel- und 6 normale Schläge durch den Korridor. Zielbild und Ballflug bleiben wichtiger als eine perfekte Schwungbahn.",
+    quality: "Mindestens 12 von 18 Bällen starten im Korridor; danach Korridor nur leicht verengen.",
+    url: "https://www.youtube.com/watch?v=f_g5GR90EvI",
+    targets: { kontakt: 3, richtung: 3, base: 2 },
+  },
+  {
+    id: "r-blockrandom", cat: "range", time: 45, title: "Kalibrieren + Transfer: Range wie der Platz",
+    coach: "Randy Joyner / CoursePilot", place: "Drivingrange", tools: "Volles Bag, 30 Bälle",
+    goal: "Eine Fähigkeit kurz kalibrieren und überwiegend unter wechselnden Platzaufgaben abrufen.",
+    drill: "6 Bälle zum Erkunden eines klaren Ballflugs. Danach 24 Bälle random: jedes Mal anderes Ziel, anderer Schläger oder andere Flughöhe, volle Routine und nur eine Chance.",
+    quality: "Im Transfer-Teil 16 von 24 Bällen mit einer guten nächsten Option; Fehler nicht wiederholen, sondern neue Aufgabe beginnen.",
+    url: "https://www.youtube.com/watch?v=f_g5GR90EvI",
+    targets: { kontakt: 2, richtung: 2, base: 3 },
   },
   {
     id: "r-steibis9", cat: "range", time: 45, title: "Steibis-Simulation: 9 Löcher auf der Range",
@@ -564,6 +657,12 @@ const COURSE_EXPERTS = [
     advice: "Akzeptiere, dass Golf Fehler enthält. Entscheidend ist Commitment zum nächsten Schlag, nicht Ärger über den letzten.",
     url: "https://www.golfmonthly.com/features/the-game/bob-rotella-how-to-master-the-mental-game-80146",
   },
+  {
+    name: "Randy Joyner",
+    role: "Performance & Transfer",
+    advice: "Sieh zuerst den gewünschten Schlag. Bewege den Schläger zum Ziel und lass den Körper sich um diese klare Absicht organisieren.",
+    url: "https://www.youtube.com/watch?v=f_g5GR90EvI",
+  },
 ];
 
 const HOLE_PLANS = {
@@ -595,10 +694,12 @@ const state = {
   activeTee: "yellow",
   showMissOptions: false,
   showPuttMissOptions: false,
+  caddieQuiet: false,
   trainingSubtab: "training",
   historyView: "month",
   drillCat: "alle",
   drillTime: 30,
+  learnedCourseNotes: loadLearnedCourseNotes(),
   gps: {
     active: false,
     watchId: null,
@@ -617,8 +718,10 @@ const els = {
   scoreTotal: document.querySelector("#scoreTotal"),
   stablefordTotal: document.querySelector("#stablefordTotal"),
   hcpForecast: document.querySelector("#hcpForecast"),
+  roundComparison: document.querySelector("#roundComparison"),
   modeDetail: document.querySelector("#modeDetail"),
   modeQuick: document.querySelector("#modeQuick"),
+  entryMode: document.querySelector("#entryMode"),
   detailEntry: document.querySelector("#detailEntry"),
   quickEntry: document.querySelector("#quickEntry"),
   quickShotsMinus: document.querySelector("#quickShotsMinus"),
@@ -627,6 +730,17 @@ const els = {
   quickPuttsMinus: document.querySelector("#quickPuttsMinus"),
   quickPuttsPlus: document.querySelector("#quickPuttsPlus"),
   quickPuttsValue: document.querySelector("#quickPuttsValue"),
+  quickCausePicker: document.querySelector("#quickCausePicker"),
+  causeGrid: document.querySelector("#causeGrid"),
+  practiceCapture: document.querySelector("#practiceCapture"),
+  practiceClub: document.querySelector("#practiceClub"),
+  practiceLie: document.querySelector("#practiceLie"),
+  practiceTarget: document.querySelector("#practiceTarget"),
+  practiceActual: document.querySelector("#practiceActual"),
+  practiceCarry: document.querySelector("#practiceCarry"),
+  practiceRoll: document.querySelector("#practiceRoll"),
+  practiceRest: document.querySelector("#practiceRest"),
+  practiceDecision: document.querySelector("#practiceDecision"),
   toPar: document.querySelector("#toPar"),
   targetPace: document.querySelector("#targetPace"),
   breakTarget: document.querySelector("#breakTarget"),
@@ -650,6 +764,7 @@ const els = {
   holeScore: document.querySelector("#holeScore"),
   holeRating: document.querySelector("#holeRating"),
   gpsCard: document.querySelector("#gpsCard"),
+  personalPlan: document.querySelector("#personalPlan"),
   gpsEyebrow: document.querySelector("#gpsEyebrow"),
   gpsDistance: document.querySelector("#gpsDistance"),
   gpsStatus: document.querySelector("#gpsStatus"),
@@ -761,6 +876,24 @@ function holeScoreLabel(shots, par) {
   };
 }
 
+function loadLearnedCourseNotes() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COURSE_NOTES_KEY));
+    return saved && typeof saved === "object" ? saved : {};
+  } catch {
+    localStorage.removeItem(COURSE_NOTES_KEY);
+    return {};
+  }
+}
+
+function saveLearnedCourseNotes() {
+  localStorage.setItem(COURSE_NOTES_KEY, JSON.stringify(state.learnedCourseNotes));
+}
+
+function emptyObservation() {
+  return { club: "", lie: "tee", target: "Mitte", actual: "Mitte", carry: "", roll: "", rest: "", decision: "gut" };
+}
+
 function loadProfile() {
   try {
     const saved = JSON.parse(localStorage.getItem(PROFILE_KEY));
@@ -775,7 +908,7 @@ function loadProfile() {
   } catch {
     localStorage.removeItem(PROFILE_KEY);
   }
-  return { handicap: "", goal: "break90", tee: "yellow", entryMode: "detail" };
+  return { handicap: PERSONAL_DATA?.currentHcpi ?? "", goal: "break90", tee: "yellow", entryMode: "detail" };
 }
 
 function saveProfile() {
@@ -788,9 +921,11 @@ function newRound() {
     course: "Golfclub Oberstaufen-Steibis",
     goal: 89,
     breakTarget: 90,
+    purpose: "practice",
+    dayGame: "A",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    holes: COURSE.map((hole) => ({ ...hole, shots: [], note: "" })),
+    holes: COURSE.map((hole) => ({ ...hole, shots: [], note: "", cause: "", observation: emptyObservation(), completed: false })),
   };
 }
 
@@ -800,6 +935,7 @@ function resetActiveRound() {
   state.selectedShotType = "Tee";
   state.showMissOptions = false;
   state.showPuttMissOptions = false;
+  state.caddieQuiet = false;
   state.activeTab = "track";
   saveActive();
 }
@@ -811,6 +947,7 @@ function resetRoundInputs() {
   state.round.breakTarget = keepTarget;
   state.round.goal = keepTarget - 1;
   state.currentHole = 0;
+  state.caddieQuiet = false;
   saveActive();
   render();
 }
@@ -842,12 +979,17 @@ function normalizeRound(round) {
     ...newRound(),
     ...round,
     breakTarget: round.breakTarget || (round.goal ? round.goal + 1 : 90),
+    purpose: round.purpose === "tournament" ? "tournament" : "practice",
+    dayGame: ["A", "B", "C"].includes(round.dayGame) ? round.dayGame : "A",
     holes: COURSE.map((courseHole, index) => ({
       ...courseHole,
       ...(round.holes?.[index] || {}),
       shots: Array.isArray(round.holes?.[index]?.shots) ? round.holes[index].shots : [],
       scratched: Boolean(round.holes?.[index]?.scratched),
       note: round.holes?.[index]?.note || "",
+      cause: HOLE_CAUSES.includes(round.holes?.[index]?.cause) ? round.holes[index].cause : "",
+      observation: { ...emptyObservation(), ...(round.holes?.[index]?.observation || {}) },
+      completed: Boolean(round.holes?.[index]?.completed),
     })),
   };
 }
@@ -878,12 +1020,11 @@ function hole(index = state.currentHole) {
 }
 
 function playedHoles(round = state.round) {
-  return round.holes.filter((item) => item.shots.length > 0 || item.scratched);
+  return CORE.playedHoles(round);
 }
 
 function holeScore(item) {
-  if (item.scratched) return 10;
-  return item.shots.reduce((sum, shot) => sum + (shot.penalty ? 2 : 1), 0);
+  return CORE.scoreHole(item);
 }
 
 function roundScore(round = state.round) {
@@ -904,6 +1045,165 @@ function targetForPlayed(round = state.round) {
   const fullPar = COURSE.reduce((sum, item) => sum + item.par, 0);
   const targetOverPar = (round.breakTarget || 90) - 1 - fullPar;
   return Math.floor(holes.reduce((sum, item) => sum + item.par, 0) + (targetOverPar * holes.length) / COURSE.length);
+}
+
+function personalTargets() {
+  if (PERSONAL_DATA?.break90Targets?.length === 18) return PERSONAL_DATA.break90Targets;
+  return COURSE.map((item) => item.par + 1);
+}
+
+function officialHoleStats(holeNumber) {
+  const rounds = PERSONAL_DATA?.officialRounds || [];
+  const values = rounds.map((round) => round.scores?.[holeNumber - 1]).filter(Number.isFinite);
+  const recent = values.slice(-3);
+  if (!values.length) return null;
+  return {
+    average: values.reduce((sum, value) => sum + value, 0) / values.length,
+    recentAverage: recent.reduce((sum, value) => sum + value, 0) / recent.length,
+    best: Math.min(...values),
+    last: values[values.length - 1],
+    rounds: values.length,
+  };
+}
+
+function latestPracticeRound() {
+  return (PERSONAL_DATA?.practiceRounds || [])
+    .slice()
+    .sort((a, b) => b.date.localeCompare(a.date))[0] || null;
+}
+
+function practiceHoleResult(holeNumber) {
+  const round = latestPracticeRound();
+  const score = round?.scores?.[holeNumber - 1];
+  return Number.isFinite(score) ? score : null;
+}
+
+function seededPracticeReview(round = latestPracticeRound()) {
+  if (!round) return null;
+  const targets = personalTargets();
+  const riskHoles = PERSONAL_DATA?.riskHoles || [];
+  const played = round.scores
+    .map((score, index) => Number.isFinite(score) ? { hole: index + 1, score, target: targets[index] } : null)
+    .filter(Boolean);
+  const score = played.reduce((sum, item) => sum + item.score, 0);
+  const target = played.reduce((sum, item) => sum + item.target, 0);
+  const risk = played.filter((item) => riskHoles.includes(item.hole));
+  const fullProjection = score + round.scores.reduce(
+    (sum, value, index) => sum + (Number.isFinite(value) ? 0 : targets[index]),
+    0,
+  );
+  const largestLoss = played.slice().sort((a, b) => (b.score - b.target) - (a.score - a.target))[0];
+  return {
+    holes: played.length,
+    score,
+    target,
+    delta: score - target,
+    fullProjection,
+    riskOnPlan: risk.filter((item) => item.score <= item.target).length,
+    riskPlayed: risk.length,
+    largestLoss,
+  };
+}
+
+function personalHolePlan(item = hole()) {
+  const target = personalTargets()[item.hole - 1] || item.par + 1;
+  const detail = PERSONAL_DATA?.holePlans?.[item.hole - 1] || {
+    tee: "Sicherster Schläger",
+    route: "Ball im Spiel halten",
+    next: "Grünmitte",
+    note: "Wind, Höhenlage und Tagesform prüfen.",
+  };
+  const kind = PERSONAL_DATA?.riskHoles?.includes(item.hole)
+    ? "risk"
+    : PERSONAL_DATA?.opportunityHoles?.includes(item.hole)
+      ? "chance"
+      : "neutral";
+  return { target, kind, ...detail };
+}
+
+function dayGame() {
+  return DAY_GAMES[state.round.dayGame] || DAY_GAMES.A;
+}
+
+function joynerEssential(item = hole()) {
+  const shotCount = state.round.holes.reduce((sum, current) => sum + current.shots.length, 0);
+  return JOYNER_ESSENTIALS[(item.hole - 1 + shotCount) % JOYNER_ESSENTIALS.length];
+}
+
+function weeklyEssential() {
+  const week = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+  return JOYNER_ESSENTIALS[week % JOYNER_ESSENTIALS.length];
+}
+
+function dayGameSelector() {
+  return `
+    <div class="day-game-selector" aria-label="Spiel des Tages">
+      <div><span>Spiel des Tages</span><small>${dayGame().detail}</small></div>
+      <div class="day-game-buttons">
+        ${Object.entries(DAY_GAMES).map(([key, game]) => `<button type="button" data-day-game="${key}" class="${state.round.dayGame === key ? "active" : ""}" aria-pressed="${state.round.dayGame === key}"><strong>${key}</strong><span>${game.short}</span></button>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function completedRoundHoles(round = state.round) {
+  return CORE.completedHoles(round);
+}
+
+function break90LiveStatus(round = state.round) {
+  const targets = personalTargets();
+  const status = CORE.livePlanStatus(round, targets, PERSONAL_DATA?.nextTournament?.maxScore || 89);
+  return { ...status, completed: completedRoundHoles(round) };
+}
+
+function formatDecimal(value) {
+  return value.toFixed(1).replace(".", ",");
+}
+
+function renderPersonalPlan(item = hole()) {
+  if (!els.personalPlan || !PERSONAL_DATA) return;
+  const plan = personalHolePlan(item);
+  const history = officialHoleStats(item.hole);
+  const live = break90LiveStatus();
+  const shots = holeScore(item);
+  const practice = state.round.purpose !== "tournament";
+  const learned = state.learnedCourseNotes[item.hole];
+  const practiceScore = practiceHoleResult(item.hole);
+  const typeLabel = plan.kind === "risk" ? "Risikoloch" : plan.kind === "chance" ? "Chancenloch" : "Planloch";
+  const statusClass = live.reserve >= 0 ? "on-track" : "behind";
+  const liveText = live.completed.length
+    ? live.reserve >= 0
+      ? `Prognose ${live.projected} · ${live.reserve} ${live.reserve === 1 ? "Schlag" : "Schläge"} Reserve`
+      : `Prognose ${live.projected} · ${Math.abs(live.reserve)} ${Math.abs(live.reserve) === 1 ? "Schlag" : "Schläge"} hinter Break 90`
+    : "Persönlicher Plan 88 · 1 Reserveschlag bis 89";
+  const holeText = shots
+    ? `Aktuell ${shots} · Lochziel ${plan.target} · ${shots <= plan.target ? "im Lochplan" : `${shots - plan.target} über Lochplan`}`
+    : `Lochziel ${plan.target} · ${typeLabel}`;
+  const deltaLabel = live.delta === 0 ? "E" : live.delta > 0 ? `+${live.delta}` : String(live.delta);
+  els.personalPlan.innerHTML = `
+    <div class="round-purpose-switch" aria-label="Rundenart">
+      <button type="button" data-round-purpose="practice" class="${practice ? "active" : ""}">Proberunde</button>
+      <button type="button" data-round-purpose="tournament" class="${practice ? "" : "active"}">Turnier 16.10.</button>
+    </div>
+    ${dayGameSelector()}
+    <div class="personal-plan-head">
+      <div>
+        <p class="eyebrow">${practice ? "Proberunde · Break-90-Vorbereitung" : "Break 90 · Turnier 16.10."}</p>
+        <h3>${holeText}</h3>
+      </div>
+      ${practice ? `<span class="plan-status ${statusClass}">${liveText}</span>` : ""}
+    </div>
+    ${practice ? "" : `<div class="tournament-status"><strong>${deltaLabel}</strong><div><span>zum persönlichen Plan</span><small>${live.completedCount ? `Nach ${live.completedCount} Loch · Prognose ${live.projected} · ${live.strokesLeft} Schläge bis 89` : "Start bei Even zum 88er-Plan · ein Reserveschlag"}</small></div></div>`}
+    <div class="personal-plan-grid">
+      ${practice ? `<div><span>Historie</span><strong>${history ? `Ø ${formatDecimal(history.recentAverage)} · Best ${history.best}` : "noch offen"}</strong><small>${history ? `letzte 3 in Steibis · zuletzt ${history.last}` : "keine Vergleichsdaten"}</small></div>` : ""}
+      <div><span>Proberunde 07.10.</span><strong>${practiceScore === null ? "nicht gespielt" : `${practiceScore} Schläge`}</strong><small>${practiceScore === null ? "keine Vergleichszahl" : `Lochplan ${plan.target} · ${practiceScore <= plan.target ? "im Soll" : `+${practiceScore - plan.target}`}`}</small></div>
+      <div><span>Vom Tee</span><strong>${plan.tee}</strong><small>${plan.route}</small></div>
+    </div>
+    <p class="personal-plan-next"><strong>${practice ? "Heute prüfen" : "Nächster Plan"}:</strong> ${practice ? plan.observe : `${plan.next}. ${plan.note}`}</p>
+    ${learned ? `<p class="practice-weather"><strong>Aus der Proberunde:</strong> ${escapeHtml(learned.summary)}</p>` : ""}
+    ${practice && PERSONAL_DATA.practiceRound?.weather ? `<p class="practice-weather">Letzte Proberunde: ${PERSONAL_DATA.practiceRound.weather}</p>` : ""}
+    ${live.completed.length ? `<p class="personal-plan-foot">Nach ${live.completed.length} abgeschlossenen Loch: ${live.completedScore} Schläge bei Soll ${live.completedTarget}. Noch ${live.strokesLeft} Schläge für ${live.holesLeft} Loch bis maximal 89.</p>` : ""}
+  `;
 }
 
 function linkGlossary(text) {
@@ -955,6 +1255,66 @@ function nettoDoubleBogeyLimit(item) {
 function quickCounts(item = hole()) {
   const putts = item.shots.filter((shot) => shot.type === "Putt" || shot.result === "Putt").length;
   return { total: item.shots.length, putts };
+}
+
+function clubById(id) {
+  return PERSONAL_DATA?.clubs?.find((club) => club.id === id) || null;
+}
+
+function renderCausePicker(item = hole()) {
+  if (!els.quickCausePicker || !els.causeGrid) return;
+  const tournament = state.round.purpose === "tournament";
+  els.quickCausePicker.hidden = !tournament;
+  els.causeGrid.innerHTML = HOLE_CAUSES.map((cause) => `<button type="button" data-hole-cause="${cause}" class="${item.cause === cause ? "active" : ""}">${cause}</button>`).join("");
+}
+
+function renderPracticeCapture(item = hole()) {
+  if (!els.practiceCapture) return;
+  const practice = state.round.purpose !== "tournament";
+  els.practiceCapture.hidden = !practice;
+  if (!practice) return;
+  const observation = item.observation || emptyObservation();
+  const clubs = (PERSONAL_DATA?.clubs || []).filter((club) => club.tournament && club.id !== "putter");
+  els.practiceClub.innerHTML = `<option value="">Schläger wählen</option>${clubs.map((club) => `<option value="${club.id}">${escapeHtml(club.label)}</option>`).join("")}`;
+  els.practiceClub.value = observation.club || "";
+  els.practiceLie.value = observation.lie || "tee";
+  els.practiceTarget.value = observation.target || "Mitte";
+  els.practiceActual.value = observation.actual || "Mitte";
+  els.practiceCarry.value = observation.carry ?? "";
+  els.practiceRoll.value = observation.roll ?? "";
+  els.practiceRest.value = observation.rest ?? "";
+  els.practiceDecision.value = observation.decision || "gut";
+}
+
+function savePracticeObservation() {
+  const item = hole();
+  item.observation = {
+    club: els.practiceClub.value,
+    lie: els.practiceLie.value,
+    target: els.practiceTarget.value,
+    actual: els.practiceActual.value,
+    carry: els.practiceCarry.value === "" ? "" : Number(els.practiceCarry.value),
+    roll: els.practiceRoll.value === "" ? "" : Number(els.practiceRoll.value),
+    rest: els.practiceRest.value === "" ? "" : Number(els.practiceRest.value),
+    decision: els.practiceDecision.value,
+  };
+  saveActive();
+  renderPersonalPlan(item);
+  renderAiCaddie(item);
+}
+
+function currentCaddieSignal(item = hole()) {
+  const plan = personalHolePlan(item);
+  const observation = item.observation || emptyObservation();
+  const selectedClub = clubById(observation.club);
+  const tournament = state.round.purpose === "tournament";
+  const club = tournament ? (holeScore(item) ? "sicherster Schläger" : plan.tee) : selectedClub?.label || plan.tee;
+  return CORE.trafficLight({
+    club,
+    lie: tournament ? (holeScore(item) ? "normal" : "tee") : observation.lie || "tee",
+    risk: holeRisk(item),
+    hasPenalty: item.shots.some((shot) => shot.penalty),
+  });
 }
 
 function rebuildQuickShots(total, putts) {
@@ -1034,10 +1394,10 @@ function applyLanguage() {
   els.resetRound.textContent = t("resetRound");
   els.toggleHoleMenu.textContent = de ? "Loch wechseln" : "Change hole";
   els.finishHole.textContent = de ? "Loch fertig →" : "Finish hole →";
-  els.planHit.textContent = de ? "Plan getroffen" : "Plan hit";
-  els.planMiss.textContent = de ? "Nicht getroffen" : "Missed plan";
-  els.puttHit.textContent = de ? "Putt-Plan getroffen" : "Putt plan hit";
-  els.puttMiss.textContent = de ? "Nicht getroffen" : "Missed plan";
+  els.planHit.textContent = de ? "Gute nächste Option" : "Good next option";
+  els.planMiss.textContent = de ? "Plan nicht umgesetzt" : "Plan not delivered";
+  els.puttHit.textContent = de ? "Start & Speed passend" : "Start & pace matched";
+  els.puttMiss.textContent = de ? "Abweichung" : "Miss";
   els.scratchHole.textContent = de ? "Loch streichen" : "Pick up hole";
   els.undoShot.textContent = de ? "Letzte Eingabe widerrufen" : "Undo last entry";
   els.aboutApp.textContent = de ? "Über die App" : "About the app";
@@ -1178,6 +1538,7 @@ function addShot(result, options = {}) {
     at: new Date().toISOString(),
     number: hole().shots.length + 1,
   });
+  state.caddieQuiet = true;
   advanceShotType(hole());
   saveActive();
   render();
@@ -1203,6 +1564,7 @@ function undoShot() {
   haptic(10);
   if (hole().scratched) hole().scratched = false;
   else hole().shots.pop();
+  state.caddieQuiet = false;
   saveActive();
   render();
 }
@@ -1265,6 +1627,7 @@ function setHole(index, options = {}) {
   state.currentHole = Math.max(0, Math.min(17, index));
   state.showMissOptions = false;
   state.showPuttMissOptions = false;
+  state.caddieQuiet = false;
   if (options.manual && state.currentHole !== previous + 1) {
     els.holeStrip.classList.remove("collapsed");
   } else {
@@ -1277,6 +1640,14 @@ function setHole(index, options = {}) {
 
 function finishHole() {
   haptic(12);
+  const item = hole();
+  if (!item.shots.length && !item.scratched) {
+    els.holeWarning.hidden = false;
+    els.holeWarning.textContent = "Bitte zuerst den Lochscore erfassen. Nur abgeschlossene Löcher fließen in den Break-90-Livestatus ein.";
+    return;
+  }
+  item.completed = true;
+  saveActive();
   if (state.currentHole < 17) {
     setHole(state.currentHole + 1, { showCaddie: false });
     if (!maybeOpenMentalMomentum()) openInfoModal("caddie");
@@ -1312,6 +1683,52 @@ function currentRoundCounts() {
   return resultCounts([state.round]);
 }
 
+function isPlanDelivered(shot) {
+  return shot?.result === "Exakt umgesetzt" || shot?.result === "Putt: Exakt";
+}
+
+function resetPerformance(round = state.round) {
+  const shots = round.holes.flatMap((item) => item.shots).filter((shot) => !shot.quick);
+  let opportunities = 0;
+  let recovered = 0;
+  for (let index = 0; index < shots.length - 1; index += 1) {
+    const shot = shots[index];
+    if (isPlanDelivered(shot)) continue;
+    opportunities += 1;
+    const next = shots[index + 1];
+    if (isPlanDelivered(next) && !next.penalty) recovered += 1;
+  }
+  return {
+    opportunities,
+    recovered,
+    missed: Math.max(0, opportunities - recovered),
+    rate: opportunities ? Math.round((recovered / opportunities) * 100) : null,
+  };
+}
+
+function performanceDiagnosis(counts, round = state.round) {
+  const puttMisses = round.holes.flatMap((item) => item.shots).filter((shot) => shot.type === "Putt" && !isPlanDelivered(shot)).length;
+  const decisionFlags = round.holes.filter((item) => item.cause === "Entscheidung").length;
+  const reset = resetPerformance(round);
+  return [
+    {
+      title: "Ballkontrolle",
+      value: counts.Rechts + counts.Links + counts.Getoppt + counts.Fett + counts["Zu kurz"] + counts["Zu lang"] + puttMisses,
+      text: "Richtung, Kontakt, Länge sowie Start und Speed beim Putten.",
+    },
+    {
+      title: "Entscheidung",
+      value: decisionFlags + counts.Strafschläge + counts.Gestrichen,
+      text: "Zielzone, Schläger, Risiko, Lage und gewünschter Ballflug.",
+    },
+    {
+      title: "Selbststeuerung",
+      value: reset.missed,
+      text: reset.opportunities ? `${reset.recovered} von ${reset.opportunities} Reaktionen führten sofort zurück zum Plan.` : "Wird sichtbar, sobald auf eine Abweichung der nächste Schlag folgt.",
+    },
+  ];
+}
+
 function historicHoleCounts(holeNumber) {
   const counts = Object.fromEntries(RESULTS.map((result) => [result, 0]));
   counts.Gestrichen = 0;
@@ -1335,6 +1752,42 @@ function noteSuggestions() {
   return [...notes].slice(-30).reverse();
 }
 
+function promotePracticeObservations(round) {
+  if (round.purpose !== "practice") return;
+  round.holes.forEach((item) => {
+    const observation = item.observation || {};
+    if (!observation.club && observation.carry === "" && !item.note) return;
+    const previous = state.learnedCourseNotes[item.hole] || { samples: [] };
+    const sample = { ...observation, note: item.note || "", at: round.updatedAt || new Date().toISOString() };
+    const samples = [...(previous.samples || []), sample].slice(-5);
+    const carries = samples.map((entry) => Number(entry.carry)).filter((value) => Number.isFinite(value) && value > 0);
+    const rolls = samples.map((entry) => Number(entry.roll)).filter((value) => Number.isFinite(value) && value >= 0);
+    const matched = samples.filter((entry) => entry.target && entry.actual && entry.target === entry.actual).length;
+    const club = clubById(observation.club)?.label || "Schläger offen";
+    const distance = carries.length ? `Ø Carry ${Math.round(carries.reduce((a, b) => a + b, 0) / carries.length)} m` : "Carry offen";
+    const roll = rolls.length ? `, Ø Roll ${Math.round(rolls.reduce((a, b) => a + b, 0) / rolls.length)} m` : "";
+    state.learnedCourseNotes[item.hole] = {
+      samples,
+      updatedAt: sample.at,
+      summary: `${club}: ${distance}${roll}; Zielseite ${matched}/${samples.length}× getroffen; letzte Entscheidung ${observation.decision || "offen"}.`,
+    };
+  });
+  saveLearnedCourseNotes();
+}
+
+function buildRoundReview(round) {
+  const officialAverages = Object.fromEntries(COURSE.map((item) => [item.hole, officialHoleStats(item.hole)?.recentAverage ?? null]));
+  const practiceRound = round.purpose === "tournament"
+    ? state.archive.find((saved) => saved.purpose === "practice" && saved.id !== round.id) || null
+    : null;
+  return REVIEW.compareRound(round, {
+    targets: personalTargets(),
+    riskHoles: PERSONAL_DATA?.riskHoles || [],
+    officialAverages,
+    practiceRound,
+  });
+}
+
 function saveCurrentRound() {
   const normalized = normalizeRound(state.round);
   const ch = courseHandicap();
@@ -1346,6 +1799,8 @@ function saveCurrentRound() {
       tee: state.activeTee,
     };
   }
+  normalized.review = buildRoundReview(normalized);
+  promotePracticeObservations(normalized);
   const index = state.archive.findIndex((item) => item.id === normalized.id);
   if (index >= 0) state.archive[index] = normalized;
   else state.archive.unshift(normalized);
@@ -1390,9 +1845,16 @@ function renderTrainingTabs() {
 
 function renderScore() {
   const score = roundScore();
+  const live = break90LiveStatus();
+  const tournament = state.round.purpose === "tournament";
   els.scoreTotal.textContent = score || "0";
   els.toPar.textContent = playedHoles().length ? formatToPar(toPar()) : "E";
-  els.targetPace.textContent = playedHoles().length ? targetForPlayed() : `B${state.round.breakTarget || 90}`;
+  els.targetPace.textContent = tournament
+    ? live.delta === 0 ? "E" : live.delta > 0 ? `+${live.delta}` : String(live.delta)
+    : live.completed.length && (state.round.breakTarget || 90) === 90 ? live.projected : `B${state.round.breakTarget || 90}`;
+  els.targetPace.title = live.completed.length
+    ? tournament ? `${live.delta >= 0 ? "+" : ""}${live.delta} zum persönlichen Lochplan` : `Break-90-Prognose aus abgeschlossenen Löchern: ${live.projected}`
+    : `Ziel: Break ${state.round.breakTarget || 90}`;
   if (els.stablefordTotal) {
     els.stablefordTotal.textContent = courseHandicap() === null ? "–" : String(stablefordTotal());
   }
@@ -1416,7 +1878,8 @@ function renderHoleStrip() {
       const classes = ["hole-chip"];
       if (index === state.currentHole) classes.push("active");
       if (item.shots.length) classes.push("played");
-      if (Object.values(historicHoleCounts(item.hole)).some((count) => count >= 2)) classes.push("risk");
+      if (item.completed) classes.push("completed");
+      if (PERSONAL_DATA?.riskHoles?.includes(item.hole) || Object.values(historicHoleCounts(item.hole)).some((count) => count >= 2)) classes.push("risk");
       return `<button class="${classes.join(" ")}" type="button" data-hole="${index}" style="--difficulty:${difficultyColor(item.si)}">${item.hole}<small>Par ${item.par}</small></button>`;
     })
     .join("");
@@ -1452,7 +1915,9 @@ function renderTrack() {
   els.holeRating.style.background = difficultyColor(item.si);
 
   if (els.modeDetail && els.quickEntry) {
-    const mode = state.profile.entryMode || "detail";
+    const tournament = state.round.purpose === "tournament";
+    const mode = tournament ? "quick" : state.profile.entryMode || "detail";
+    els.entryMode.hidden = tournament;
     els.modeDetail.classList.toggle("active", mode === "detail");
     els.modeQuick.classList.toggle("active", mode === "quick");
     els.detailEntry.hidden = mode === "quick";
@@ -1460,6 +1925,8 @@ function renderTrack() {
     const qc = quickCounts(item);
     els.quickShotsValue.textContent = qc.total;
     els.quickPuttsValue.textContent = qc.putts;
+    renderCausePicker(item);
+    renderPracticeCapture(item);
   }
 
   if (els.holeWarning) {
@@ -1471,8 +1938,12 @@ function renderTrack() {
         : "Netto-Doppelbogey erreicht: 0 Punkte auf diesem Loch. Im Stableford kannst du aufheben und weitergehen.";
     }
   }
-  if (els.note) els.note.value = item.note;
+  if (els.note) {
+    els.note.value = item.note;
+    els.note.closest(".note-label").hidden = state.round.purpose === "tournament";
+  }
   renderGps();
+  renderPersonalPlan(item);
 
   els.shotList.innerHTML = item.scratched
     ? `<div class="shot-row scratch"><strong>-</strong><span>${state.language === "en" ? "Hole picked up" : "Loch gestrichen"} · ${holeScore(item)} ${state.language === "en" ? "shots" : "Schläge"}</span></div>`
@@ -1518,9 +1989,11 @@ function break90Chance() {
 function holeRisk(item) {
   const history = historicHoleCounts(item.hole);
   const historicRisk = Object.values(history).reduce((sum, count) => sum + count, 0);
+  const official = officialHoleStats(item.hole);
+  const scoreRisk = official ? Math.max(0, official.recentAverage - (item.par + 1)) * 18 : 0;
   const difficulty = Math.max(0, 7 - item.si);
-  const currentTrouble = item.shots.filter((shot) => shot.result !== "Exakt umgesetzt" && shot.result !== "Putt").length;
-  return Math.min(100, difficulty * 8 + historicRisk * 12 + currentTrouble * 18);
+  const currentTrouble = item.shots.filter((shot) => !shot.quick && shot.result !== "Exakt umgesetzt" && shot.result !== "Putt").length;
+  return Math.min(100, Math.round(difficulty * 8 + historicRisk * 12 + scoreRisk + currentTrouble * 18));
 }
 
 function nextBestDecision(item) {
@@ -1529,12 +2002,12 @@ function nextBestDecision(item) {
   const parTarget = item.par + 1;
   const hcp = Number(state.profile.handicap);
   const cautious = Number.isFinite(hcp) && hcp >= 18;
-  if (shots === 0 && cautious && item.si <= 9) return "HCP-orientiert: Ball in Spiel bringen. Nimm den Schläger, mit dem Aus und Penalty Area am unwahrscheinlichsten sind.";
-  if (shots === 0 && item.si <= 6) return "Tee-Ball nur in Spiel bringen. Distanz ist weniger wichtig als ein freier zweiter Schlag.";
-  if (shots === 0 && item.par === 3) return "Mitte Grün oder sichere Vorderkante. Fahne ignorieren, wenn sie eng steht.";
-  if (shots >= parTarget - 1) return "Schaden begrenzen: größte Zielzone, kein Schlag mit Doppel-Fehler-Potenzial.";
-  if (risk > 55) return "Konservativ bleiben. Ziel ist der nächste einfache Schlag, nicht der perfekte.";
-  return "Normaler Plan: klare Zielzone wählen, 80 Prozent Tempo, Ergebnis sofort tippen.";
+  if (shots === 0 && cautious && item.si <= 9) return `Wähle den Schläger für deine breite Spielzone. ${dayGame().live}`;
+  if (shots === 0 && item.si <= 6) return `Spiele auf die breite Fairwayseite und eröffne dir einen freien zweiten Schlag. ${dayGame().live}`;
+  if (shots === 0 && item.par === 3) return `Sieh den Ball zur Grünmitte oder sicheren Vorderkante fliegen. ${dayGame().live}`;
+  if (shots >= parTarget - 1) return "Wähle die größte Zielzone und erzeuge von dort die nächste spielbare Position.";
+  if (risk > 55) return "Spiele auf die breite Zielseite, sodass deine normale Streuung eine gute nächste Position behält.";
+  return `Klares Zielbild, ein äußerer Fokus, dann frei schwingen. ${dayGame().live}`;
 }
 
 function paceWarning(item) {
@@ -1546,10 +2019,10 @@ function paceWarning(item) {
   const beforeGreen = transport + approach;
   const targetBeforeGreen = Math.max(1, item.par - 2);
   if (putts === 0 && beforeGreen > targetBeforeGreen) {
-    return `Warnung: ${beforeGreen} Transport-/Annäherungsschläge vor dem ersten Putt. Empfehlung: nicht mehr die Fahne jagen, sondern sicher aufs Grün oder in die größte Zone.`;
+    return `Neue Chance: ${beforeGreen} Schläge vor dem Grün. Sieh jetzt die größte Grün- oder Landezone und spiele dorthin.`;
   }
   if (strokes >= item.par && putts === 0) {
-    return `Score-Alarm: Du bist schon bei Par, bevor geputtet wurde. Nächster Schlag: Schaden begrenzen, kein Heldenschlag.`;
+    return "Reset: Score loslassen. Wähle die größte Zielzone und erzeuge einen einfachen nächsten Schlag.";
   }
   return "";
 }
@@ -1570,31 +2043,52 @@ function expertForContext(item = hole()) {
 function caddieAttention(item) {
   const shots = holeScore(item);
   const risk = holeRisk(item);
-  if (!shots) return `Loch ${item.hole}: Start mit klarer Zielseite. Sicherer Ball im Spiel ist wichtiger als perfekte Länge.`;
-  if (item.shots.some((shot) => shot.penalty) || item.scratched) return "Erster Fokus: großen Score stoppen. Nächster Schlag nur in die größte sichere Zone.";
-  if (risk > 55) return "Risiko erhöht. Plane den nächsten Schlag so, dass ein Fehler noch spielbar bleibt.";
-  return "Einfach halten: Ziel sehen, Schläger wählen, Schlag committen, Ergebnis erfassen.";
+  if (!shots) return `Wahrnehmen: Lage und Wind. Absicht: klare Zielseite. Aufmerksamkeit: ${joynerEssential(item).cue}`;
+  if (item.shots.some((shot) => shot.penalty) || item.scratched) return "Akzeptiert. Der nächste Auftrag ist eine breite Zielzone und eine spielbare Position.";
+  if (risk > 55) return "Sieh die breite Zielseite und den gewünschten Ballflug. Lass deine normale Streuung dort Platz haben.";
+  return "Absicht klären, einen äußeren Fokus wählen, Schlag spielen, Ergebnis akzeptieren.";
 }
 
 function renderAiCaddie(item) {
-  const chance = break90Chance();
-  const risk = holeRisk(item);
   const recommendation = nextBestDecision(item);
+  const personalPlan = personalHolePlan(item);
   const warning = paceWarning(item);
-  const expert = expertForContext(item);
+  const signal = currentCaddieSignal(item);
+  const tournament = state.round.purpose === "tournament";
+  const essential = joynerEssential(item);
+
+  if (state.caddieQuiet && item.shots.length) {
+    els.aiCaddie.innerHTML = `
+      <div class="caddie-quiet">
+        <div><p class="eyebrow">Akzeptanz</p><h3>Erfasst. Nicht analysieren – weiter.</h3><p>Atmen, Umgebung wahrnehmen und den letzten Schlag dort lassen.</p></div>
+        <button class="compact-button" type="button" data-show-next-task>Nächsten Auftrag zeigen</button>
+      </div>
+    `;
+    return;
+  }
+  if (tournament) {
+    els.aiCaddie.innerHTML = `
+      <p class="eyebrow">Ein Auftrag</p>
+      <h3>Nächste Entscheidung · Loch ${item.hole}</h3>
+      <div class="traffic-card ${signal.level}"><i class="traffic-dot" aria-hidden="true"></i><div><strong>${signal.label}</strong><span>${signal.reason}</span></div></div>
+      ${warning ? `<div class="caddie-warning">${linkGlossary(warning)}</div>` : ""}
+      <div class="caddie-compact">
+        <div><span>Jetzt</span><p>${linkGlossary(recommendation)}</p></div>
+        <div><span>Äußerer Fokus</span><p>${essential.cue}</p></div>
+      </div>
+    `;
+    return;
+  }
   els.aiCaddie.innerHTML = `
+    <p class="eyebrow">Absicht · Aufmerksamkeit · Akzeptanz</p>
     <h3>KI-Caddie Loch ${item.hole}</h3>
     <p class="caddie-lead">${linkGlossary(caddieAttention(item))}</p>
+    <div class="traffic-card ${signal.level}"><i class="traffic-dot" aria-hidden="true"></i><div><strong>${signal.label}</strong><span>${signal.reason}</span></div></div>
     ${warning ? `<div class="caddie-warning">${linkGlossary(warning)}</div>` : ""}
-    <div class="metric-row compact">
-      <div class="metric-pill"><span>Break-Chance</span><strong>${chance}%</strong><div class="ai-meter"><span style="width: ${chance}%"></span></div></div>
-      <div class="metric-pill"><span>Lochrisiko</span><strong>${risk}%</strong><div class="ai-meter"><span style="width: ${risk}%"></span></div></div>
-    </div>
     <div class="caddie-compact">
       <div><span>Jetzt</span><p>${linkGlossary(recommendation)}</p></div>
-      <div><span>Trainerimpuls · ${expert.name}</span><p>${linkGlossary(expert.advice)}</p></div>
+      <div class="essential-tip"><span>Essential · ${essential.title}</span><p>${essential.cue}</p></div>
     </div>
-    <p class="premium-note">Detailmodus, Vorlesen und Mehr-Runden-Trends: KI-Caddie Pro ab 3 gespeicherten Runden.</p>
   `;
 }
 
@@ -1670,6 +2164,7 @@ function renderHcpForecast() {
 
 function renderAnalysis() {
   renderHcpForecast();
+  renderRoundComparison();
   const counts = resultCounts();
   const played = playedHoles().length;
   const score = roundScore();
@@ -1679,11 +2174,14 @@ function renderAnalysis() {
   const exactRate = counts["Exakt umgesetzt"] + trouble ? Math.round((counts["Exakt umgesetzt"] / Math.max(1, counts["Exakt umgesetzt"] + trouble)) * 100) : 0;
   const penaltyRate = played ? Math.round((counts.Strafschläge / played) * 100) : 0;
   const puttLoad = played ? Math.round((counts.Putts / played) * 100) : 0;
+  const reset = resetPerformance();
+  const diagnosis = performanceDiagnosis(counts);
 
   els.summaryGrid.innerHTML = [
     ["Gespielte Löcher", played, Math.min(100, Math.round((played / 18) * 100)), "Datenbasis"],
     ["Score / Ziel", `${score || 0}/${played ? targetForPlayed() : 90}`, played ? Math.min(100, Math.round((score / Math.max(1, targetForPlayed())) * 100)) : 0, "Zielkorridor"],
-    ["Plan getroffen", `${exactRate}%`, exactRate, `${counts["Exakt umgesetzt"]} Treffer`],
+    ["Plan umgesetzt", `${exactRate}%`, exactRate, `${counts["Exakt umgesetzt"]} Treffer`],
+    ["Reset-Quote", reset.rate === null ? "–" : `${reset.rate}%`, reset.rate || 0, reset.opportunities ? `${reset.recovered}/${reset.opportunities} Folgeschläge` : "noch offen"],
     ["Fehler-Schläge", trouble, Math.min(100, trouble * 10), "Abweichungen"],
     ["3+ Putts", threePlus, Math.min(100, threePlus * 25), "Putting"],
     ["Strafschläge", counts.Strafschläge, Math.min(100, penaltyRate), "Penalty-Last"],
@@ -1692,7 +2190,7 @@ function renderAnalysis() {
   ]
     .map(([label, value, width, sub]) => `<article class="summary-card stat-card"><span>${label}</span><strong>${value}</strong><small>${sub}</small><div class="stat-bar"><i style="width:${width}%"></i></div></article>`)
     .join("");
-  renderStatVisuals(counts, { played, score, threePlus, trouble, exactRate, penaltyRate, puttLoad });
+  renderStatVisuals(counts, { played, score, threePlus, trouble, exactRate, penaltyRate, puttLoad, resetRate: reset.rate || 0 });
   renderHoleShotOverview();
 
   renderTopThree(counts, threePlus);
@@ -1715,9 +2213,38 @@ function renderAnalysis() {
   if (counts.Strafschläge || counts.Gestrichen) insights.push(["Strafen", "Rot, Weiss oder Streichen sind Break-90-Killer. Nächstes Ziel: Ball in Spiel, auch wenn es kürzer ist."]);
   if (threePlus) insights.push(["Putting", "Speed-Control ist Priorität. Ein 3-Putt weniger ist direkt ein Schlag besser."]);
 
-  els.insights.innerHTML = insights.length
-    ? insights.map(([title, text]) => `<article class="insight-card"><h3>${title}</h3><p>${text}</p></article>`).join("")
-    : `<div class="empty-state">Noch keine Muster. Nach ein paar Löchern entsteht hier deine persönliche Steibis-Analyse.</div>`;
+  els.insights.innerHTML = `
+    <div class="performance-diagnosis">
+      ${diagnosis.map((item) => `<article class="insight-card performance-pillar"><span>${item.value}</span><h3>${item.title}</h3><p>${item.text}</p></article>`).join("")}
+    </div>
+    ${insights.length
+      ? insights.map(([title, text]) => `<article class="insight-card"><h3>${title}</h3><p>${text}</p></article>`).join("")
+      : `<div class="empty-state">Noch keine deutlichen Muster. Nach ein paar Löchern entsteht hier deine persönliche Analyse.</div>`}
+  `;
+}
+
+function renderRoundComparison() {
+  if (!els.roundComparison) return;
+  const review = buildRoundReview(state.round);
+  if (!review.holes) {
+    els.roundComparison.innerHTML = `<div class="empty-state compact">Nach abgeschlossenen Löchern vergleicht CoursePilot automatisch Plan, Proberunde und Turnierhistorie.</div>`;
+    return;
+  }
+  const practiceRows = review.perHole.filter((item) => item.vsPractice !== null);
+  const practiceBetter = practiceRows.filter((item) => item.vsPractice <= 0).length;
+  const historyRows = review.perHole.filter((item) => item.isRisk && item.vsHistorical !== null);
+  const historyDelta = historyRows.length ? historyRows.reduce((sum, item) => sum + item.vsHistorical, 0) / historyRows.length : null;
+  els.roundComparison.innerHTML = `
+    <article class="comparison-card">
+      <p class="eyebrow">Automatischer Rundenvergleich</p>
+      <h3>${review.delta === 0 ? "Even" : review.delta > 0 ? `+${review.delta}` : review.delta} zum persönlichen Plan</h3>
+      <div class="comparison-grid">
+        <div><span>Ziel vs. Ergebnis</span><strong>${review.totalScore}/${review.totalTarget}</strong></div>
+        <div><span>Proberunde</span><strong>${practiceRows.length ? `${practiceBetter}/${practiceRows.length} gleich/besser` : "nach Speicherung"}</strong></div>
+        <div><span>Risikohistorie</span><strong>${historyDelta === null ? "offen" : `${historyDelta > 0 ? "+" : ""}${formatDecimal(historyDelta)} Ø`}</strong></div>
+      </div>
+    </article>
+  `;
 }
 
 function renderStatVisuals(counts, metrics) {
@@ -1727,9 +2254,9 @@ function renderStatVisuals(counts, metrics) {
   const projected = metrics.played ? Math.round((metrics.score / played) * 18) : 0;
   const scoreDelta = metrics.played ? projected - (target - 1) : 0;
   const data = [
-    ["Plan getroffen", metrics.exactRate, "green"],
-    ["Break-Chance", break90Chance(), "blue"],
-    ["Lochrisiko", holeRisk(hole()), "red"],
+    ["Plan umgesetzt", metrics.exactRate, "green"],
+    ["Reset-Quote", metrics.resetRate, "blue"],
+    ["Ball spielbar", Math.max(0, 100 - Math.min(100, metrics.penaltyRate)), "red"],
   ];
   els.statVisuals.innerHTML = `
     <article class="stat-hero-card">
@@ -1857,9 +2384,9 @@ function renderTopThree(counts, threePlus) {
       text: "Erster Putt in die Nähe, zweiter Putt rein. Speed vor Linie.",
     },
     {
-      title: "Break-90-Disziplin",
+      title: "Reset-Disziplin",
       score: Math.max(1, playedHoles().filter((item) => holeScore(item) - item.par >= 2).length * 2 + counts.Strafschläge * 3 + counts.Gestrichen * 4),
-      text: "Bogey ist ein gutes Ergebnis. Doppelbogey entsteht meist durch den zweiten Fehler.",
+      text: "Nach einer Abweichung beginnt ein neuer Auftrag: breite Zielzone und gute nächste Option.",
     },
   ]
     .sort((a, b) => b.score - a.score)
@@ -1880,7 +2407,7 @@ function renderTopThree(counts, threePlus) {
 
 function mentoringPlan(key, counts, played, projected, threePlus, hcpText) {
   const target = state.round.breakTarget || 90;
-  const archiveRounds = state.archive.length;
+  const archiveRounds = state.archive.length + (PERSONAL_DATA?.officialRounds?.length || 0) + (PERSONAL_DATA?.practiceRounds?.length || 0);
   const base = {
     putting: {
       focus: "Putting-Mentoring",
@@ -1899,7 +2426,7 @@ function mentoringPlan(key, counts, played, projected, threePlus, hcpText) {
     penalties: {
       focus: "Safety-Mentoring",
       promise: "Break-Ziele werden über vermiedene Strafschläge gewonnen. Der sichere nächste Schlag ist der Standard.",
-      roundRule: "Bei Rot, Weiss oder Ball-verloren-Risiko automatisch sichere Seite oder kürzeren Schläger wählen.",
+      roundRule: "Bei engem Zielraum die breite spielbare Seite sehen und den dafür passenden Schläger wählen.",
       practice: ["Tee-Entscheidungen auf 6 Bahnen simulieren", "für jede Bahn sichere Zielseite notieren", "Erfolg: kein geplanter Schlag über Aus oder Penalty Area"],
       reflection: "War der riskante Schlag wirklich nötig oder nur verlockend?",
     },
@@ -1913,7 +2440,7 @@ function mentoringPlan(key, counts, played, projected, threePlus, hcpText) {
     break90: {
       focus: `Break-${target}-Mentoring`,
       promise: "CoursePilot trainiert nicht Perfektion, sondern weniger Folgefehler und stabile Bogeys.",
-      roundRule: "Bogey akzeptieren, Doppelbogey aktiv vermeiden.",
+      roundRule: "Nur der aktuelle Schlag zählt: Zielbild, äußerer Fokus und eine gute nächste Option.",
       practice: ["6-Loch-Szenario planen", "pro Loch konservativen Plan und Notfallplan nennen", "Erfolg: kein Loch mit zwei riskanten Entscheidungen"],
       reflection: "Wo hast du einen zweiten Fehler nach dem ersten Fehler vermieden?",
     },
@@ -1921,7 +2448,7 @@ function mentoringPlan(key, counts, played, projected, threePlus, hcpText) {
   const plan = base[key] || base.break90;
   const dataLine = played
     ? `${played} Loch gespielt · Hochrechnung ${projected || "-"} · ${counts.Strafschläge} Strafschläge · ${threePlus} Loch/Löcher mit 3+ Putts`
-    : `Noch keine aktuellen Lochdaten · ${archiveRounds} gespeicherte Runde${archiveRounds === 1 ? "" : "n"} · Profil ${hcpText}`;
+    : `Noch keine aktuellen Lochdaten · ${archiveRounds} historische Runde${archiveRounds === 1 ? "" : "n"} · Profil ${hcpText}`;
   const weeklyRhythm = archiveRounds >= 3
     ? "Wochenrhythmus: 1 Fokusdrill, 1 kurze Kontrollrunde, danach Trend mit Historie vergleichen."
     : "Wochenrhythmus: 1 Fokusdrill, danach eine Runde speichern. Ab 3 Runden wird der Trend belastbarer.";
@@ -2089,20 +2616,61 @@ function renderTraining() {
     { key: "break90", score: 1 },
   ].sort((a, b) => b.score - a.score);
   const primary = TRAINING_SOURCES[priorities[0].key];
+  const essential = weeklyEssential();
   const hcpText = hcpBand();
+  const practiceReview = seededPracticeReview();
   const nextAction = played
     ? `${hcpText}: Fokus zuerst auf ${primary.title.toLowerCase()}. Hochrechnung aktuell ${projected} Schläge.`
-    : `${hcpText}: Spiele ein paar Löcher, dann priorisiert die App automatisch Training, Caddie-Strategie und Coach-Hinweise.`;
+    : `${hcpText}: Die fünf offiziellen Turnierrunden setzen den strategischen Fokus; Detaildaten aus der Proberunde ergänzen danach technische Ursachen.`;
+  const reviewSource = played ? state.round : state.archive[0];
+  const weeklyFocus = reviewSource
+    ? REVIEW.weeklyFocus(reviewSource.review || buildRoundReview(reviewSource))
+    : practiceReview
+      ? ["Par-3-Zielbilder und Carry-Entscheidung festigen", "Schadensbegrenzung an Loch 14 und nach dem ersten Fehler trainieren"]
+      : REVIEW.weeklyFocus(null);
 
   els.trainingList.innerHTML = `
+    <article class="training-card joyner-essential-card">
+      <p class="eyebrow">Wiederkehrendes Essential · diese Woche</p>
+      <h3>${essential.title}</h3>
+      <p class="essential-quote">${essential.cue}</p>
+      <p>${essential.practice}</p>
+      <details class="drill-details">
+        <summary>Alle sieben Essentials</summary>
+        <ol class="mentor-steps">
+          ${JOYNER_ESSENTIALS.map((item) => `<li><strong>${item.title}:</strong> ${item.cue}</li>`).join("")}
+        </ol>
+        <p><a href="https://www.youtube.com/watch?v=f_g5GR90EvI" target="_blank" rel="noreferrer">Range-Lektion ansehen</a></p>
+      </details>
+    </article>
+    <article class="training-card">
+      <p class="eyebrow">Die nächsten 7 Tage</p>
+      <h3>Nur zwei Prioritäten</h3>
+      <ol class="mentor-steps">${weeklyFocus.map((focus) => `<li>${escapeHtml(focus)}</li>`).join("")}</ol>
+      <p class="setting-help">Die Liste wird nach jeder gespeicherten Runde aus Planabweichung, Risikolöchern, Entscheidungen und Ursachen-Tags neu berechnet.</p>
+    </article>
+    <article class="training-card history-training-card">
+      <p class="eyebrow">Proberunde 07.10. · Fokus bis 16.10.</p>
+      <h3>${practiceReview ? `${practiceReview.score} auf ${practiceReview.holes} Loch · ${practiceReview.delta > 0 ? "+" : ""}${practiceReview.delta} zum Teilplan` : "Break 90 über Entscheidungen vorbereiten"}</h3>
+      <p>${practiceReview ? `Mit den Planscores für die nicht gespielten Löcher 10 und 11 ergibt sich eine 93er-Vergleichsrunde. Das ist vier Schläge über maximal 89 – nah genug für ein klares, realistisches Verbesserungsprogramm.` : "Die offiziellen GBE-Ergebnisse entwickelten sich 111 → 106 → 99 → 91 → 99."}</p>
+      <div class="mentor-grid">
+        <div><span>Risikoblöcke</span><strong>${practiceReview ? `${practiceReview.riskOnPlan}/${practiceReview.riskPlayed} gespielte Risikolöcher im Soll` : "Löcher 2, 5, 6, 8, 10 und 12 konservativ testen"}</strong></div>
+        <div><span>Größter Verlust</span><strong>${practiceReview?.largestLoss ? `Loch ${practiceReview.largestLoss.hole}: ${practiceReview.largestLoss.score} statt Plan ${practiceReview.largestLoss.target}` : "Scorekarten zeigen das Wo, nicht die technische Ursache"}</strong></div>
+      </div>
+      <ol class="mentor-steps">
+        <li><strong>Par 3:</strong> Sieh die Flugkurve zur Grünmitte. Wenn dein B-Spiel verfügbar ist: ein Schläger mehr und kompakter Dreiviertelschlag.</li>
+        <li><strong>Loch 14:</strong> Nach einer Abweichung beginnt ein neuer Auftrag: größte Zielzone und eine gute nächste Option.</li>
+        <li><strong>Bewahren:</strong> Die breite Zielseite funktioniert. Der Gesamtscore verändert den Auftrag des aktuellen Schlags nicht.</li>
+      </ol>
+    </article>
     <article class="training-card ai-training-card">
       <p class="eyebrow">KI-Caddie Analyse</p>
-      <h3>${played ? primary.title : "Noch keine Rundendaten"}</h3>
+      <h3>${played ? primary.title : "5 offizielle Turnierrunden vorhanden"}</h3>
       <p>${linkGlossary(nextAction)}</p>
-      <p>${played ? `Datenbasis: ${played} gespielte Löcher · ${counts.Strafschläge} Strafschläge · ${threePlus} Loch/Löcher mit 3+ Putts · HCP-Profil ${hcpText}.` : "Nach der Runde entsteht hier automatisch ein Trainerplan aus Score, HCP, Schlagtyp und Fehlerprofil."}</p>
+      <p>${played ? `Datenbasis: ${played} gespielte Löcher · ${counts.Strafschläge} Strafschläge · ${threePlus} Loch/Löcher mit 3+ Putts · HCP-Profil ${hcpText}.` : "Datenbasis: offizielle Scorekarten mit Lochscores, GBE und Nettopunkten. Schlagursachen werden erst in der App erfasst."}</p>
       <div class="caddie-mini-proof">
         <strong>Warum dieser Fokus?</strong>
-        <span>${played ? "Die App priorisiert den größten Score-Hebel, nicht den prominentesten Fehler." : "Ohne Rundendaten startet CoursePilot mit Break-Ziel, HCP und Platzstrategie."}</span>
+        <span>${played ? "Die App priorisiert den größten Score-Hebel, nicht den prominentesten Fehler." : "Die Historie belegt die Lochmuster; die heutige Proberunde prüft Carry, Zielseite und Entscheidungsgüte."}</span>
       </div>
     </article>
   `;
@@ -2147,34 +2715,81 @@ function renderCoachReport() {
 
 function renderArchive() {
   renderHistoryStats();
-  els.archiveList.innerHTML = state.archive.length
-    ? state.archive
-        .map((round) => {
+  const practiceCards = (PERSONAL_DATA?.practiceRounds || [])
+    .slice()
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map((round) => {
+      const date = new Date(`${round.date}T12:00:00`).toLocaleDateString("de-DE");
+      const review = seededPracticeReview(round);
+      return `
+        <article class="archive-card practice-archive-card">
+          <p class="eyebrow">Proberunde · manuell übernommen</p>
+          <h3>${date} · ${review.score} Schläge auf ${review.holes} Loch</h3>
+          <p><strong>${escapeHtml(round.label)}</strong><br>Par ${round.par} · +${round.score - round.par} · nicht gespielt: ${round.notPlayed.join(", ")}</p>
+          <p><strong>${review.delta > 0 ? "+" : ""}${review.delta} zum persönlichen Teilplan</strong> · Risikolöcher ${review.riskOnPlan}/${review.riskPlayed} im Soll · 18-Loch-Vergleich ${review.fullProjection}</p>
+          <p class="setting-help">${escapeHtml(round.assessment)} ${escapeHtml(round.focus)}</p>
+        </article>
+      `;
+    })
+    .join("");
+  const officialCards = (PERSONAL_DATA?.officialRounds || [])
+    .slice()
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map((round) => {
+      const date = new Date(`${round.date}T12:00:00`).toLocaleDateString("de-DE");
+      const gross = round.rawScore && round.rawScore !== round.gbe ? ` · Brutto ${round.rawScore}` : "";
+      const picked = round.pickedUp?.length ? ` · gestrichen: ${round.pickedUp.join(", ")}` : "";
+      return `
+        <article class="archive-card official-archive-card">
+          <p class="eyebrow">Offizielle Scorekarte</p>
+          <h3>${date} · GBE ${round.gbe}${gross}</h3>
+          <p><strong>${escapeHtml(round.tournament)}</strong><br>18 Loch · ${round.netPoints} Nettopunkte · HCPI ${formatDecimal(round.hcpi)} · Course HCP ${round.courseHandicap}${picked}</p>
+        </article>
+      `;
+    })
+    .join("");
+  const localCards = state.archive.length
+    ? state.archive.map((round) => {
           const date = new Date(round.updatedAt || round.createdAt).toLocaleDateString("de-DE");
           const holes = playedHoles(round).length;
           const pts = roundStableford(round);
+          const review = round.review || buildRoundReview(round);
+          const focus = REVIEW.weeklyFocus(review);
           return `
             <article class="archive-card">
               <h3>${date} · ${holes} Loch · Score ${roundScore(round) || 0}${pts === null ? "" : ` · ${pts} Pkt.`}</h3>
-              <p>${round.course}</p>
+              <p>${round.course} · ${round.purpose === "tournament" ? "Turnier" : "Proberunde"}</p>
+              <p><strong>${review.delta === 0 ? "Even" : review.delta > 0 ? `+${review.delta}` : review.delta} zum Plan</strong> · Risikolöcher ${review.riskOnPlan}/${review.riskPlayed} im Soll · Hauptgrund ${escapeHtml(review.mainCause)}</p>
+              <p class="setting-help">Nächster Fokus: ${focus.map(escapeHtml).join(" · ")}</p>
               <button type="button" data-load-round="${round.id}">Runde laden</button>
             </article>
           `;
-        })
-        .join("")
-    : `<div class="empty-state">Noch keine gespeicherte Runde. Du kannst auch nach 3, 6 oder 9 Löchern speichern.</div>`;
+        }).join("")
+    : `<div class="empty-state">Noch keine mit CoursePilot gespeicherte Runde. Die offiziellen Turnierrunden sind bereits oben verfügbar.</div>`;
+  els.archiveList.innerHTML = practiceCards + officialCards + localCards;
 }
 
 function renderHistoryStats() {
   els.historyViewButtons.forEach((button) => button.classList.toggle("active", button.dataset.historyView === state.historyView));
-  if (!state.archive.length) {
+  const summaries = [
+    ...(PERSONAL_DATA?.officialRounds || []).map((round) => ({
+      date: new Date(`${round.date}T12:00:00`), score: round.gbe, holes: 18, points: round.netPoints,
+    })),
+    ...(PERSONAL_DATA?.practiceRounds || []).map((round) => ({
+      date: new Date(`${round.date}T12:00:00`), score: round.score, holes: round.holes, points: null,
+    })),
+    ...state.archive.map((round) => ({
+      date: new Date(round.updatedAt || round.createdAt), score: roundScore(round), holes: playedHoles(round).length, points: roundStableford(round),
+    })),
+  ];
+  if (!summaries.length) {
     els.historyStats.innerHTML = "";
     return;
   }
   const monthGroups = new Map();
   const yearGroups = new Map();
-  state.archive.forEach((round) => {
-    const date = new Date(round.updatedAt || round.createdAt);
+  summaries.forEach((round) => {
+    const date = round.date;
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     const monthLabel = date.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
     const yearKey = String(date.getFullYear());
@@ -2186,9 +2801,9 @@ function renderHistoryStats() {
   const groups = state.historyView === "year" ? [...yearGroups.values()] : [...monthGroups.values()];
   els.historyStats.innerHTML = groups
     .map((group) => {
-      const avgScore = Math.round(group.rounds.reduce((sum, round) => sum + roundScore(round), 0) / group.rounds.length);
-      const avgHoles = Math.round(group.rounds.reduce((sum, round) => sum + playedHoles(round).length, 0) / group.rounds.length);
-      const best = Math.min(...group.rounds.map((round) => roundScore(round) || 0).filter(Boolean));
+      const avgScore = Math.round(group.rounds.reduce((sum, round) => sum + round.score, 0) / group.rounds.length);
+      const avgHoles = Math.round(group.rounds.reduce((sum, round) => sum + round.holes, 0) / group.rounds.length);
+      const best = Math.min(...group.rounds.map((round) => round.score || 0).filter(Boolean));
       return `
         <article class="history-card">
           <p class="eyebrow">${group.type} · ${group.label}</p>
@@ -2196,7 +2811,7 @@ function renderHistoryStats() {
           <strong>Ø ${avgScore} auf Ø ${avgHoles} Loch</strong>
           <div class="stat-bar"><i style="width:${Math.min(100, Math.round((avgHoles / 18) * 100))}%"></i></div>
           <p>Bester Score: ${Number.isFinite(best) ? best : "-"}${(() => {
-            const withPts = group.rounds.map((r) => roundStableford(r)).filter((p) => p !== null);
+            const withPts = group.rounds.map((r) => r.points).filter((p) => p !== null && p !== undefined);
             if (!withPts.length) return "";
             return ` · Ø ${Math.round(withPts.reduce((a, b) => a + b, 0) / withPts.length)} Pkt.`;
           })()}</p>
@@ -2249,19 +2864,15 @@ function closeFeedbackModal() {
 }
 
 function caddieBullets(item = hole()) {
-  const risk = holeRisk(item);
-  const shots = holeScore(item);
-  const hcp = Number(state.profile.handicap);
-  const warning = paceWarning(item);
+  const plan = personalHolePlan(item);
+  const essential = joynerEssential(item);
   return [
-    `Nächster Schlag: Loch ${item.hole} · Par ${item.par}. Empfehlung wird auf dieses Par, dein Break-Ziel und den aktuellen Schlagtyp bezogen.`,
-    warning,
-    nextBestDecision(item),
-    item.si <= 6 ? `Schweres Loch: Stroke Index ${item.si}. Bogey ist ein gutes Ergebnis.` : "Spiele auf die breite Zielseite und vermeide den Folgefehler.",
-    Number.isFinite(hcp) ? `HCP ${hcp}: Risiko und Zielzone konservativ wählen, wenn der Schlag eng wirkt.` : "HCP noch offen: Empfehlung basiert auf Platzdaten und aktuellen Schlägen.",
-    shots ? `Aktuell ${shots} Schlag/Schläge auf diesem Loch. Nächster Schlag soll den Schaden begrenzen.` : "Vor dem Schlag: Ziel, Fehlseite und sicherer nächster Schlag klären.",
-    risk > 55 ? "Lochrisiko erhöht: Layup, Mitte Grün oder sicherer Schläger bevorzugt." : "Risiko im Rahmen: normaler Plan mit ruhigem Tempo.",
-  ].filter(Boolean);
+    `Wahrnehmen: Lage, Wind und die verfügbare breite Zielzone an Loch ${item.hole}.`,
+    `Absicht: ${nextBestDecision(item)}`,
+    `Aufmerksamkeit: ${essential.cue}`,
+    `Tagesform: ${dayGame().label}. ${dayGame().detail}`,
+    `Akzeptanz: Ergebnis erfassen, nicht analysieren und zum nächsten Auftrag wechseln. Lochplan ${plan.target}.`,
+  ];
 }
 
 function bulletList(items) {
@@ -2290,7 +2901,7 @@ function caddieTopics() {
   return [
     ["club", "Schlägerwahl"],
     ["strategy", "Lochstrategie"],
-    ["risk", "Risiko vermeiden"],
+    ["risk", "Spielbare Option"],
     ["approach", "Annäherung"],
     ["putt", "Putt & Grün"],
     ["mental", "Mentaler Tipp"],
@@ -2302,18 +2913,22 @@ function caddieTopicContent(topic, item = hole()) {
   const expert = expertForContext(item);
   const risk = holeRisk(item);
   const shots = holeScore(item);
+  const personalPlan = personalHolePlan(item);
+  const history = officialHoleStats(item.hole);
   const base = {
     club: [
-      shots === 0 ? "Nimm den längsten Schläger, der Aus und Strafzone realistisch aus dem Spiel hält." : "Wähle jetzt den Schläger mit der größten Trefferfläche, nicht den mit der maximalen Distanz.",
+      shots === 0 ? `Persönliche Baseline vom Tee: ${personalPlan.tee}. Geplanter Weg: ${personalPlan.route}.` : `${personalPlan.next}. Wähle bei schlechter Lage den Schläger mit der größten Trefferfläche, nicht den mit der maximalen Distanz.`,
+      "Carry-Werte sind Planwerte. Wind, Höhenunterschied, Temperatur, Lage und Tagescarry können die Wahl verändern.",
       risk > 55 ? "Bei erhöhtem Lochrisiko ist ein Layup oder ein voller kontrollierter Schläger besser als ein Grenzschlag." : "Wenn die Zielzone breit ist, darfst du normal spielen. Tempo bei 80 bis 90 Prozent halten.",
     ],
     strategy: [
+      `Persönliches Break-90-Ziel an diesem Loch: ${personalPlan.target} Schläge. ${history ? `Letzte drei Turniere Ø ${formatDecimal(history.recentAverage)}, Bestwert ${history.best}.` : ""}`,
       state.language === "en" ? HOLE_PLANS_EN[item.hole] : HOLE_PLANS[item.hole],
-      item.si <= 6 ? `Stroke Index ${item.si}: Bogey ist ein gutes Ergebnis. Doppelbogey aktiv vermeiden.` : "Nutze die breite Zielseite. Par ist Bonus, Bogey bleibt im Plan.",
+      item.si <= 6 ? `Stroke Index ${item.si}: Erzeuge vom Tee eine freie nächste Position und bleibe bei deinem ${dayGame().label}.` : "Nutze die breite Zielseite. Par darf entstehen; deine Aufgabe bleibt der aktuelle Schlag.",
     ],
     risk: [
-      paceWarning(item) || "Der zweite Fehler ist teurer als der erste. Nach einem schlechten Schlag sofort defensiver werden.",
-      "Vermeide kurzseitige Fehlschläge, rote/weiße Zonen und Schläge aus schlechten Lagen mit zu hoher Erwartung.",
+      paceWarning(item) || "Nach einer Abweichung beginnt ein neuer Auftrag: breite Zielzone, klare Flugkurve, spielbare nächste Position.",
+      "Plane deine normale Streuung so ein, dass auf beiden Seiten möglichst viel spielbare Fläche bleibt.",
     ],
     approach: [
       "Bei Annäherungen zählt die sichere Grünhälfte. Fahne nur angreifen, wenn Fehlschlag kurz und lang spielbar bleibt.",
@@ -2324,8 +2939,8 @@ function caddieTopicContent(topic, item = hole()) {
       "Bei langen Putts in eine Zone putten, nicht auf Lochkante. 3-Putt-Vermeidung ist direkter Scoregewinn.",
     ],
     mental: [
-      "Ein Schlag, ein Auftrag. Nach dem Ergebnis sofort zum nächsten einfachen Schlag wechseln.",
-      "Bob-Rotella-Prinzip: Commitment zum aktuellen Schlag ist wichtiger als Ärger über den letzten.",
+      "Wahrnehmen – Absicht – Aufmerksamkeit – Akzeptanz. Danach gehört der Schlag der Vergangenheit.",
+      "Gedanken und Emotionen dürfen da sein. Du musst sie nicht lösen, bevor du den nächsten klaren Auftrag ausführst.",
     ],
     why: [
       `Datenbasis: ${hcpBand()} · Break ${state.round.breakTarget || 90} · ${playedHoles().length} aktuelle Lochdaten · ${state.archive.length} gespeicherte Runden.`,
@@ -2357,18 +2972,18 @@ function mentalPopupContent(kind) {
   const content = {
     mentalStart: [
       "Rundenstart",
-      "Mentaler Start",
-      ["Für die ersten drei Löcher zählt nur Rhythmus.", "Vor jedem Schlag: Zielseite wählen, Schlag sehen, committen.", "Bogey ist kein Fehler, wenn der Ball im Spiel bleibt."],
+      "Ein Schlag, ein Auftrag",
+      ["Wahrnehmen: Lage, Wind und Zielraum.", "Absicht: Flugkurve sehen. Aufmerksamkeit: genau ein äußerer Fokus.", "Akzeptanz: Ergebnis registrieren und den Schlag dort lassen."],
     ],
     mentalGood: [
       "Momentum",
       "Gute Phase stabilisieren",
-      ["Nichts erzwingen. Der Plan funktioniert gerade.", "Gleiches Tempo, gleiche Routine, gleiche Zielbreite.", "Par ist Bonus. Kein Extra-Risiko wegen eines guten Laufs."],
+      ["Nichts hinzufügen. Dein aktuelles Spiel ist verfügbar.", "Gleiche Routine, klares Zielbild und derselbe äußere Fokus.", "Das Ergebnis des letzten Lochs verändert den Auftrag dieses Schlags nicht."],
     ],
     mentalBad: [
       "Reset",
-      "Schaden begrenzen",
-      ["Score loslassen, nächsten einfachen Schlag wählen.", "Keine Fahnenjagd aus schlechter Lage.", "Ziel: Doppel-Fehler stoppen und wieder in den Bogey-Plan kommen."],
+      "Akzeptieren und neu beginnen",
+      ["Der letzte Schlag muss weder erklärt noch korrigiert werden.", "Sieh jetzt die größte Zielzone und den gewünschten Ballflug.", "Spiele dein heutiges A-, B- oder C-Spiel – nicht einen Schwung, den du gerade nicht hast."],
     ],
   }[kind];
   return content;
@@ -2401,18 +3016,19 @@ function maybeOpenMentalMomentum() {
 
 function openInfoModal(kind) {
   const item = hole();
-  const chance = break90Chance();
+  const live = break90LiveStatus();
+  const projected = live.completed.length ? live.projected : personalTargets().reduce((sum, value) => sum + value, 0);
   const risk = holeRisk(item);
   const content = {
     metrics: {
       eyebrow: "Berechnung",
-      title: "Break-Chance & Lochrisiko",
-      body: `<p><strong>Break-Chance</strong> ist eine vorsichtige Schätzung aus aktuellem Score, gespielten Löchern, Break-Ziel und Fehlerlast. Je mehr gespeicherte Runden vorhanden sind, desto belastbarer wird sie.</p><p><strong>Lochrisiko</strong> kombiniert Stroke Index, historische Fehler auf diesem Loch und aktuelle Trouble-Schläge. Aktuell: Break-Chance ${chance}%, Lochrisiko ${risk}%.</p>`,
+      title: "Break-90-Prognose & Lochrisiko",
+      body: `<p><strong>Break-90-Prognose ${projected}</strong> setzt deine abgeschlossenen Löcher ins Verhältnis zum persönlichen 88er-Lochplan. Ein zusätzlicher Reserveschlag erlaubt weiterhin maximal 89. Das ist eine Soll-Ist-Hochrechnung, keine Erfolgswahrscheinlichkeit.</p><p><strong>Lochrisiko</strong> kombiniert Stroke Index, offizielle Ergebnisse der letzten drei Steibis-Turniere, lokal erfasste Fehler und aktuelle Trouble-Schläge. Aktuell an Loch ${item.hole}: ${risk}%.</p>`,
     },
     about: {
       eyebrow: "Über die App",
       title: "CoursePilot",
-      body: "<p>CoursePilot hilft Amateur-Golfern, auf bekannten Plätzen smarter zu spielen: weniger Strafschläge, weniger 3-Putts, klarere Entscheidungen und ein datenbasierter Trainingsfokus.</p><p>Die App ist für Spieler gedacht, die Break-Ziele wie Break 90, 95 oder 100 verfolgen und aus jeder Runde lernen wollen.</p><p>Konzept, Umsetzung und Copyright: Stefan mit KI-Entwicklungspartner Codex, 2026. Regelhinweise ersetzen keine Spielleitung oder offiziellen Rules of Golf.</p>",
+      body: "<p>CoursePilot hilft Amateur-Golfern, auf bekannten Plätzen smarter zu spielen: weniger Strafschläge, weniger 3-Putts, klarere Entscheidungen und ein datenbasierter Trainingsfokus.</p><p>Die App ist für Spieler gedacht, die Break-Ziele wie Break 90, 95 oder 100 verfolgen und aus jeder Runde lernen wollen.</p><p>Konzept und Umsetzung: privates CoursePilot-Projekt mit KI-Entwicklungspartner Codex, 2026. Regelhinweise ersetzen keine Spielleitung oder offiziellen Rules of Golf.</p>",
     },
     welcome: {
       eyebrow: "Willkommen",
@@ -2498,7 +3114,7 @@ function saveFeedbackEntry() {
     "",
     `Freitext: ${feedback.text || "-"}`,
   ].join("\n");
-  location.href = `mailto:schaedler.stefan@gmail.com?subject=${encodeURIComponent("CoursePilot Feedback")}&body=${encodeURIComponent(body)}`;
+  location.href = `mailto:?subject=${encodeURIComponent("CoursePilot Feedback")}&body=${encodeURIComponent(body)}`;
   closeFeedbackModal();
 }
 
@@ -2615,6 +3231,20 @@ els.shotGrid.addEventListener("click", (event) => {
   else addShot(button.dataset.result);
 });
 
+els.personalPlan?.addEventListener("click", (event) => {
+  const purposeButton = event.target.closest("[data-round-purpose]");
+  const dayGameButton = event.target.closest("[data-day-game]");
+  if (purposeButton) state.round.purpose = purposeButton.dataset.roundPurpose === "tournament" ? "tournament" : "practice";
+  if (dayGameButton) {
+    state.round.dayGame = ["A", "B", "C"].includes(dayGameButton.dataset.dayGame) ? dayGameButton.dataset.dayGame : "A";
+    state.caddieQuiet = false;
+  }
+  if (!purposeButton && !dayGameButton) return;
+  haptic(6);
+  saveActive();
+  render();
+});
+
 els.planHit.addEventListener("click", () => addShot("Exakt umgesetzt"));
 els.planMiss.addEventListener("click", () => {
   state.showMissOptions = true;
@@ -2695,11 +3325,29 @@ els.quickPuttsMinus.addEventListener("click", () => {
   const { total, putts } = quickCounts();
   rebuildQuickShots(total, putts - 1);
 });
+els.causeGrid?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-hole-cause]");
+  if (!button) return;
+  hole().cause = hole().cause === button.dataset.holeCause ? "" : button.dataset.holeCause;
+  saveActive();
+  renderCausePicker();
+});
+[els.practiceClub, els.practiceLie, els.practiceTarget, els.practiceActual, els.practiceCarry, els.practiceRoll, els.practiceRest, els.practiceDecision]
+  .filter(Boolean)
+  .forEach((field) => {
+    field.addEventListener("change", savePracticeObservation);
+    if (field.tagName === "INPUT") field.addEventListener("input", savePracticeObservation);
+  });
 els.languageToggle.addEventListener("click", toggleLanguage);
 els.welcomeInfo.addEventListener("click", () => openInfoModal("welcome"));
 els.aboutApp.addEventListener("click", () => openInfoModal("about"));
 els.openTip.addEventListener("click", () => openInfoModal("tip"));
 els.aiCaddie.addEventListener("click", (event) => {
+  if (event.target.closest("[data-show-next-task]")) {
+    state.caddieQuiet = false;
+    renderAiCaddie(hole());
+    return;
+  }
   if (event.target.closest(".metric-pill")) openInfoModal("metrics");
 });
 els.closeInfoModal.addEventListener("click", closeInfoModal);

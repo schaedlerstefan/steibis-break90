@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="app-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=42" />
+    <link rel="stylesheet" href="styles.css?v=51" />
   </head>
   <body>
     <div class="app-shell">
@@ -86,7 +86,7 @@
             <button class="icon-button" id="nextHole" type="button" aria-label="Nächstes Loch" title="Nächstes Loch">›</button>
           </div>
 
-          <section class="gps-card" id="gpsCard" aria-label="GPS-Distanz">
+          <section class="gps-card" id="gpsCard" aria-label="GPS-Distanz" hidden>
             <div>
               <p class="eyebrow" id="gpsEyebrow">GPS</p>
               <strong id="gpsDistance">Distanz zum Grün offen</strong>
@@ -94,6 +94,8 @@
             </div>
             <button class="compact-button" id="enableGps" type="button">GPS aktivieren</button>
           </section>
+
+          <section class="personal-plan-card" id="personalPlan" aria-label="Persönlicher Break-90-Plan"></section>
 
           <div class="round-quick-row">
             <button class="hole-toggle" id="toggleHoleMenu" type="button">Loch wechseln</button>
@@ -109,10 +111,10 @@
             <div id="detailEntry">
               <p class="eyebrow">Schlagtyp</p>
               <div class="shot-type-grid" id="shotTypeGrid"></div>
-              <p class="eyebrow">Plan-Ergebnis</p>
+              <p class="eyebrow">Nächste Spielsituation</p>
               <div class="plan-choice">
-                <button class="plan-button hit" id="planHit" type="button">Plan getroffen</button>
-                <button class="plan-button miss" id="planMiss" type="button">Nicht getroffen</button>
+                <button class="plan-button hit" id="planHit" type="button">Gute nächste Option</button>
+                <button class="plan-button miss" id="planMiss" type="button">Plan nicht umgesetzt</button>
               </div>
               <div class="miss-options" id="missOptions" hidden>
                 <p class="eyebrow">Abweichung erfassen</p>
@@ -120,8 +122,8 @@
               </div>
               <p class="eyebrow putt-heading">Putt</p>
               <div class="plan-choice putt-choice">
-                <button class="plan-button hit" id="puttHit" type="button">Putt-Plan getroffen</button>
-                <button class="plan-button miss" id="puttMiss" type="button">Nicht getroffen</button>
+                <button class="plan-button hit" id="puttHit" type="button">Start &amp; Speed passend</button>
+                <button class="plan-button miss" id="puttMiss" type="button">Abweichung</button>
               </div>
               <div class="miss-options" id="puttMissOptions" hidden>
                 <p class="eyebrow">Putt-Abweichung</p>
@@ -145,8 +147,28 @@
                   <button type="button" id="quickPuttsPlus" aria-label="Putt mehr">+</button>
                 </div>
               </div>
-              <p class="setting-help">Turniermodus: nur zählen, keine Fehlererfassung. Für Training und Analyse den Detail-Modus nutzen.</p>
+              <div class="cause-picker" id="quickCausePicker">
+                <p class="eyebrow">Ein Hauptgrund – optional</p>
+                <div class="cause-grid" id="causeGrid"></div>
+              </div>
+              <p class="setting-help">Turniermodus: Score, Putts und höchstens ein Hauptgrund. Keine Schlag-für-Schlag-Analyse.</p>
             </div>
+            <section class="practice-capture" id="practiceCapture" aria-label="Proberunden-Messung">
+              <div class="practice-capture-head">
+                <div><p class="eyebrow">Proberunden-Messung</p><strong>Eine Beobachtung für den Turnierplan</strong></div>
+                <span>lokal gespeichert</span>
+              </div>
+              <div class="practice-fields">
+                <label>Schläger<select id="practiceClub"></select></label>
+                <label>Lage<select id="practiceLie"><option value="tee">Tee</option><option value="excellent">FW · sehr gut</option><option value="normal">FW · normal</option><option value="rough">Rough/schwierig</option></select></label>
+                <label>Zielseite<select id="practiceTarget"><option value="Mitte">Mitte</option><option value="Links">Links</option><option value="Rechts">Rechts</option></select></label>
+                <label>Tatsächlich<select id="practiceActual"><option value="Mitte">Mitte</option><option value="Links">Links</option><option value="Rechts">Rechts</option><option value="Kurz">Kurz</option><option value="Lang">Lang</option></select></label>
+                <label>Carry<input id="practiceCarry" type="number" inputmode="numeric" min="0" max="300" placeholder="m" /></label>
+                <label>Roll<input id="practiceRoll" type="number" inputmode="numeric" min="0" max="150" placeholder="m" /></label>
+                <label>Rest<input id="practiceRest" type="number" inputmode="numeric" min="0" max="500" placeholder="m" /></label>
+                <label>Entscheidung<select id="practiceDecision"><option value="gut">gut</option><option value="neutral">neutral</option><option value="schlecht">schlecht</option></select></label>
+              </div>
+            </section>
             <button class="wide-button primary" id="finishHole" type="button">Loch fertig →</button>
           </section>
 
@@ -224,6 +246,7 @@
               <h3>Statistik</h3>
             </div>
             <div class="hcp-forecast" id="hcpForecast"></div>
+            <div class="round-comparison" id="roundComparison"></div>
             <div class="stat-visuals" id="statVisuals"></div>
             <div class="summary-grid" id="summaryGrid"></div>
             <details class="more-panel shot-overview-panel" open>
@@ -371,10 +394,13 @@
       </section>
     </div>
 
-    <script src="app.js?v=42"></script>
+    <script src="personal-data.js?v=51"></script>
+    <script src="coursepilot-core.js?v=51"></script>
+    <script src="coursepilot-review.js?v=51"></script>
+    <script src="app.js?v=51"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=42");
+        navigator.serviceWorker.register("./sw.js?v=51");
       }
     </script>
   </body>
